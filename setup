@@ -1,0 +1,16 @@
+#!/bin/sh
+# Compile and setup ready to run in a separate directory
+# usage:  source setup <directory name> [compile params]
+
+mkdir $1
+
+#Compile
+make clean
+make
+
+#Setup dir
+if [ $? == 0 ]; then
+  mv gpe $1
+  cp parameters.f90 $1
+  cd $1
+fi
