@@ -5,9 +5,9 @@ module ic
 
   private
   public :: get_grid, ics, get_bcs
-  real, dimension(0:nx), public :: x
-  real, dimension(0:ny), public :: y
-  real, dimension(0:nz), public :: z
+  real, dimension(0:nx1), public :: x
+  real, dimension(0:ny1), public :: y
+  real, dimension(0:nz1), public :: z
 
   contains
 
@@ -18,15 +18,15 @@ module ic
 
     integer :: i, j, k
 
-    do i=0,nx
+    do i=0,nx1
       x(i) = xl + real(i)*dx
     end do
 
-    do j=0,ny
+    do j=0,ny1
       y(j) = yl + real(j)*dy
     end do
     
-    do k=0,nz
+    do k=0,nz1
       z(k) = zl + real(k)*dz
     end do
 
@@ -39,9 +39,9 @@ module ic
     implicit none
 
     integer, intent(out) :: p
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: out_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
     logical :: state_exist
-    real, dimension(0:nx,0:ny,0:nz) :: real_rand, imag_rand
+    real, dimension(0:nx1,0:ny1,0:nz1) :: real_rand, imag_rand
 
     ! If this is a restarted run...
     if (restart) then
@@ -82,7 +82,7 @@ module ic
     implicit none
 
     integer, intent(out) :: p
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: out_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
     integer :: nx_prev, ny_prev, nz_prev, alloc_err
     real :: dt_prev
     complex, dimension(:,:,:), allocatable :: var_prev
@@ -101,7 +101,7 @@ module ic
     ! onto new grid
     if ((nx_prev /= nx) .or. (ny_prev /= ny) .or. (nz_prev /= nz)) then
       print*, 'Interpolating onto new grid...'
-      allocate(var_prev(0:nx_prev,0:ny_prev,0:nz_prev), stat=alloc_err)
+      allocate(var_prev(0:nx_prev-1,0:ny_prev-1,0:nz_prev-1), stat=alloc_err)
       if (alloc_err /= 0) stop 'ERROR: Interpolating allocation error' 
       read (50) var_prev
       call inter(var_prev, nx_prev, ny_prev, nz_prev, out_var)
@@ -135,13 +135,13 @@ module ic
     implicit none
 
     integer, intent(in) :: nxp, nyp, nzp
-    complex, dimension(0:nxp,0:nyp,0:nzp), intent(in) :: prev_var
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: out_var
+    complex, dimension(0:nxp-1,0:nyp-1,0:nzp-1), intent(in) :: prev_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
     integer:: i, j, k
     real :: dx_prev, dy_prev, dz_prev
-    real, dimension(0:nxp) :: x_prev
-    real, dimension(0:nyp) :: y_prev
-    real, dimension(0:nzp) :: z_prev
+    real, dimension(0:nxp-1) :: x_prev
+    real, dimension(0:nyp-1) :: y_prev
+    real, dimension(0:nzp-1) :: z_prev
 
     ! Previous grid
     dx_prev = (xr-xl) / nxp
@@ -149,15 +149,15 @@ module ic
     dz_prev = (zr-zl) / nzp
 
     ! Previous coordinates
-    do i=0,nxp
+    do i=0,nxp-1
       x_prev(i) = xl + real(i) * dx_prev
     end do
 
-    do j=0,nyp
+    do j=0,nyp-1
       y_prev(j) = yl + real(j) * dy_prev
     end do
     
-    do k=0,nzp
+    do k=0,nzp-1
       z_prev(k) = zl + real(k) * dz_prev
     end do
 
@@ -174,32 +174,32 @@ module ic
     implicit none
     
     integer, intent(in) :: nxp, nyp, nzp
-    complex, dimension(0:nxp,0:nyp,0:nzp), intent(in)  :: in_var
-    real, dimension(0:nxp), intent(in) :: x_prev
-    real, dimension(0:nyp), intent(in) :: y_prev
-    real, dimension(0:nzp), intent(in) :: z_prev
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: out_var
+    complex, dimension(0:nxp-1,0:nyp-1,0:nzp-1), intent(in)  :: in_var
+    real, dimension(0:nxp-1), intent(in) :: x_prev
+    real, dimension(0:nyp-1), intent(in) :: y_prev
+    real, dimension(0:nzp-1), intent(in) :: z_prev
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
     integer :: i, j, k, i2, j2, k2, i2plus, j2plus, k2plus
     real :: c1, c2, c3, one_c1, one_c2, one_c3
 
-    do k=0,nz   !new 'z' index
+    do k=0,nz1   !new 'z' index
       k2 = int(nzp*k/nz)   !old 'z' index
-      do j=0,ny   !new 'y' index
+      do j=0,ny1   !new 'y' index
         j2 = int(nyp*j/ny)   !old 'y' index
-        do i=0,nx   !new 'x' index
+        do i=0,nx1   !new 'x' index
           i2 = int(nxp*i/nx)   !old 'x' index
-          if (i == nx) then
-            i2plus = 1
+          if (i == nx1) then
+            i2plus = 0
           else 
             i2plus = i2+1
           end if
-          if (j == ny) then
-            j2plus = 1
+          if (j == ny1) then
+            j2plus = 0
           else 
             j2plus = j2+1
           end if
-          if (k == nz) then
-            k2plus = 1
+          if (k == nz1) then
+            k2plus = 0
           else 
             k2plus = k2+1
           end if
@@ -232,15 +232,15 @@ module ic
     implicit none
 
     real, parameter :: c=450.0
-    real, dimension(0:nx,0:ny,0:nz) :: fermi, r
+    real, dimension(0:nx1,0:ny1,0:nz1) :: fermi, r
     real :: mu
     integer :: i, j, k
 
     mu = sqrt(c/pi)
 
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
           if (r(i,j,k)<=sqrt(2.0*mu)) then
             fermi(i,j,k) = sqrt((2.0*mu - r(i,j,k)**2)/(2.0*c))
@@ -259,8 +259,8 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: ei
-    real, dimension(0:nx,0:ny,0:nz), intent(in) :: theta
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: ei
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: theta
 
     ei = cos(theta) + eye*sin(theta)
 
@@ -272,8 +272,8 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx,0:ny,0:nz) :: amp
-    real, dimension(0:nx,0:ny,0:nz), intent(in) :: r
+    real, dimension(0:nx1,0:ny1,0:nz1) :: amp
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
     real, parameter :: c1 = -0.7
     real, parameter :: c2 = 1.15
 
@@ -287,9 +287,9 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: vortex_line
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_line
     type (line_param), intent(in) :: vl
-    real, dimension(0:nx,0:ny,0:nz) :: r, theta
+    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta
 
     call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
     call get_theta(vl%x0, vl%y0, vl%amp, vl%ll, vl%sgn, theta)
@@ -304,17 +304,17 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: vortex_ring
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_ring
     real, intent(in) :: x0, r0
-    real, dimension(0:ny,0:nz) :: s
-    real, dimension(0:nx,0:ny,0:nz) :: rr1, rr2, d1, d2
+    real, dimension(0:ny1,0:nz1) :: s
+    real, dimension(0:nx1,0:ny1,0:nz1) :: rr1, rr2, d1, d2
     integer :: i, j, k
 
     call get_s(s)
     
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           d1(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)+r0)**2 )
           d2(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)-r0)**2 )
         end do
@@ -329,9 +329,9 @@ module ic
     rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
                  (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
 
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           vortex_ring(i,j,k) = rr1(i,j,k)*((x(i)-x0)+eye*(s(j,k)+r0)) * &
                                rr2(i,j,k)*((x(i)-x0)-eye*(s(j,k)-r0))
         end do
@@ -346,13 +346,13 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: pade_pulse_ring
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: pade_pulse_ring
     real, intent(in) :: x0, r0
     character(*), intent(in) :: pulse_or_ring
-    real, dimension(0:nx) :: x2
-    real, dimension(0:ny) :: y2
-    real, dimension(0:ny,0:nz) :: s, s2
-    real, dimension(0:nx,0:ny,0:nz) :: uu, vv, denom
+    real, dimension(0:nx1) :: x2
+    real, dimension(0:ny1) :: y2
+    real, dimension(0:ny1,0:nz1) :: s, s2
+    real, dimension(0:nx1,0:ny1,0:nz1) :: uu, vv, denom
     real, dimension(9) :: a
     real, parameter :: pow = 7.0/4.0
     real :: one_2u, U, m
@@ -366,9 +366,9 @@ module ic
     y2 = (y)**2
     s2 = (s-r0)**2
     
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           denom(i,j,k) = (1.0 + a(8)*x2(i) + a(7)*s2(j,k) + &
                           a(9)*(x2(i)+one_2u*s2(j,k))**2)**pow
           
@@ -421,10 +421,10 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: vortex_pair
-    real, dimension(0:nx) :: x2, x4
-    real, dimension(0:ny) :: y2, y4
-    real, dimension(0:nx,0:ny) :: uu, vv, denom
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_pair
+    real, dimension(0:nx1) :: x2, x4
+    real, dimension(0:ny1) :: y2, y4
+    real, dimension(0:nx1,0:ny1) :: uu, vv, denom
     
     real, parameter :: a0 = -1.14026
     real, parameter :: a1 = -0.150112
@@ -445,8 +445,8 @@ module ic
     y2 = y**2
     y4 = y**4
     
-    do j=0,ny
-      do i=0,nx
+    do j=0,ny1
+      do i=0,nx1
         denom(i,j) = 1.0 + c0*x2(i) + c1*x4(i) + c2*y2(j) + &
                            c3*x2(i)*y2(j) + c4*y(j)**4
         
@@ -456,7 +456,7 @@ module ic
       end do
     end do
     
-    do k =0,nz
+    do k =0,nz1
       vortex_pair(:,:,k) = uu(:,:) + eye*vv(:,:)
     end do
 
@@ -469,12 +469,12 @@ module ic
     implicit none
 
     real, intent(in) :: x0, y0, a, ll
-    real, dimension(0:nx,0:ny,0:nz), intent(out) :: r
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: r
     integer :: i, j, k
 
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           r(i,j,k) = sqrt((x(i)-x0)**2 + (y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2)
         end do
       end do
@@ -488,11 +488,11 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:ny,0:nz), intent(out) :: s
+    real, dimension(0:ny1,0:nz1), intent(out) :: s
     integer :: j, k
 
-    do k=0,nz
-      do j=0,ny
+    do k=0,nz1
+      do j=0,ny1
         s(j,k) = sqrt(y(j)**2 + z(k)**2)
       end do
     end do
@@ -506,12 +506,12 @@ module ic
     implicit none
 
     real, intent(in) :: x0, y0, a, ll, sgn
-    real, dimension(0:nx,0:ny,0:nz), intent(out) :: theta
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: theta
     integer :: i, j, k
 
-    do k=0,nz
-      do j=0,ny
-        do i=0,nx
+    do k=0,nz1
+      do j=0,ny1
+        do i=0,nx1
           theta(i,j,k) = sgn * atan2(y(j)-y0-a*cos(2.0*pi*z(k)/ll), x(i)-x0)
         end do
       end do
@@ -525,8 +525,8 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx,0:ny,0:nz), intent(in) :: r
-    real, dimension(0:nx,0:ny,0:nz), intent(out) :: rr
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rr
     integer :: i, j
     
     rr = sqrt( ((0.3437+0.0286*r**2)) / &
@@ -540,14 +540,14 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: in_var
 
     in_var(0:2,:,:) = 0.0
     in_var(:,0:2,:) = 0.0
     in_var(:,:,0:2) = 0.0
-    in_var(nx-2:nx,:,:) = 0.0
-    in_var(:,ny-2:ny,:) = 0.0
-    in_var(:,:,nz-2:nz) = 0.0
+    in_var(nx-3:nx1,:,:) = 0.0
+    in_var(:,ny-3:ny1,:) = 0.0
+    in_var(:,:,nz-3:nz1) = 0.0
 
     return
   end subroutine get_bcs

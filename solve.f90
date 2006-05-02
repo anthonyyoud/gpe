@@ -13,8 +13,8 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in)  :: var_in
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: var_out
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: var_in
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: var_out
 
     select case (scheme)
       case ('euler')
@@ -39,9 +39,9 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in)  :: old
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: new
-    complex, dimension(0:nx,0:ny,0:nz) :: rhs
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: rhs
 
     call get_rhs(old, rhs)
 
@@ -58,9 +58,9 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in)  :: old
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: new
-    complex, dimension(4,0:nx,0:ny,0:nz) :: k
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
+    complex, dimension(4,0:nx1,0:ny1,0:nz1) :: k
 
     call get_rhs(old,k(1,:,:,:))
     k(1,:,:,:) = dt*k(1,:,:,:)
@@ -85,9 +85,9 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: out_var
-    complex, dimension(0:nx,0:ny,0:nz) :: tmp_var, err_var, psi_scal
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, err_var, psi_scal
     real :: errmax, tnew
     complex :: dt_temp, dt_next, dt_did
 
@@ -183,9 +183,9 @@ module solve
     real, parameter :: dc4      = c4 - 13525.0 / 55296.0
     real, parameter :: dc5      = c5 - 277.0 / 14336.0
     real, parameter :: dc6      = c6 - 0.25
-    complex, dimension(0:nx,0:ny,0:nz), intent(in)  :: old
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: new, err
-    complex, dimension(6,0:nx,0:ny,0:nz) :: k
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new, err
+    complex, dimension(6,0:nx1,0:ny1,0:nz1) :: k
 
     call get_rhs(old,k(1,:,:,:))
     k(1,:,:,:) = dt*k(1,:,:,:)
@@ -228,9 +228,9 @@ module solve
     use derivs
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in)  :: in_var
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: rhs
-    complex, dimension(0:nx,0:ny,0:nz) :: dpsidx, dpsidz
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rhs
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx, dpsidz
     real :: U=0.0 !0.18
     
     call deriv_x(in_var, dpsidx)

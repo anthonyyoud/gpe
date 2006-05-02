@@ -8,29 +8,29 @@ module variables
             energy, momentum, linelength
 
   type, public :: var
-    complex, dimension(0:nx,0:ny,0:nz) :: new
-    complex, dimension(0:nx,0:ny,0:nz) :: old
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: new
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: old
   end type var
 
   type, public :: deriv
-    complex, dimension(0:nx,0:ny,0:nz) :: x
-    complex, dimension(0:nx,0:ny,0:nz) :: y
-    complex, dimension(0:nx,0:ny,0:nz) :: z
-    complex, dimension(0:nx,0:ny,0:nz) :: xx
-    complex, dimension(0:nx,0:ny,0:nz) :: yy
-    complex, dimension(0:nx,0:ny,0:nz) :: zz
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: x
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: y
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: z
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: xx
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: yy
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: zz
   end type deriv
 
   type, public :: re_im
-    real, dimension(0:nx,0:ny,0:nz) :: re
-    real, dimension(0:nx,0:ny,0:nz) :: im
+    real, dimension(0:nx1,0:ny1,0:nz1) :: re
+    real, dimension(0:nx1,0:ny1,0:nz1) :: im
   end type re_im
   
   real, parameter, private   :: c1 = 3.0/8.0, &
                                 c2 = 7.0/6.0, &
                                 c3 = 23.0/24.0
 
-  !complex, dimension(0:nx,0:ny,0:nz), save, public :: U
+  !complex, dimension(0:nx1,0:ny1,0:nz1), save, public :: U
 
   contains
 
@@ -40,8 +40,8 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    complex, dimension(0:nx,0:ny,0:nz) :: laplacian
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: laplacian
     type (deriv) :: d
 
     call deriv_xx(in_var,d%xx)
@@ -58,8 +58,8 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(:,:,:), intent(in) :: in_var
-    real, dimension(0:nx,0:ny,0:nz), intent(out) :: phase
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: phase
 
     phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
 
@@ -71,8 +71,8 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(:,:,:), intent(in) :: in_var
-    real, dimension(0:nx,0:ny,0:nz), intent(out) :: density
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: density
 
     density = abs(in_var)
 
@@ -84,12 +84,12 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, intent(out) :: norm
     real :: int_z
-    real, dimension(0:nx,0:ny,0:nz) :: int_var
-    real, dimension(0:ny,0:nz) :: int_x
-    real, dimension(0:nz) :: int_y
+    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
+    real, dimension(0:ny1,0:nz1) :: int_x
+    real, dimension(0:nz1) :: int_y
     
     int_var = abs(in_var)**2
     
@@ -107,8 +107,8 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    complex, dimension(0:nx,0:ny,0:nz), intent(out) :: U
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: U
     type (deriv) :: d
 
     call deriv_x(in_var, d%x)
@@ -128,13 +128,13 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, intent(out) :: E
     real :: int_z
-    real, dimension(0:nx,0:ny,0:nz) :: int_var
-    real, dimension(0:ny,0:nz) :: int_x
-    real, dimension(0:nz) :: int_y
-    complex, dimension(0:nx,0:ny,0:nz) :: dpsidx
+    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
+    real, dimension(0:ny1,0:nz1) :: int_x
+    real, dimension(0:nz1) :: int_y
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx
 
     call deriv_x(in_var, dpsidx)
     
@@ -155,12 +155,12 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, dimension(3), intent(out) :: P
     real :: int_z
-    real, dimension(0:nx,0:ny,0:nz) :: int_var
-    real, dimension(0:ny,0:nz) :: int_x
-    real, dimension(0:nz) :: int_y
+    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
+    real, dimension(0:ny1,0:nz1) :: int_x
+    real, dimension(0:nz1) :: int_y
     type (deriv) :: dpsi, dpsistar
 
     call deriv_x(in_var, dpsi%x)
@@ -205,19 +205,19 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    real, dimension(0:ny,0:nz), intent(out) :: x_int
+    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:ny1,0:nz1), intent(out) :: x_int
     integer :: j, k
 
-    do k =0,nz
-      do j=0,ny
+    do k=0,nz1
+      do j=0,ny1
         x_int(j,k) = (c1*in_var(0,j,k) + &
                       c2*in_var(1,j,k) + &
                       c3*in_var(2,j,k) + &
-                      sum(in_var(3:nx-3,j,k)) + &
-                      c3*in_var(nx-2,j,k) + &
-                      c2*in_var(nx-1,j,k) + &
-                      c1*in_var(nx,j,k)) * dx
+                      sum(in_var(3:nx-4,j,k)) + &
+                      c3*in_var(nx-3,j,k) + &
+                      c2*in_var(nx-2,j,k) + &
+                      c1*in_var(nx-1,j,k)) * dx
       end do
     end do
 
@@ -229,18 +229,18 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:ny,0:nz), intent(in) :: in_var
-    real, dimension(0:nz), intent(out) :: y_int
+    real, dimension(0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:nz1), intent(out) :: y_int
     integer :: k
 
-    do k =0,nz
+    do k=0,nz1
       y_int(k) = (c1*in_var(0,k) + &
                   c2*in_var(1,k) + &
                   c3*in_var(2,k) + &
-                  sum(in_var(3:ny-3,k)) + &
-                  c3*in_var(ny-2,k) + &
-                  c2*in_var(ny-1,k) + &
-                  c1*in_var(ny,k)) * dy
+                  sum(in_var(3:ny-4,k)) + &
+                  c3*in_var(ny-3,k) + &
+                  c2*in_var(ny-2,k) + &
+                  c1*in_var(ny-1,k)) * dy
     end do
 
     return
@@ -251,16 +251,16 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:nz), intent(in) :: in_var
+    real, dimension(0:nz1), intent(in) :: in_var
     real, intent(out) :: z_int
 
     z_int = (c1*in_var(0) + &
              c2*in_var(1) + &
              c3*in_var(2) + &
-             sum(in_var(3:nz-3)) + &
-             c3*in_var(nz-2) + &
-             c2*in_var(nz-1) + &
-             c1*in_var(nz)) * dz
+             sum(in_var(3:nz-4)) + &
+             c3*in_var(nz-3) + &
+             c2*in_var(nz-2) + &
+             c1*in_var(nz-1)) * dz
 
     return
   end subroutine integrate_z
@@ -270,7 +270,7 @@ module variables
     implicit none
   
     real :: linelength
-    complex, intent(in) :: psi(0:nx,0:ny,0:nz)
+    complex, intent(in) :: psi(0:nx1,0:ny1,0:nz1)
     real, intent(in) :: time
     real :: xx, yy, h, a, den
     integer :: i, j, k, n, m, p, lv, lu
@@ -279,12 +279,12 @@ module variables
   ! MUST have dx=dy=dz
   
     linelength = 0.0
-    !do i=1,nx1
-    !  do j=1,ny1
-    !    do k=1,nz1
-    do k=1,nz1
-      do j=1,ny1
-        iloop: do i=1,nx1
+    !do i=1,nx1-1
+    !  do j=1,ny1-1
+    !    do k=1,nz1-1
+    do k=1,nz1-1
+      do j=1,ny1-1
+        iloop: do i=1,nx1-1
           m=1
           nloop: do n=1,6
   ! 1-front,2-back, 3-right, 4-left, 5-top, 6-bottom

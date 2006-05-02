@@ -67,8 +67,8 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    real, dimension(0:nx,0:ny,0:nz) :: phase, density
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:nx1,0:ny1,0:nz1) :: phase, density
     real :: xpos, ypos, zpos
 
     call get_phase(in_var, phase)
@@ -93,7 +93,7 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real :: E
 
     call energy(in_var, E)
@@ -110,7 +110,7 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, dimension(3) :: P
 
     call momentum(in_var, P)
@@ -128,8 +128,8 @@ module io
     implicit none
 
     integer, intent(in) :: p
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
-    real, dimension(0:nx,0:ny,0:nz) :: phase, density
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    real, dimension(0:nx1,0:ny1,0:nz1) :: phase, density
     real :: zpos
     integer :: i, j, k
 
@@ -141,29 +141,29 @@ module io
     
     zpos = nz/2 !22 !44 !22
     
-    do i=0,nx
+    do i=0,nx1
       write (11, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
                               phase(i,j,zpos), real(in_var(i,j,zpos)), &
-                              aimag(in_var(i,j,zpos)), j=0,ny)
+                              aimag(in_var(i,j,zpos)), j=0,ny1)
       write (11, *)
     end do
     
-    !do j=0,ny
+    !do j=0,ny1
     !  write (11, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
     !                          phase(i,j,zpos), real(in_var(i,j,zpos)), &
-    !                          aimag(in_var(i,j,zpos)), i=0,nx)
+    !                          aimag(in_var(i,j,zpos)), i=0,nx1)
     !  write (11, *)
     !end do
     
-    !do i=0,nx
+    !do i=0,nx1
     !  write (11, '(4e17.9)') (x(i), z(k), density(i,ny/2,k), &
-    !                          phase(i,ny/2,k), k=0,nz)
+    !                          phase(i,ny/2,k), k=0,nz1)
     !  write (11, *)
     !end do
     
-    !do j=0,ny
+    !do j=0,ny1
     !  write (11, '(4e17.9)') (y(j), z(k), density(nx/2,j,k), &
-    !                          phase(nx/2,j,k), k=0,nz)
+    !                          phase(nx/2,j,k), k=0,nz1)
     !  write (11, *)
     !end do
 
@@ -179,7 +179,7 @@ module io
     implicit none
 
     integer, intent(in) :: p
-    complex, intent(in) :: in_var(0:nx,0:ny,0:nz)
+    complex, intent(in) :: in_var(0:nx1,0:ny1,0:nz1)
     integer :: i, j, k
 
     open (12, status = 'unknown', file = 'u_idl'//itos(p)//'.dat', &
@@ -202,7 +202,7 @@ module io
     implicit none
 
     integer, intent(in) :: p, flag
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     integer :: j, k
 
     open (50, file = 'end_state.dat', form='unformatted')
@@ -243,14 +243,14 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
-    real, dimension(0:nx,0:ny,0:nz) :: denom
+    real, dimension(0:nx1,0:ny1,0:nz1) :: denom
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
-    integer, parameter :: z_start=1, z_end=nz1
+    integer, parameter :: z_start=1, z_end=nz1-1
 
     open (15, status = 'unknown', file = 'zeros'//itos(p)//'.dat')
 
@@ -261,8 +261,8 @@ module io
 
     !do k=nz/2+0, nz/2+0
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if (((var%re(i,j,k) == 0.0) .and. &
                (var%im(i,j,k) == 0.0)) .or. &
               ((var%re(i,j,k) == 0.0) .and. &
@@ -284,8 +284,8 @@ module io
     write (15, *) "# i,j,k --> i,j+1,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if (((var%re(i,j,k) == 0.0) .and. &
                (var%im(i,j,k) == 0.0)) .or. &
               ((var%re(i,j,k) == 0.0) .and. &
@@ -308,8 +308,8 @@ module io
       write (15, *) "# i,j,k --> i,j,k+1"
 
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if (((var%re(i,j,k) == 0.0) .and. &
                  (var%im(i,j,k) == 0.0)) .or. &
                 ((var%re(i,j,k) == 0.0) .and. &
@@ -340,16 +340,16 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real, dimension(4) :: zero
     real, dimension(2) :: m
-    real, dimension(4,0:nx,0:ny,0:nz) :: denom
+    real, dimension(4,0:nx1,0:ny1,0:nz1) :: denom
     real :: xp, yp, zp
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
-    integer, parameter :: z_start=1, z_end=nz1
+    integer, parameter :: z_start=1, z_end=nz1-1
 
     open (15, status = 'old', position='append', &
               file = 'zeros'//itos(p)//'.dat')
@@ -360,8 +360,8 @@ module io
     write (15, *) "# i,j,k --> i+1,j,k --> i+1,j+1,k --> i,j+1,k"
     
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
                (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
               ((var%im(i+1,j,k)*var%im(i+1,j+1,k) < 0.0) .and. &
@@ -422,8 +422,8 @@ module io
     if (z_start /= z_end) then
       write (15, *) "# i,j,k --> i+1,j,k --> i+1,j,k+1 --> i,j,k+1"
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
                  (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
                 ((var%im(i+1,j,k)*var%im(i+1,j,k+1) < 0.0) .and. &
@@ -483,8 +483,8 @@ module io
       
       write (15, *) "# i,j,k --> i,j,k+1 --> i,j+1,k+1 --> i,j+1,k"
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if (((var%re(i,j,k)*var%re(i,j,k+1) < 0.0) .and. &
                  (var%im(i,j,k)*var%im(i,j,k+1) >= 0.0)) .and. &
                 ((var%im(i,j,k+1)*var%im(i,j+1,k+1) < 0.0) .and. &
@@ -554,14 +554,14 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
-    real, dimension(0:nx,0:ny,0:nz) :: denom
+    real, dimension(0:nx1,0:ny1,0:nz1) :: denom
     integer :: i, j, k
     integer, parameter :: z_start=nz/2, z_end=nz/2
-    !integer, parameter :: z_start=1, z_end=nz1
+    !integer, parameter :: z_start=1, z_end=nz1-1
 
     open (16, status = 'unknown', file = 're_zeros'//itos(p)//'.dat')
     open (17, status = 'unknown', file = 'im_zeros'//itos(p)//'.dat')
@@ -572,8 +572,8 @@ module io
     write (16, *) "# i,j,k --> i+1,j,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((var%re(i,j,k) == 0.0) .or. &
               (var%re(i,j,k)*var%re(i+1,j,k) < 0.0)) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i+1,j,k)
@@ -589,8 +589,8 @@ module io
     write (16, *) "# i,j,k --> i,j+1,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((var%re(i,j,k) == 0.0) .or. &
               (var%re(i,j,k)*var%re(i,j+1,k) < 0.0)) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i,j+1,k)
@@ -607,8 +607,8 @@ module io
       write (16, *) "# i,j,k --> i,j,k+1"
 
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if ((var%re(i,j,k) == 0.0) .and. &
                 (var%re(i,j,k)*var%re(i,j,k+1) < 0.0)) then
               denom(i,j,k) = var%re(i,j,k)-var%re(i,j,k+1)
@@ -625,8 +625,8 @@ module io
     write (17, *) "# i,j,k --> i+1,j,k"
     
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((var%im(i,j,k) == 0.0) .or. &
               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0)) then
             denom(i,j,k) = var%im(i,j,k)-var%im(i+1,j,k)
@@ -642,8 +642,8 @@ module io
     write (17, *) "# i,j,k --> i,j+1,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((var%im(i,j,k) == 0.0) .or. &
               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0)) then
             denom(i,j,k) = var%im(i,j,k)-var%im(i,j+1,k)
@@ -660,8 +660,8 @@ module io
       write (17, *) "# i,j,k --> i,j,k+1"
 
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if ((var%im(i,j,k) == 0.0) .and. &
                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0)) then
               denom(i,j,k) = var%im(i,j,k)-var%im(i,j,k+1)
@@ -687,13 +687,13 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     integer, intent(in) :: p
     real :: zero
-    real, dimension(0:nx,0:ny,0:nz) :: denom, phase
+    real, dimension(0:nx1,0:ny1,0:nz1) :: denom, phase
     integer :: i, j, k
     integer, parameter :: z_start=nz/2, z_end=nz/2
-    !integer, parameter :: z_start=1, z_end=nz1
+    !integer, parameter :: z_start=1, z_end=nz1-1
 
     open (18, status = 'unknown', file = 'phase_zeros'//itos(p)//'.dat')
 
@@ -702,8 +702,8 @@ module io
     write (18, *) "# i,j,k --> i+1,j,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((phase(i,j,k) == 0.0) .or. &
               (phase(i,j,k)*phase(i+1,j,k) < 0.0)) then
             denom(i,j,k) = phase(i,j,k)-phase(i+1,j,k)
@@ -719,8 +719,8 @@ module io
     write (18, *) "# i,j,k --> i,j+1,k"
 
     do k=z_start, z_end
-      do j=1,ny1
-        do i=1,nx1
+      do j=1,ny1-1
+        do i=1,nx1-1
           if ((phase(i,j,k) == 0.0) .or. &
               (phase(i,j,k)*phase(i,j+1,k) < 0.0)) then
             denom(i,j,k) = phase(i,j,k)-phase(i,j+1,k)
@@ -737,8 +737,8 @@ module io
       write (18, *) "# i,j,k --> i,j,k+1"
 
       do k=z_start, z_end
-        do j=1,ny1
-          do i=1,nx1
+        do j=1,ny1-1
+          do i=1,nx1-1
             if ((phase(i,j,k) == 0.0) .and. &
                 (phase(i,j,k)*phase(i,j,k+1) < 0.0)) then
               denom(i,j,k) = phase(i,j,k)-phase(i,j,k+1)
@@ -762,7 +762,7 @@ module io
     use variables, only : linelength
     implicit none
 
-    complex, dimension(0:nx,0:ny,0:nz), intent(in) :: in_var
+    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, intent(in) :: t
 
     write (20, '(2e17.9)') t, linelength(t, in_var)
