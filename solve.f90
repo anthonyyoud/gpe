@@ -13,7 +13,7 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: var_in
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: var_in
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: var_out
 
     select case (scheme)
@@ -39,13 +39,18 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
     complex, dimension(0:nx1,0:ny1,0:nz1) :: rhs
+    integer :: j, k
 
     call get_rhs(old, rhs)
 
-    new = old + dt*rhs
+    do k=ksta,kend
+      do j=jsta,jend
+        new(:,j,k) = old(:,j,k) + dt*rhs(:,j,k)
+      end do
+    end do
 
     t = t+real(dt)
     im_t = im_t+abs(aimag(dt))
@@ -56,23 +61,61 @@ module solve
   subroutine rk4(old, new)
     ! Explicit fourth order Runge-Kutta time stepping
     use parameters
+    use variables
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
-    complex, dimension(4,0:nx1,0:ny1,0:nz1) :: k
+    complex, dimension(4,0:nx1,-2:ny+1,-2:nz+1) :: kk
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: tmp
+    integer :: j, k
 
-    call get_rhs(old,k(1,:,:,:))
-    k(1,:,:,:) = dt*k(1,:,:,:)
-    call get_rhs(old+0.5*k(1,:,:,:), k(2,:,:,:))
-    k(2,:,:,:) = dt*k(2,:,:,:)
-    call get_rhs(old+0.5*k(2,:,:,:), k(3,:,:,:))
-    k(3,:,:,:) = dt*k(3,:,:,:)
-    call get_rhs(old+k(3,:,:,:), k(4,:,:,:))
-    k(4,:,:,:) = dt*k(4,:,:,:)
+    call get_rhs(old,kk(1,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(1,:,j,k) = dt*kk(1,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+0.5*kk(1,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(2,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(2,:,j,k) = dt*kk(2,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+0.5*kk(2,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(3,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(3,:,j,k) = dt*kk(3,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+kk(3,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(4,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(4,:,j,k) = dt*kk(4,:,j,k)
+      end do
+    end do
 
-    new = old + k(1,:,:,:)/6.0 + k(2,:,:,:)/3.0 + &
-                k(3,:,:,:)/3.0 + k(4,:,:,:)/6.0
+    do k=ksta,kend
+      do j=jsta,jend
+        new(:,j,k) = old(:,j,k) + kk(1,:,j,k)/6.0 + kk(2,:,j,k)/3.0 + &
+                                  kk(3,:,j,k)/3.0 + kk(4,:,j,k)/6.0
+      end do
+    end do
 
     t = t+real(dt)
     im_t = im_t+abs(aimag(dt))
@@ -85,11 +128,13 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
     complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, err_var, psi_scal
-    real :: errmax, tnew
+    real :: tnew
+    real, dimension(2) :: errmaxs, errmaxr
     complex :: dt_temp, dt_next, dt_did
+    integer :: j, k
 
     ! General error condition
     errcon = (5.0/safety)**(1.0/dt_increase)
@@ -97,17 +142,27 @@ module solve
     ! Get the RHS for use as a scaling variable
     call get_rhs(in_var, psi_scal)
     ! Specific scaling condition
-    psi_scal = abs(in_var) + dt*abs(psi_scal) + 1e-30
+    do k=ksta, kend
+      do j=jsta,jend
+        psi_scal(:,j,k) = abs(in_var(:,j,k)) + dt*abs(psi_scal(:,j,k)) + 1e-30
+      end do
+    end do
 
     do
       ! Do a Runge-Kutta step
       call rkck(in_var, tmp_var, err_var)
       ! Get the maximum error over the whole field
-      errmax = maxval(abs(err_var/psi_scal))/eps
+      errmaxs(1) = maxval(abs(err_var(:,jsta:jend,ksta:kend)/&
+                             psi_scal(:,jsta:jend,ksta:kend)))/eps
+      errmaxs(2) = 0.0
+
+      call MPI_ALLREDUCE(errmaxs, errmaxr, 1, MPI_2REAL, MPI_MAXLOC, &
+                         MPI_COMM_WORLD, ierr)
+                      
       ! Step succeeded so exit
-      if (errmax <= 1.0) exit
+      if (errmaxr(1) <= 1.0) exit
       ! Step didn't succeed so decrease the time step
-      dt_temp = safety*dt*(errmax**dt_decrease)
+      dt_temp = safety*dt*(errmaxr(1)**dt_decrease)
       ! Don't decrease the time step by more than a factor of ten
       if (.not. real_time) then
         dt = cmplx(0.0,-sign(max(abs(dt_temp), 0.1*abs(dt)), abs(dt)))
@@ -118,15 +173,17 @@ module solve
       tnew = t+real(dt)
       if (real_time) then
         if (tnew == t) then
-          ! Guard against infinitesimal time steps
-          print*, 'WARNING: Timestep underflow in rkqs()'
+          if (myrank == 0) then
+            ! Guard against infinitesimal time steps
+            print*, 'WARNING: Timestep underflow in rkqs()'
+          end if
         end if
       end if
     end do
     
-    if (errmax > errcon) then
+    if (errmaxr(1) > errcon) then
       ! Increase the time step
-      dt_next = safety*dt*(errmax**dt_increase)
+      dt_next = safety*dt*(errmaxr(1)**dt_increase)
     else
       ! But not by more than a factor of 5
       dt_next = 5.0*dt
@@ -142,11 +199,17 @@ module solve
     im_t = im_t+abs(aimag(dt))
     
     ! Update the variable
-    out_var = tmp_var
+    do k=ksta,kend
+      do j=jsta,jend
+        out_var(:,j,k) = tmp_var(:,j,k)
+      end do
+    end do
 
-    !if (abs(dt) <= 1e-5) then
-      write (13, '(3e17.9)') t, im_t, abs(dt)
-    !end if
+    if (myrank == 0) then
+      !if (abs(dt) <= 1e-5) then
+        write (13, '(3e17.9)') t, im_t, abs(dt)
+      !end if
+    end if
 
     return
   end subroutine rkqs
@@ -154,6 +217,7 @@ module solve
   subroutine rkck(old, new, err)
     ! Explicit fifth order Runge--Kutta--Fehlberg time stepping
     use parameters
+    use variables
     implicit none
 
     real, parameter :: b21      = 0.2
@@ -183,40 +247,95 @@ module solve
     real, parameter :: dc4      = c4 - 13525.0 / 55296.0
     real, parameter :: dc5      = c5 - 277.0 / 14336.0
     real, parameter :: dc6      = c6 - 0.25
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: old
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new, err
-    complex, dimension(6,0:nx1,0:ny1,0:nz1) :: k
+    complex, dimension(6,0:nx1,-2:ny+1,-2:nz+1) :: kk
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: tmp
+    integer :: j, k
 
-    call get_rhs(old,k(1,:,:,:))
-    k(1,:,:,:) = dt*k(1,:,:,:)
-    call get_rhs(old+b21*k(1,:,:,:), k(2,:,:,:))
-    k(2,:,:,:) = dt*k(2,:,:,:)
-    call get_rhs(old+b31*k(1,:,:,:)+&
-                     b32*k(2,:,:,:), k(3,:,:,:))
-    k(3,:,:,:) = dt*k(3,:,:,:)
-    call get_rhs(old+b41*k(1,:,:,:)+&
-                     b42*k(2,:,:,:)+&
-                     b43*k(3,:,:,:), k(4,:,:,:))
-    k(4,:,:,:) = dt*k(4,:,:,:)
-    call get_rhs(old+b51*k(1,:,:,:)+&
-                     b52*k(2,:,:,:)+&
-                     b53*k(3,:,:,:)+&
-                     b54*k(4,:,:,:), k(5,:,:,:))
-    k(5,:,:,:) = dt*k(5,:,:,:)
-    call get_rhs(old+b61*k(1,:,:,:)+&
-                     b62*k(2,:,:,:)+&
-                     b63*k(3,:,:,:)+&
-                     b64*k(4,:,:,:)+&
-                     b65*k(5,:,:,:), k(6,:,:,:))
-    k(6,:,:,:) = dt*k(6,:,:,:)
+    call get_rhs(old,kk(1,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(1,:,j,k) = dt*kk(1,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b21*kk(1,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(2,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(2,:,j,k) = dt*kk(2,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b31*kk(1,:,j,k)+&
+                                b32*kk(2,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(3,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(3,:,j,k) = dt*kk(3,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b41*kk(1,:,j,k)+&
+                                b42*kk(2,:,j,k)+&
+                                b43*kk(3,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(4,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(4,:,j,k) = dt*kk(4,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b51*kk(1,:,j,k)+&
+                                b52*kk(2,:,j,k)+&
+                                b53*kk(3,:,j,k)+&
+                                b54*kk(4,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(5,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(5,:,j,k) = dt*kk(5,:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b61*kk(1,:,j,k)+&
+                                b62*kk(2,:,j,k)+&
+                                b63*kk(3,:,j,k)+&
+                                b64*kk(4,:,j,k)+&
+                                b65*kk(5,:,j,k)
+      end do
+    end do
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk(6,:,0:ny1,0:nz1))
+    do k=ksta,kend
+      do j=jsta,jend
+        kk(6,:,j,k) = dt*kk(6,:,j,k)
+      end do
+    end do
 
-    new = old + c1*k(1,:,:,:) + c2*k(2,:,:,:) + &
-                c3*k(3,:,:,:) + c4*k(4,:,:,:) + &
-                c5*k(5,:,:,:) + c6*k(6,:,:,:)
+    do k=ksta,kend
+      do j=jsta,jend
+        new(:,j,k) = old(:,j,k) + c1*kk(1,:,j,k) + c2*kk(2,:,j,k) + &
+                                  c3*kk(3,:,j,k) + c4*kk(4,:,j,k) + &
+                                  c5*kk(5,:,j,k) + c6*kk(6,:,j,k)
 
-    err = dc1*k(1,:,:,:) + dc2*k(2,:,:,:) + &
-          dc3*k(3,:,:,:) + dc4*k(4,:,:,:) + &
-          dc5*k(5,:,:,:) + dc6*k(6,:,:,:)
+        err(:,j,k) = dc1*kk(1,:,j,k) + dc2*kk(2,:,j,k) + &
+                     dc3*kk(3,:,j,k) + dc4*kk(4,:,j,k) + &
+                     dc5*kk(5,:,j,k) + dc6*kk(6,:,j,k)
+      end do
+    end do
 
     return
   end subroutine rkck
@@ -228,16 +347,24 @@ module solve
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in)  :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: in_var
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rhs
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx, dpsidz
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx, dpsidz, tmp
+    integer :: j, k
     real :: U=0.0 !0.18
     
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)
     
-    rhs = 0.5*eye * ( laplacian(in_var) + (1.0-abs(in_var)**2)*in_var ) + &
-          U*dpsidx
+    tmp = laplacian(in_var)
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        rhs(:,j,k) = 0.5*eye * ( tmp(:,j,k) + &
+                    (1.0-abs(in_var(:,j,k))**2)*in_var(:,j,k) ) + &
+                     U*dpsidx(:,j,k)
+      end do
+    end do
     !rhs = 0.5 * ( laplacian(in_var) + (1.0-abs(in_var)**2)*in_var ) - &
     !      eye*U*dpsidx
 

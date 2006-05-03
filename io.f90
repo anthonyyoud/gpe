@@ -5,7 +5,8 @@ module io
   private
   public :: open_files, close_files, save_time, save_energy, save_surface, &
             idl_surface, end_state, get_zeros, get_re_im_zeros, &
-            get_phase_zeros, get_extra_zeros, save_linelength, save_momentum
+            get_phase_zeros, get_extra_zeros, save_linelength, save_momentum, &
+            get_dirs
 
   contains
 
@@ -60,6 +61,20 @@ module io
     return
   end subroutine close_files
 
+  subroutine get_dirs()
+    use parameters
+    implicit none
+
+    if (myrank < 10) then
+      write (proc_dir(6:6), '(1i1)') myrank
+      write (proc_dir(5:5), '(1i1)') 0
+    else
+      write (proc_dir(5:6), '(1i2)') myrank
+    end if
+
+    return
+  end subroutine get_dirs
+
   subroutine save_time(time, in_var)
     ! Save time-series data
     use parameters
@@ -93,7 +108,7 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     real :: E
 
     call energy(in_var, E)
@@ -110,7 +125,7 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     real, dimension(3) :: P
 
     call momentum(in_var, P)

@@ -238,8 +238,8 @@ module ic
 
     mu = sqrt(c/pi)
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
           if (r(i,j,k)<=sqrt(2.0*mu)) then
@@ -261,8 +261,13 @@ module ic
 
     complex, dimension(0:nx1,0:ny1,0:nz1) :: ei
     real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: theta
+    integer :: j, k
 
-    ei = cos(theta) + eye*sin(theta)
+    do k=ksta,kend
+      do j=jsta,jend
+        ei(:,j,k) = cos(theta(:,j,k)) + eye*sin(theta(:,j,k))
+      end do
+    end do
 
     return
   end function ei
@@ -276,8 +281,13 @@ module ic
     real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
     real, parameter :: c1 = -0.7
     real, parameter :: c2 = 1.15
+    integer :: j, k
 
-    amp = 1.0 - exp(c1*r**c2)
+    do k=ksta,kend
+      do j=jsta,jend
+        amp(:,j,k) = 1.0 - exp(c1*r(:,j,k)**c2)
+      end do
+    end do
 
     return
   end function amp
@@ -289,12 +299,19 @@ module ic
 
     complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_line
     type (line_param), intent(in) :: vl
-    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta
+    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta, tmp
+    integer :: j, k
 
     call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
     call get_theta(vl%x0, vl%y0, vl%amp, vl%ll, vl%sgn, theta)
 
-    vortex_line = amp(r)*ei(theta)
+    tmp = amp(r)*ei(theta)
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        vortex_line(:,j,k) = tmp(:,j,k)
+      end do
+    end do
 
     return
   end function vortex_line
@@ -312,8 +329,8 @@ module ic
 
     call get_s(s)
     
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           d1(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)+r0)**2 )
           d2(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)-r0)**2 )
@@ -324,13 +341,17 @@ module ic
     call get_rr(d1,rr1)
     call get_rr(d2,rr2)
     
-    rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
-                 (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
-    rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
-                 (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
+    do k=ksta,kend
+      do j=jsta,jend
+        rr1(:,j,k) = sqrt( ((0.3437+0.0286*d1(:,j,k)**2)) / &
+                            (1.0+(0.3333*d1(:,j,k)**2)+(0.0286*d1(:,j,k)**4)) )
+        rr2(:,j,k) = sqrt( ((0.3437+0.0286*d2(:,j,k)**2)) / &
+                            (1.0+(0.3333*d2(:,j,k)**2)+(0.0286*d2(:,j,k)**4)) )
+      end do
+    end do
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           vortex_ring(i,j,k) = rr1(i,j,k)*((x(i)-x0)+eye*(s(j,k)+r0)) * &
                                rr2(i,j,k)*((x(i)-x0)-eye*(s(j,k)-r0))
@@ -366,8 +387,8 @@ module ic
     y2 = (y)**2
     s2 = (s-r0)**2
     
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           denom(i,j,k) = (1.0 + a(8)*x2(i) + a(7)*s2(j,k) + &
                           a(9)*(x2(i)+one_2u*s2(j,k))**2)**pow
@@ -384,7 +405,11 @@ module ic
       end do
     end do
     
-    pade_pulse_ring = uu + eye*vv
+    do k=ksta,kend
+      do j=jsta,jend
+        pade_pulse_ring(:,j,k) = uu(:,j,k) + eye*vv(:,j,k)
+      end do
+    end do
 
     contains
 
@@ -445,7 +470,7 @@ module ic
     y2 = y**2
     y4 = y**4
     
-    do j=0,ny1
+    do j=jsta,jend
       do i=0,nx1
         denom(i,j) = 1.0 + c0*x2(i) + c1*x4(i) + c2*y2(j) + &
                            c3*x2(i)*y2(j) + c4*y(j)**4
@@ -456,8 +481,10 @@ module ic
       end do
     end do
     
-    do k =0,nz1
-      vortex_pair(:,:,k) = uu(:,:) + eye*vv(:,:)
+    do k=ksta,kend
+      do j=jsta,jend
+        vortex_pair(:,j,k) = uu(:,j) + eye*vv(:,j)
+      end do
     end do
 
     return
@@ -472,8 +499,8 @@ module ic
     real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: r
     integer :: i, j, k
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           r(i,j,k) = sqrt((x(i)-x0)**2 + (y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2)
         end do
@@ -491,8 +518,8 @@ module ic
     real, dimension(0:ny1,0:nz1), intent(out) :: s
     integer :: j, k
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         s(j,k) = sqrt(y(j)**2 + z(k)**2)
       end do
     end do
@@ -509,8 +536,8 @@ module ic
     real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: theta
     integer :: i, j, k
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
           theta(i,j,k) = sgn * atan2(y(j)-y0-a*cos(2.0*pi*z(k)/ll), x(i)-x0)
         end do
@@ -527,10 +554,14 @@ module ic
 
     real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
     real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rr
-    integer :: i, j
+    integer :: i, j, k
     
-    rr = sqrt( ((0.3437+0.0286*r**2)) / &
-                (1.0+(0.3333*r**2)+(0.0286*r**4)) )
+    do k=ksta,kend
+      do j=jsta,jend
+        rr(:,j,k) = sqrt( ((0.3437+0.0286*r(:,j,k)**2)) / &
+                           (1.0+(0.3333*r(:,j,k)**2)+(0.0286*r(:,j,k)**4)) )
+      end do
+    end do
 
     return
   end subroutine get_rr

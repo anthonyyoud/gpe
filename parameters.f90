@@ -3,6 +3,10 @@ module parameters
   implicit none
   save
 
+  include 'mpif.h'
+
+  integer,      parameter :: nyprocs      = 1
+  integer,      parameter :: nzprocs      = 1
   integer,      parameter :: nx           = 32
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 64
@@ -63,6 +67,19 @@ module parameters
   integer, parameter :: nx1         = nx-1
   integer, parameter :: ny1         = ny-1
   integer, parameter :: nz1         = nz-1
+  integer, parameter :: nprocs      = nyprocs*nzprocs
+  integer            :: end_proc    = 0
+  integer            :: myrank
+  integer            :: myranky
+  integer            :: myrankz
+  integer            :: jsta, jend, jlen, yprev, ynext, &
+                        ksta, kksta, kend, kkend, klen, zprev, znext, ierr
+  integer, dimension(MPI_STATUS_SIZE) :: istatus
+  integer, dimension(0:nzprocs-1)     :: jdisp, kklen
+  integer, dimension(0:nyprocs-1)     :: kdisp, jjlen
+  complex, allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2
+  character(7)       :: proc_dir = 'proc**/'
+  logical            :: first_write = .true.
   real               :: t           = 0
   real               :: im_t        = 0
   complex            :: dt

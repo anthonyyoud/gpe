@@ -1,13 +1,14 @@
 OUTDIR		= ./
-OBJECTS		= parameters.o derivs.o ic.o variables.o io.o \
+OBJECTS		= parameters.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
 FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
 #FFLAGS	        = -O2
 #FFLAGS	        = -O0 -w95
-#FFLAGS	        = -pg -d0 -CA -CB -CS -CU -CV
+#FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
+#FFLAGS	        = -g -O0 -check
 LINKFLAGS	=
 #LINKFLAGS	= -i_dynamic
-COMPILER	= ifort
+COMPILER	= mpif90
 #COMPILER	= gfortran
 LDBLAS          = 
 LDSCALA         = 

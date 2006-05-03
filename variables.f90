@@ -4,12 +4,14 @@ module variables
   implicit none
 
   private
-  public :: laplacian, get_density, get_phase, get_norm, get_U, &
-            energy, momentum, linelength
+  public :: laplacian, get_density, get_phase, get_norm, &
+            energy, momentum, linelength, setup_itable, para_range, &
+            array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
+            unpack_y
 
   type, public :: var
     complex, dimension(0:nx1,0:ny1,0:nz1) :: new
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: old
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: old
   end type var
 
   type, public :: deriv
@@ -25,6 +27,9 @@ module variables
     real, dimension(0:nx1,0:ny1,0:nz1) :: re
     real, dimension(0:nx1,0:ny1,0:nz1) :: im
   end type re_im
+
+  integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
+  integer, public :: unit_no, time_unit_no
   
   real, parameter, private   :: c1 = 3.0/8.0, &
                                 c2 = 7.0/6.0, &
@@ -40,18 +45,256 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     complex, dimension(0:nx1,0:ny1,0:nz1) :: laplacian
     type (deriv) :: d
+    integer :: j, k
 
     call deriv_xx(in_var,d%xx)
     call deriv_yy(in_var,d%yy)
     call deriv_zz(in_var,d%zz)
     
-    laplacian = d%xx + d%yy + d%zz
+    do k=ksta,kend
+      do j=jsta,jend
+        laplacian(:,j,k) = d%xx(:,j,k) + d%yy(:,j,k) + d%zz(:,j,k)
+      end do
+    end do
 
     return
   end function laplacian
+
+  subroutine setup_itable()
+    use parameters
+    implicit none
+
+    integer :: j, k, irank
+
+    itable = MPI_PROC_NULL
+
+    irank = 0
+
+    do k=0,nzprocs-1
+      do j=0,nyprocs-1
+        itable(j,k) = irank
+        if (myrank == irank) then
+          myranky = j
+          myrankz = k
+        end if
+        irank = irank+1
+      end do
+    end do
+
+    if (bcs == 1) then
+      itable(-1,:) = itable(nyprocs-1,:)
+      itable(nyprocs,:) = itable(0,:)
+      itable(:,-1) = itable(:,nzprocs-1)
+      itable(:,nzprocs) = itable(:,0)
+    end if
+
+    return
+  end subroutine setup_itable
+
+  subroutine para_range(n1, n2, nprocs, irank, ista, iend)
+    implicit none
+
+    integer, intent(in) :: n1, n2, nprocs, irank
+    integer, intent(out) :: ista, iend
+    integer, dimension(2) :: iwork
+
+    iwork(1) = (n2-n1+1)/nprocs
+    iwork(2) = mod(n2-n1+1, nprocs)
+    ista = irank*iwork(1)+n1+min(irank, iwork(2))
+    iend = ista+iwork(1)-1
+    if (iwork(2) > irank) iend = iend+1
+
+    return
+  end subroutine para_range
+
+  subroutine array_len(jlen, klen)
+    use parameters
+    implicit none
+
+    integer, intent(out) :: jlen, klen
+
+    jlen = jend-jsta+1
+    kksta = max(0, ksta-1)
+    kkend = min(nz1, kend+1)
+    klen = kkend-kksta+1
+
+    return
+  end subroutine array_len
+
+  subroutine neighbours()
+  use parameters
+    implicit none
+
+    znext = itable(myranky, myrankz+1)
+    zprev = itable(myranky, myrankz-1)
+    ynext = itable(myranky+1, myrankz)
+    yprev = itable(myranky-1, myrankz)
+
+    return
+  end subroutine neighbours
+
+  subroutine send_recv_z(in_var)
+    use parameters
+    implicit none
+
+    !integer, intent(in) :: p
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    integer, dimension(4) :: jsend, jrecv
+    integer :: i, j
+
+    call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_REAL, znext, 1, &
+                   MPI_COMM_WORLD, jsend(1), ierr)
+    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_REAL, zprev, 1, &
+               MPI_COMM_WORLD, jsend(2), ierr)
+
+    call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_REAL, zprev, 1, &
+                   MPI_COMM_WORLD, jrecv(1), ierr)
+    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_REAL, znext, 1, &
+                   MPI_COMM_WORLD, jrecv(2), ierr)
+
+    call MPI_WAIT(jsend(1), istatus, ierr)
+    call MPI_WAIT(jsend(2), istatus, ierr)
+    call MPI_WAIT(jrecv(1), istatus, ierr)
+    call MPI_WAIT(jrecv(2), istatus, ierr)
+
+    call MPI_ISEND(in_var(0,jsta,kend), nx*jlen, MPI_REAL, znext, 1, &
+                   MPI_COMM_WORLD, jsend(3), ierr)
+    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_REAL, zprev, 1, &
+                   MPI_COMM_WORLD, jsend(4), ierr)
+    call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_REAL, zprev, 1, &
+                   MPI_COMM_WORLD, jrecv(3), ierr)
+    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_REAL, znext, 1, &
+                   MPI_COMM_WORLD, jrecv(4), ierr)
+
+    call MPI_WAIT(jsend(3), istatus, ierr)
+    call MPI_WAIT(jsend(4), istatus, ierr)
+    call MPI_WAIT(jrecv(3), istatus, ierr)
+    call MPI_WAIT(jrecv(4), istatus, ierr)
+
+    !if (p == 2000) then
+    !  do j=jsta,jend
+    !    do i=0,nx1
+    !      print*, in_var(i,j,kend), in_var(i,j,ksta-1)
+    !    end do
+    !  end do
+    !end if
+
+    return
+  end subroutine send_recv_z
+
+  subroutine send_recv_y()
+    use parameters
+    implicit none
+
+    integer, dimension(2) :: ksend, krecv
+
+    call MPI_ISEND(works1(0,1,kksta), nx*2*klen, MPI_REAL, ynext, 1, &
+                   MPI_COMM_WORLD, ksend(1), ierr)
+    call MPI_ISEND(works2(0,1,kksta), nx*2*klen, MPI_REAL, yprev, 1, &
+                   MPI_COMM_WORLD, ksend(2), ierr)
+
+    call MPI_IRECV(workr1(0,1,kksta), nx*2*klen, MPI_REAL, yprev, 1, &
+                   MPI_COMM_WORLD, krecv(1), ierr)
+    call MPI_IRECV(workr2(0,1,kksta), nx*2*klen, MPI_REAL, ynext, 1, &
+                   MPI_COMM_WORLD, krecv(2), ierr)
+
+    call MPI_WAIT(ksend(1), istatus, ierr)
+    call MPI_WAIT(ksend(2), istatus, ierr)
+    call MPI_WAIT(krecv(1), istatus, ierr)
+    call MPI_WAIT(krecv(2), istatus, ierr)
+
+    return
+  end subroutine send_recv_y
+
+  subroutine pack_y(in_var)
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    integer :: k
+
+    if (myranky /= nyprocs-1) then
+      do k=kksta,kkend
+        works1(:,:,k) = in_var(:,jend-1:jend,k)
+      end do
+    end if
+
+    if (bcs == 1) then
+      if (myranky == nyprocs-1) then
+        do k=kksta,kkend
+          works1(:,:,k) = in_var(:,jend-1:jend,k)
+        end do
+      end if
+    end if
+
+    if (myranky /= 0) then
+      do k=kksta,kkend
+        works2(:,:,k) = in_var(:,jsta:jsta+1,k)
+      end do
+    end if
+
+    if (bcs == 1) then
+      if (myranky == 0) then
+        do k=kksta,kkend
+          works2(:,:,k) = in_var(:,jsta:jsta+1,k)
+        end do
+      end if
+    end if
+
+    return
+  end subroutine pack_y
+
+  subroutine unpack_y(in_var)
+    use parameters
+    implicit none
+
+    !integer, intent(in) :: p
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(out) :: in_var
+    integer :: i, k
+    
+    if (myranky /= 0) then
+      do k=kksta,kkend
+        in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
+        !print*, workr1(1,k)
+      end do
+    end if
+
+    if (bcs == 1) then
+      if (myranky == 0) then
+        do k=kksta,kkend
+          in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
+          !print*, workr1(1,k)
+        end do
+      end if
+    end if
+
+    if (myranky /= nyprocs-1) then
+      do k=kksta,kkend
+        in_var(:,jend+1:jend+2,k) = workr2(:,:,k)
+      end do
+    end if
+
+    if (bcs == 1) then
+      if (myranky == nyprocs-1) then
+        do k=kksta,kkend
+          in_var(:,jend+1:jend+2,k) = workr2(:,:,k)
+        end do
+      end if
+    end if
+
+    !if (p == 2000) then
+    !  do k=kksta,kkend
+    !    do i=0,nx1
+    !      print*, in_var(i,jend+2,k), in_var(i,jsta+1,k)
+    !    end do
+    !  end do
+    !end if
+
+    return
+  end subroutine unpack_y
 
   subroutine get_phase(in_var, phase)
     ! Phase
@@ -60,8 +303,13 @@ module variables
 
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: phase
+    integer :: j, k
 
-    phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
+    do k=0,nz1
+      do j=0,ny1
+        phase(:,j,k) = atan2(aimag(in_var(:,j,k))+1.0e-6, real(in_var(:,j,k)))
+      end do
+    end do
 
     return
   end subroutine get_phase
@@ -73,8 +321,13 @@ module variables
 
     complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
     real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: density
+    integer :: j, k
 
-    density = abs(in_var)
+    do k=0,nz1
+      do j=0,ny1
+        density(:,j,k) = abs(in_var(:,j,k))
+      end do
+    end do
 
     return
   end subroutine get_density
@@ -90,8 +343,13 @@ module variables
     real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
     real, dimension(0:ny1,0:nz1) :: int_x
     real, dimension(0:nz1) :: int_y
+    integer :: j, k
     
-    int_var = abs(in_var)**2
+    do k=0,nz1
+      do j=0,ny1
+        int_var(:,j,k) = abs(in_var(:,j,k))**2
+      end do
+    end do
     
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -102,25 +360,25 @@ module variables
     return
   end subroutine get_norm
 
-  subroutine get_U(in_var, U)
-    use parameters
-    use derivs
-    implicit none
+  !subroutine get_U(in_var, U)
+  !  use parameters
+  !  use derivs
+  !  implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: U
-    type (deriv) :: d
+  !  complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+  !  complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: U
+  !  type (deriv) :: d
 
-    call deriv_x(in_var, d%x)
-    call deriv_xx(in_var, d%xx)
-    call deriv_yy(in_var, d%yy)
+  !  call deriv_x(in_var, d%x)
+  !  call deriv_xx(in_var, d%xx)
+  !  call deriv_yy(in_var, d%yy)
 
-    U = -0.5*eye * (d%xx + d%yy + (1.0-abs(in_var)**2)*in_var ) / d%x
-    print*, U
-    stop
+  !  U = -0.5*eye * (d%xx + d%yy + (1.0-abs(in_var)**2)*in_var ) / d%x
+  !  print*, U
+  !  stop
 
-    return
-  end subroutine get_U
+  !  return
+  !end subroutine get_U
 
   subroutine energy(in_var, E)
     ! Calculate the energy
@@ -128,17 +386,22 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     real, intent(out) :: E
     real :: int_z
     real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
     real, dimension(0:ny1,0:nz1) :: int_x
     real, dimension(0:nz1) :: int_y
     complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx
+    integer :: j, k
 
     call deriv_x(in_var, dpsidx)
     
-    int_var = abs(dpsidx)**2
+    do k=0,nz1
+      do j=0,ny1
+        int_var(:,j,k) = abs(dpsidx(:,j,k))**2
+      end do
+    end do
 
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -155,13 +418,14 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
     real, dimension(3), intent(out) :: P
     real :: int_z
     real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
     real, dimension(0:ny1,0:nz1) :: int_x
     real, dimension(0:nz1) :: int_y
     type (deriv) :: dpsi, dpsistar
+    integer :: j, k
 
     call deriv_x(in_var, dpsi%x)
     call deriv_y(in_var, dpsi%y)
@@ -170,8 +434,12 @@ module variables
     call deriv_y(conjg(in_var), dpsistar%y)
     call deriv_z(conjg(in_var), dpsistar%z)
     
-    int_var = (real(in_var)-1.0)*aimag(dpsistar%x) - &
-               aimag(in_var)*real(dpsi%x)
+    do k=0,nz1
+      do j=0,ny1
+        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%x(:,j,k)) - &
+                          aimag(in_var(:,j,k))*real(dpsi%x(:,j,k))
+      end do
+    end do
 
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -179,8 +447,12 @@ module variables
     
     P(1) = int_z
     
-    int_var = (real(in_var)-1.0)*aimag(dpsistar%y) - &
-               aimag(in_var)*real(dpsi%y)
+    do k=0,nz1
+      do j=0,ny1
+        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%y(:,j,k)) - &
+                          aimag(in_var(:,j,k))*real(dpsi%y(:,j,k))
+      end do
+    end do
 
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -188,8 +460,12 @@ module variables
     
     P(2) = int_z
     
-    int_var = (real(in_var)-1.0)*aimag(dpsistar%z) - &
-               aimag(in_var)*real(dpsi%z)
+    do k=ksta,kend
+      do j=jsta,jend
+        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%z(:,j,k)) - &
+                          aimag(in_var(:,j,k))*real(dpsi%z(:,j,k))
+      end do
+    end do
 
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
