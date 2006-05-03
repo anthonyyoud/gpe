@@ -100,6 +100,11 @@ program gpe
   
   ! Calculate the norm of the initial condition
   call get_norm(psi%new, prev_norm)
+  if (myrank == 0) then
+    print*, "NORM:", prev_norm
+  end if
+  !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  !stop
  
   ! Begin real time loop
   do while (t <= end_time)
@@ -129,6 +134,12 @@ program gpe
 
     ! Update the variable
     psi%old(:,jsta:jend,ksta:kend) = psi%new
+    
+    call send_recv_z(psi%old)
+    call pack_y(psi%old)
+
+    call send_recv_y()
+    call unpack_y(psi%old)
 
     tmp_var = 0.0
     do k=ksta,kend
@@ -143,6 +154,8 @@ program gpe
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
     !if (mod(p, save_rate) == 0) then
+      call save_energy(t, psi%old)
+      call save_momentum(t, psi%old)
       if (myrank == 0) then
         !call save_time(t, psi%new)
         call save_time(t, tmp)
@@ -181,25 +194,22 @@ program gpe
     if (mod(p, save_rate2) == 0) then
       call end_state(psi%new, p, 0)
     end if
-    stop
 
-    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
-    call send_recv_z(psi%old)
-    call pack_y(psi%old)
+    !call send_recv_z(psi%old)
+    !call pack_y(psi%old)
 
-    call send_recv_y()
-    call unpack_y(psi%old)
+    !call send_recv_y()
+    !call unpack_y(psi%old)
 
     ! Call the solver subroutine to solve the equation
     call solver(psi%old, psi%new)
     !call get_bcs(psi%new)
     
-    if (myrank == 0) then
-      ! Calculate the norm
-      !call get_norm(psi%new, norm)
-      call get_norm(tmp, norm)
-    end if
+    ! Calculate the norm
+    call get_norm(psi%new, norm)
+    !call get_norm(tmp, norm)
 
     call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 

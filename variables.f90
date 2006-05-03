@@ -501,6 +501,7 @@ module variables
 
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(jsta:jend,ksta:kend), intent(out) :: x_int
+    real, dimension(0:ny1,0:nz1) :: tmp_var, tmp
     integer :: j, k
 
     do k=ksta,kend
@@ -515,6 +516,25 @@ module variables
       end do
     end do
 
+    tmp_var = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        tmp_var(j,k) = x_int(j,k)
+      end do
+    end do
+
+    call MPI_REDUCE(tmp_var, tmp, ny*nz, &
+                    MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+    if (myrank == 0) then
+      open (53, file='diag.dat')
+      do k=0,nz1
+        write (53, '(2i5,e17.9)') (j, k, tmp(j,k), j=0,ny1)
+        write (53, *)
+      end do
+      close (53)
+    end if
+
     return
   end subroutine integrate_x
   
@@ -526,28 +546,48 @@ module variables
     real, dimension(jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(ksta:kend), intent(out) :: y_int
     real, dimension(jsta:jend,ksta:kend) :: tmp_var
-    real, dimension(ksta:kend) :: tmp
-    integer :: j, k
+    real, dimension(0:nz1) :: tmp, tmp2, tmp_var2, total
+    integer :: j, k, irank
 
     tmp_var = in_var
+    !tmp_var = 5.0
     
-    do k=ksta,kend
-      do j=jsta,jend
-        if (j==0) tmp_var(j,k) = c1*in_var(j,k)
-        if (j==1) tmp_var(j,k) = c2*in_var(j,k)
-        if (j==2) tmp_var(j,k) = c3*in_var(j,k)
-        if (j==ny-3) tmp_var(j,k) = c3*in_var(j,k)
-        if (j==ny-2) tmp_var(j,k) = c2*in_var(j,k)
-        if (j==ny-1) tmp_var(j,k) = c1*in_var(j,k)
-      end do
-
-      tmp(k) = sum(tmp_var(:,k))
-
-      call MPI_ALLREDUCE(tmp(k), y_int(k), 1, MPI_REAL, MPI_SUM, &
-                         MPI_COMM_WORLD, ierr)
-
-      y_int(k) = y_int(k) * dy
+    do j=jsta,jend
+      if (j==0) tmp_var(j,:) = c1*in_var(j,:)
+      if (j==1) tmp_var(j,:) = c2*in_var(j,:)
+      if (j==2) tmp_var(j,:) = c3*in_var(j,:)
+      if (j==ny-3) tmp_var(j,:) = c3*in_var(j,:)
+      if (j==ny-2) tmp_var(j,:) = c2*in_var(j,:)
+      if (j==ny-1) tmp_var(j,:) = c1*in_var(j,:)
     end do
+      
+    tmp = 0.0
+    do k=ksta,kend
+      tmp(k) = sum(tmp_var(:,k))
+    end do
+
+    call MPI_ALLREDUCE(tmp, total, nz, MPI_REAL, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+
+    do k=ksta,kend
+      y_int(k) = total(k) * dy
+    end do
+
+    tmp_var2 = 0.0
+    do k=ksta,kend
+      tmp_var2(k) = y_int(k)
+    end do
+
+    call MPI_REDUCE(tmp_var2, tmp2, nz, &
+                    MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+    if (myrank == 0) then
+      open (53, file='diag.dat')
+      do k=0,nz1
+        write (53, '(1i5,e17.9)') k, tmp2(k)
+      end do
+      close (53)
+    end if
 
     return
   end subroutine integrate_y
@@ -575,6 +615,8 @@ module variables
     end do
     
     tmp = sum(tmp_var)
+    if (myranky /= 0) tmp = 0.0
+    !print*,tmp
 
     call MPI_ALLREDUCE(tmp, z_int, 1, MPI_REAL, MPI_SUM, &
                        MPI_COMM_WORLD, ierr)
