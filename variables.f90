@@ -145,14 +145,14 @@ module variables
     integer, dimension(4) :: jsend, jrecv
     integer :: i, j
 
-    call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_REAL, znext, 1, &
+    call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jsend(1), ierr)
-    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_REAL, zprev, 1, &
+    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_COMPLEX, zprev, 1, &
                MPI_COMM_WORLD, jsend(2), ierr)
 
-    call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_REAL, zprev, 1, &
+    call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(1), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_REAL, znext, 1, &
+    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(2), ierr)
 
     call MPI_WAIT(jsend(1), istatus, ierr)
@@ -160,13 +160,13 @@ module variables
     call MPI_WAIT(jrecv(1), istatus, ierr)
     call MPI_WAIT(jrecv(2), istatus, ierr)
 
-    call MPI_ISEND(in_var(0,jsta,kend), nx*jlen, MPI_REAL, znext, 1, &
+    call MPI_ISEND(in_var(0,jsta,kend), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jsend(3), ierr)
-    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_REAL, zprev, 1, &
+    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jsend(4), ierr)
-    call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_REAL, zprev, 1, &
+    call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(3), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_REAL, znext, 1, &
+    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(4), ierr)
 
     call MPI_WAIT(jsend(3), istatus, ierr)
@@ -191,14 +191,14 @@ module variables
 
     integer, dimension(2) :: ksend, krecv
 
-    call MPI_ISEND(works1(0,1,kksta), nx*2*klen, MPI_REAL, ynext, 1, &
+    call MPI_ISEND(works1(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
                    MPI_COMM_WORLD, ksend(1), ierr)
-    call MPI_ISEND(works2(0,1,kksta), nx*2*klen, MPI_REAL, yprev, 1, &
+    call MPI_ISEND(works2(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
                    MPI_COMM_WORLD, ksend(2), ierr)
 
-    call MPI_IRECV(workr1(0,1,kksta), nx*2*klen, MPI_REAL, yprev, 1, &
+    call MPI_IRECV(workr1(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
                    MPI_COMM_WORLD, krecv(1), ierr)
-    call MPI_IRECV(workr2(0,1,kksta), nx*2*klen, MPI_REAL, ynext, 1, &
+    call MPI_IRECV(workr2(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
                    MPI_COMM_WORLD, krecv(2), ierr)
 
     call MPI_WAIT(ksend(1), istatus, ierr)

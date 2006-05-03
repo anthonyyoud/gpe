@@ -299,7 +299,8 @@ module ic
 
     complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_line
     type (line_param), intent(in) :: vl
-    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta, tmp
+    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp
     integer :: j, k
 
     call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
@@ -312,7 +313,7 @@ module ic
         vortex_line(:,j,k) = tmp(:,j,k)
       end do
     end do
-
+    
     return
   end function vortex_line
   

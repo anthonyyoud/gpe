@@ -39,17 +39,19 @@ program gpe
   print*
 
   ! Check which time stepping scheme we're using
-  select case (scheme)
-    case ('euler')
-      print*, 'Explicit Euler time stepping'
-    case ('rk4')
-      print*, 'Explicit fourth order Runge-Kutta time stepping'
-    case ('rk_adaptive')
-      print*, 'Explicit fifth order &
-              &Runge-Kutta-Fehlberg adaptive time stepping'
-    case default
-      STOP 'ERROR: Unrecognised time stepping scheme'
-  end select
+  if (myrank == 0) then
+    select case (scheme)
+      case ('euler')
+        print*, 'Explicit Euler time stepping'
+      case ('rk4')
+        print*, 'Explicit fourth order Runge-Kutta time stepping'
+      case ('rk_adaptive')
+        print*, 'Explicit fifth order &
+                &Runge-Kutta-Fehlberg adaptive time stepping'
+      case default
+        STOP 'ERROR: Unrecognised time stepping scheme'
+    end select
+  end if
   
   ! Set the time step
   dt = time_step
@@ -129,10 +131,10 @@ program gpe
         tmp_var(:,j,k) = psi%new(:,j,k)
       end do
     end do
-    
-    call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
-                    MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
+    call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
+                    MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+                    
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
     !if (mod(p, save_rate) == 0) then
@@ -142,7 +144,7 @@ program gpe
         !call save_energy(t, psi%old)
         !call save_momentum(t, psi%old)
         !call save_linelength(t, psi%new)
-        call save_linelength(t, tmp)
+        !call save_linelength(t, tmp)
       end if
     end if
     
@@ -169,7 +171,7 @@ program gpe
         end if
       end if
     end if
-    
+
     ! Periodically save the statea
     if (myrank == 0) then
       if (mod(p, save_rate2) == 0) then

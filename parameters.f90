@@ -5,8 +5,8 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 1
-  integer,      parameter :: nzprocs      = 1
+  integer,      parameter :: nyprocs      = 3
+  integer,      parameter :: nzprocs      = 2
   integer,      parameter :: nx           = 32
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 64
@@ -77,7 +77,7 @@ module parameters
   integer, dimension(MPI_STATUS_SIZE) :: istatus
   integer, dimension(0:nzprocs-1)     :: jdisp, kklen
   integer, dimension(0:nyprocs-1)     :: kdisp, jjlen
-  complex, allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2
+  complex, dimension(0:nx1,2,0:nz1) :: works1, works2, workr1, workr2
   character(7)       :: proc_dir = 'proc**/'
   logical            :: first_write = .true.
   real               :: t           = 0
