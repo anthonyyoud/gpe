@@ -6,7 +6,7 @@ module io
   public :: open_files, close_files, save_time, save_energy, save_surface, &
             idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_phase_zeros, get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs
+            get_dirs, save_deriv_psi
 
   contains
 
@@ -793,5 +793,40 @@ module io
 
     return
   end subroutine save_linelength
+
+  subroutine save_deriv_psi(in_var)
+    use parameters
+    use derivs
+    use ic, only : x, y, z
+    implicit none
+
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsiz
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp, tmp_var
+    integer :: i, j, k
+
+    call deriv_z(in_var, dpsiz)
+
+    tmp_var = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        tmp_var(:,j,k) = dpsiz(:,j,k)
+      end do
+    end do
+
+    call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
+                    MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+    if (myrank == 0) then
+      open (54, file='deriv.dat')
+      do k=0,nz1
+        write (54, '(3e17.9)') (y(j), z(k), abs(tmp(nx/2,j,k)), j=0,ny1)
+        write (54, *)
+      end do
+      close (54)
+    end if
+
+    return
+  end subroutine save_deriv_psi
 
 end module io
