@@ -7,20 +7,20 @@ module variables
   public :: laplacian, get_density, get_phase, get_norm, &
             energy, momentum, linelength, setup_itable, para_range, &
             array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-            unpack_y
+            unpack_y, get_unit_no
 
   type, public :: var
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: new
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: old
+    complex, allocatable, dimension(:,:,:) :: new
+    complex, allocatable, dimension(:,:,:) :: old
   end type var
 
   type, public :: deriv
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: x
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: y
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: z
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: xx
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: yy
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: zz
+    complex, allocatable, dimension(:,:,:) :: x
+    complex, allocatable, dimension(:,:,:) :: y
+    complex, allocatable, dimension(:,:,:) :: z
+    complex, allocatable, dimension(:,:,:) :: xx
+    complex, allocatable, dimension(:,:,:) :: yy
+    complex, allocatable, dimension(:,:,:) :: zz
   end type deriv
 
   type, public :: re_im
@@ -45,23 +45,35 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: laplacian
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: laplacian
     type (deriv) :: d
-    integer :: j, k
+
+    allocate(d%xx(0:nx1,jsta:jend,ksta:kend))
+    allocate(d%yy(0:nx1,jsta:jend,ksta:kend))
+    allocate(d%zz(0:nx1,jsta:jend,ksta:kend))
 
     call deriv_xx(in_var,d%xx)
     call deriv_yy(in_var,d%yy)
     call deriv_zz(in_var,d%zz)
     
-    do k=ksta,kend
-      do j=jsta,jend
-        laplacian(:,j,k) = d%xx(:,j,k) + d%yy(:,j,k) + d%zz(:,j,k)
-      end do
-    end do
+    laplacian = d%xx + d%yy + d%zz
 
+    deallocate(d%xx)
+    deallocate(d%yy)
+    deallocate(d%zz)
+    
     return
   end function laplacian
+
+  subroutine get_unit_no()
+    implicit none
+
+    unit_no = myrank+20
+    time_unit_no = unit_no+20
+
+    return
+  end subroutine get_unit_no
 
   subroutine setup_itable()
     use parameters
@@ -141,7 +153,7 @@ module variables
     implicit none
 
     !integer, intent(in) :: p
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer, dimension(4) :: jsend, jrecv
     integer :: i, j
 
@@ -213,7 +225,7 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer :: k
 
     if (myranky /= nyprocs-1) then
@@ -252,7 +264,7 @@ module variables
     implicit none
 
     !integer, intent(in) :: p
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(out) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(out) :: in_var
     integer :: i, k
     
     if (myranky /= 0) then
@@ -337,19 +349,15 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, intent(out) :: norm
     real :: int_z
-    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
-    real, dimension(0:ny1,0:nz1) :: int_x
-    real, dimension(0:nz1) :: int_y
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
+    real, dimension(jsta:jend,ksta:kend) :: int_x
+    real, dimension(ksta:kend) :: int_y
     integer :: j, k
     
-    do k=0,nz1
-      do j=0,ny1
-        int_var(:,j,k) = abs(in_var(:,j,k))**2
-      end do
-    end do
+    int_var = abs(in_var)**2
     
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -386,22 +394,18 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, intent(out) :: E
     real :: int_z
-    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
-    real, dimension(0:ny1,0:nz1) :: int_x
-    real, dimension(0:nz1) :: int_y
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
+    real, dimension(jsta:jend,ksta:kend) :: int_x
+    real, dimension(ksta:kend) :: int_y
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx
     integer :: j, k
 
     call deriv_x(in_var, dpsidx)
     
-    do k=0,nz1
-      do j=0,ny1
-        int_var(:,j,k) = abs(dpsidx(:,j,k))**2
-      end do
-    end do
+    int_var = abs(dpsidx)**2
 
     call integrate_x(int_var, int_x)
     call integrate_y(int_x, int_y)
@@ -418,15 +422,22 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, dimension(3), intent(out) :: P
     real :: int_z
-    real, dimension(0:nx1,0:ny1,0:nz1) :: int_var
-    real, dimension(0:ny1,0:nz1) :: int_x
-    real, dimension(0:nz1) :: int_y
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
+    real, dimension(jsta:jend,ksta:kend) :: int_x
+    real, dimension(ksta:kend) :: int_y
     type (deriv) :: dpsi, dpsistar
     integer :: j, k
 
+    allocate(dpsi%x(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsi%y(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsi%z(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsistar%x(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsistar%y(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsistar%z(0:nx1,jsta:jend,ksta:kend))
+    
     call deriv_x(in_var, dpsi%x)
     call deriv_y(in_var, dpsi%y)
     call deriv_z(in_var, dpsi%z)
@@ -434,8 +445,8 @@ module variables
     call deriv_y(conjg(in_var), dpsistar%y)
     call deriv_z(conjg(in_var), dpsistar%z)
     
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%x(:,j,k)) - &
                           aimag(in_var(:,j,k))*real(dpsi%x(:,j,k))
       end do
@@ -447,8 +458,8 @@ module variables
     
     P(1) = int_z
     
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%y(:,j,k)) - &
                           aimag(in_var(:,j,k))*real(dpsi%y(:,j,k))
       end do
@@ -473,6 +484,13 @@ module variables
     
     P(3) = int_z
 
+    deallocate(dpsi%x)
+    deallocate(dpsi%y)
+    deallocate(dpsi%z)
+    deallocate(dpsistar%x)
+    deallocate(dpsistar%y)
+    deallocate(dpsistar%z)
+
     return
   end subroutine momentum
 
@@ -481,12 +499,12 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:ny1,0:nz1), intent(out) :: x_int
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(jsta:jend,ksta:kend), intent(out) :: x_int
     integer :: j, k
 
-    do k=0,nz1
-      do j=0,ny1
+    do k=ksta,kend
+      do j=jsta,jend
         x_int(j,k) = (c1*in_var(0,j,k) + &
                       c2*in_var(1,j,k) + &
                       c3*in_var(2,j,k) + &
@@ -505,18 +523,30 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:nz1), intent(out) :: y_int
-    integer :: k
+    real, dimension(jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(ksta:kend), intent(out) :: y_int
+    real, dimension(jsta:jend,ksta:kend) :: tmp_var
+    real, dimension(ksta:kend) :: tmp
+    integer :: j, k
 
-    do k=0,nz1
-      y_int(k) = (c1*in_var(0,k) + &
-                  c2*in_var(1,k) + &
-                  c3*in_var(2,k) + &
-                  sum(in_var(3:ny-4,k)) + &
-                  c3*in_var(ny-3,k) + &
-                  c2*in_var(ny-2,k) + &
-                  c1*in_var(ny-1,k)) * dy
+    tmp_var = in_var
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        if (j==0) tmp_var(j,k) = c1*in_var(j,k)
+        if (j==1) tmp_var(j,k) = c2*in_var(j,k)
+        if (j==2) tmp_var(j,k) = c3*in_var(j,k)
+        if (j==ny-3) tmp_var(j,k) = c3*in_var(j,k)
+        if (j==ny-2) tmp_var(j,k) = c2*in_var(j,k)
+        if (j==ny-1) tmp_var(j,k) = c1*in_var(j,k)
+      end do
+
+      tmp(k) = sum(tmp_var(:,k))
+
+      call MPI_ALLREDUCE(tmp(k), y_int(k), 1, MPI_REAL, MPI_SUM, &
+                         MPI_COMM_WORLD, ierr)
+
+      y_int(k) = y_int(k) * dy
     end do
 
     return
@@ -527,16 +557,29 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:nz1), intent(in) :: in_var
+    real, dimension(ksta:kend), intent(in) :: in_var
     real, intent(out) :: z_int
+    real, dimension(ksta:kend) :: tmp_var
+    real :: tmp
+    integer :: k
 
-    z_int = (c1*in_var(0) + &
-             c2*in_var(1) + &
-             c3*in_var(2) + &
-             sum(in_var(3:nz-4)) + &
-             c3*in_var(nz-3) + &
-             c2*in_var(nz-2) + &
-             c1*in_var(nz-1)) * dz
+    tmp_var = in_var
+    
+    do k=ksta,kend
+      if (k==0) tmp_var(k) = c1*in_var(k)
+      if (k==1) tmp_var(k) = c2*in_var(k)
+      if (k==2) tmp_var(k) = c3*in_var(k)
+      if (k==nz-3) tmp_var(k) = c3*in_var(k)
+      if (k==nz-2) tmp_var(k) = c2*in_var(k)
+      if (k==nz-1) tmp_var(k) = c1*in_var(k)
+    end do
+    
+    tmp = sum(tmp_var)
+
+    call MPI_ALLREDUCE(tmp, z_int, 1, MPI_REAL, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+
+    z_int = z_int*dz
 
     return
   end subroutine integrate_z

@@ -24,10 +24,17 @@ program gpe
   call para_range(0, ny1, nyprocs, myranky, jsta, jend)
   call array_len(jlen, klen)
   call neighbours()
-  !call get_unit_no()
-  !call get_dirs()
+  call get_unit_no()
+  call get_dirs()
 
   call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+
+  allocate(psi%old(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+  allocate(psi%new(0:nx1,jsta:jend,ksta:kend))
+  allocate(works1(0:nx1,2,kksta:kkend))
+  allocate(works2(0:nx1,2,kksta:kkend))
+  allocate(workr1(0:nx1,2,kksta:kkend))
+  allocate(workr2(0:nx1,2,kksta:kkend))
 
   if (myrank == 0) then
     do k=-1,nzprocs
@@ -83,12 +90,10 @@ program gpe
   !call get_U(psi%new, U)
 
   ! If this is not a restart...
-  if (myrank == 0) then
-    if (.not. restart) then
-      inquire(file='end_state.dat', exist=state_exist)
-      ! Exit if not doing restart but end_state.dat exists
-      if (state_exist) stop 'ERROR: restart=.false. but end_state.dat exists.'
-    end if
+  if (.not. restart) then
+    inquire(file=proc_dir//'end_state.dat', exist=state_exist)
+    ! Exit if not doing restart but end_state.dat exists
+    if (state_exist) stop 'ERROR: restart=.false. but end_state.dat exists.'
   end if
   
   p = p_start
@@ -123,7 +128,7 @@ program gpe
     end if
 
     ! Update the variable
-    psi%old(:,jsta:jend,ksta:kend) = psi%new(:,jsta:jend,ksta:kend)
+    psi%old(:,jsta:jend,ksta:kend) = psi%new
 
     tmp_var = 0.0
     do k=ksta,kend
@@ -173,12 +178,10 @@ program gpe
     end if
 
     ! Periodically save the statea
-    if (myrank == 0) then
-      if (mod(p, save_rate2) == 0) then
-        !call end_state(psi%new, p, 0)
-        call end_state(tmp, p, 0)
-      end if
+    if (mod(p, save_rate2) == 0) then
+      call end_state(psi%new, p, 0)
     end if
+    stop
 
     call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
@@ -232,11 +235,11 @@ program gpe
   end do
   
   ! Time loop finished so cleanly end the run
+  call end_state(psi%new, p, 1)
   if (myrank == 0) then
-    !call end_state(psi%new, p, 1)
     !call save_surface(p, psi%new)
     !call idl_surface(p, psi%new)
-    call end_state(tmp, p, 1)
+    !call end_state(tmp, p, 1)
     call save_surface(p, tmp)
     call idl_surface(p, tmp)
   end if

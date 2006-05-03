@@ -13,8 +13,8 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: var_in
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: var_out
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: var_in
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: var_out
 
     select case (scheme)
       case ('euler')
@@ -39,18 +39,13 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: rhs
-    integer :: j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: new
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: rhs
 
     call get_rhs(old, rhs)
 
-    do k=ksta,kend
-      do j=jsta,jend
-        new(:,j,k) = old(:,j,k) + dt*rhs(:,j,k)
-      end do
-    end do
+    new = old(:,jsta:jend,ksta:kend) + dt*rhs
 
     t = t+real(dt)
     im_t = im_t+abs(aimag(dt))
@@ -64,13 +59,13 @@ module solve
     use variables
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new
-    complex, dimension(4,0:nx1,-2:ny+1,-2:nz+1) :: kk
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: tmp
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: new
+    complex, dimension(4,0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: tmp
     integer :: j, k
 
-    call get_rhs(old,kk(1,:,0:ny1,0:nz1))
+    call get_rhs(old,kk(1,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(1,:,j,k) = dt*kk(1,:,j,k)
@@ -81,7 +76,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(2,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(2,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(2,:,j,k) = dt*kk(2,:,j,k)
@@ -92,7 +87,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(3,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(3,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(3,:,j,k) = dt*kk(3,:,j,k)
@@ -103,7 +98,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(4,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(4,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(4,:,j,k) = dt*kk(4,:,j,k)
@@ -128,9 +123,9 @@ module solve
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, err_var, psi_scal
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_var, err_var, psi_scal
     real :: tnew
     real, dimension(2) :: errmaxs, errmaxr
     complex :: dt_temp, dt_next, dt_did
@@ -142,18 +137,13 @@ module solve
     ! Get the RHS for use as a scaling variable
     call get_rhs(in_var, psi_scal)
     ! Specific scaling condition
-    do k=ksta, kend
-      do j=jsta,jend
-        psi_scal(:,j,k) = abs(in_var(:,j,k)) + dt*abs(psi_scal(:,j,k)) + 1e-30
-      end do
-    end do
+    psi_scal = abs(in_var(:,jsta:jend,ksta:kend)) + dt*abs(psi_scal) + 1e-30
 
     do
       ! Do a Runge-Kutta step
       call rkck(in_var, tmp_var, err_var)
       ! Get the maximum error over the whole field
-      errmaxs(1) = maxval(abs(err_var(:,jsta:jend,ksta:kend)/&
-                             psi_scal(:,jsta:jend,ksta:kend)))/eps
+      errmaxs(1) = maxval(abs(err_var/psi_scal))/eps
       errmaxs(2) = 0.0
 
       call MPI_ALLREDUCE(errmaxs, errmaxr, 1, MPI_2REAL, MPI_MAXLOC, &
@@ -199,11 +189,7 @@ module solve
     im_t = im_t+abs(aimag(dt))
     
     ! Update the variable
-    do k=ksta,kend
-      do j=jsta,jend
-        out_var(:,j,k) = tmp_var(:,j,k)
-      end do
-    end do
+    out_var = tmp_var
 
     if (myrank == 0) then
       !if (abs(dt) <= 1e-5) then
@@ -247,13 +233,13 @@ module solve
     real, parameter :: dc4      = c4 - 13525.0 / 55296.0
     real, parameter :: dc5      = c5 - 277.0 / 14336.0
     real, parameter :: dc6      = c6 - 0.25
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: old
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: new, err
-    complex, dimension(6,0:nx1,-2:ny+1,-2:nz+1) :: kk
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1) :: tmp
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: new, err
+    complex, dimension(6,0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: tmp
     integer :: j, k
 
-    call get_rhs(old,kk(1,:,0:ny1,0:nz1))
+    call get_rhs(old,kk(1,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(1,:,j,k) = dt*kk(1,:,j,k)
@@ -264,7 +250,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(2,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(2,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(2,:,j,k) = dt*kk(2,:,j,k)
@@ -276,7 +262,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(3,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(3,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(3,:,j,k) = dt*kk(3,:,j,k)
@@ -289,7 +275,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(4,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(4,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(4,:,j,k) = dt*kk(4,:,j,k)
@@ -303,7 +289,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(5,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(5,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(5,:,j,k) = dt*kk(5,:,j,k)
@@ -318,7 +304,7 @@ module solve
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(6,:,0:ny1,0:nz1))
+    call get_rhs(tmp, kk(6,:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
         kk(6,:,j,k) = dt*kk(6,:,j,k)
@@ -347,24 +333,19 @@ module solve
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: in_var
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rhs
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: dpsidx, dpsidz, tmp
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rhs
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx, dpsidz
     integer :: j, k
     real :: U=0.0 !0.18
     
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)
     
-    tmp = laplacian(in_var)
-    
-    do k=ksta,kend
-      do j=jsta,jend
-        rhs(:,j,k) = 0.5*eye * ( tmp(:,j,k) + &
-                    (1.0-abs(in_var(:,j,k))**2)*in_var(:,j,k) ) + &
-                     U*dpsidx(:,j,k)
-      end do
-    end do
+    rhs = 0.5*eye * ( laplacian(in_var) + &
+                    (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+                             in_var(:,jsta:jend,ksta:kend) ) + &
+                     U*dpsidx
     !rhs = 0.5 * ( laplacian(in_var) + (1.0-abs(in_var)**2)*in_var ) - &
     !      eye*U*dpsidx
 

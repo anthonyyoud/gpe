@@ -108,12 +108,14 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
     real :: E
 
     call energy(in_var, E)
     
-    write (14, '(2e17.9)') time, E
+    if (myrank == 0) then
+      write (14, '(2e17.9)') time, E
+    end if
 
     return
   end subroutine save_energy
@@ -125,12 +127,14 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, dimension(3) :: P
 
     call momentum(in_var, P)
     
-    write (21, '(4e17.9)') time, P(1), P(2), P(3)
+    if (myrank == 0) then
+      write (21, '(4e17.9)') time, P(1), P(2), P(3)
+    end if
 
     return
   end subroutine save_momentum
@@ -214,39 +218,44 @@ module io
   subroutine end_state(in_var, p, flag)
     ! Save variables for use in a restarted run
     use parameters
+    use variables, only : unit_no
     implicit none
 
     integer, intent(in) :: p, flag
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     integer :: j, k
 
-    open (50, file = 'end_state.dat', form='unformatted')
+    open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
 
-    write(50) nx
-    write(50) ny
-    write(50) nz
-    write(50) p
-    write(50) t
-    write(50) dt
-    write(50) in_var
+    write (unit_no) nx
+    write (unit_no) ny
+    write (unit_no) nz
+    write (unit_no) p
+    write (unit_no) t
+    write (unit_no) dt
+    write (unit_no) in_var
 
-    close (50)
+    close (unit_no)
 
     ! Write the variables at the last save
-    open (98, file = 'save.dat')
-    write (98, *) 'Periodically saved state'
-    write (98, *) 't=', t
-    write (98, *) 'dt=', dt
-    write (98, *) 'nx=', nx
-    write (98, *) 'ny=', ny
-    write (98, *) 'nz=', nz
-    write (98, *) 'p=', p
-    close (98)
+    if (myrank == 0) then
+      open (98, file = 'save.dat')
+      write (98, *) 'Periodically saved state'
+      write (98, *) 't=', t
+      write (98, *) 'dt=', dt
+      write (98, *) 'nx=', nx
+      write (98, *) 'ny=', ny
+      write (98, *) 'nz=', nz
+      write (98, *) 'p=', p
+      close (98)
+    end if
     
-    if (flag == 1) then
-      ! Delete RUNNING file to cleanly terminate the run
-      open (99, file = 'RUNNING')
-      close (99, status = 'delete')
+    if (myrank == 0) then
+      if (flag == 1) then
+        ! Delete RUNNING file to cleanly terminate the run
+        open (99, file = 'RUNNING')
+        close (99, status = 'delete')
+      end if
     end if
 
     return

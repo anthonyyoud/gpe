@@ -13,8 +13,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fx
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fx
     integer :: i, j, k
     integer, dimension(2) :: minus=0, plus=0
 
@@ -54,8 +54,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fy
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fy
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
 
@@ -91,8 +91,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fz
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fz
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
 
@@ -128,8 +128,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fxx
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fxx
     integer :: i, j, k
     integer, dimension(2) :: minus=0, plus=0
 
@@ -172,8 +172,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fyy
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fyy
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
 
@@ -212,8 +212,8 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in)  :: f
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: fzz
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fzz
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
 

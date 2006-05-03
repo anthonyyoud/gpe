@@ -77,7 +77,8 @@ module parameters
   integer, dimension(MPI_STATUS_SIZE) :: istatus
   integer, dimension(0:nzprocs-1)     :: jdisp, kklen
   integer, dimension(0:nyprocs-1)     :: kdisp, jjlen
-  complex, dimension(0:nx1,2,0:nz1) :: works1, works2, workr1, workr2
+  !complex, dimension(0:nx1,2,0:nz1) :: works1, works2, workr1, workr2
+  complex, allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2
   character(7)       :: proc_dir = 'proc**/'
   logical            :: first_write = .true.
   real               :: t           = 0

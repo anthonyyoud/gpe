@@ -39,14 +39,13 @@ module ic
     implicit none
 
     integer, intent(out) :: p
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     logical :: state_exist
-    real, dimension(0:nx1,0:ny1,0:nz1) :: real_rand, imag_rand
 
     ! If this is a restarted run...
     if (restart) then
       real_time = .true.
-      inquire(file='end_state.dat', exist=state_exist)
+      inquire(file=proc_dir//'end_state.dat', exist=state_exist)
       ! Exit if doing restart but end_state.dat does not exist
       if (.not. state_exist) stop 'ERROR: restart=.true.&
                                    &but end_state.dat does not exist.'
@@ -79,40 +78,26 @@ module ic
   subroutine state_restart(out_var, p)
     ! Get restart data
     use parameters
+    use variables
     implicit none
 
     integer, intent(out) :: p
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
-    integer :: nx_prev, ny_prev, nz_prev, alloc_err
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    integer :: nx_prev, ny_prev, nz_prev
     real :: dt_prev
-    complex, dimension(:,:,:), allocatable :: var_prev
 
-    open (50, file = 'end_state.dat', form='unformatted')
+    open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
 
     ! Read in the grid sizes and time step from the previous run
-    read (50) nx_prev
-    read (50) ny_prev
-    read (50) nz_prev
-    read (50) p
-    read (50) t
-    read (50) dt_prev
-    
-    ! If the previous grid size is not the same as the new one then interpolate
-    ! onto new grid
-    if ((nx_prev /= nx) .or. (ny_prev /= ny) .or. (nz_prev /= nz)) then
-      print*, 'Interpolating onto new grid...'
-      allocate(var_prev(0:nx_prev-1,0:ny_prev-1,0:nz_prev-1), stat=alloc_err)
-      if (alloc_err /= 0) stop 'ERROR: Interpolating allocation error' 
-      read (50) var_prev
-      call inter(var_prev, nx_prev, ny_prev, nz_prev, out_var)
-      if (allocated(var_prev)) deallocate(var_prev, stat=alloc_err)
-      if (alloc_err /= 0) stop 'ERROR: Interpolating deallocation error'
-    else
-      ! Otherwise just read in the data
-      read (50) out_var
-    end if
+    read (unit_no) nx_prev
+    read (unit_no) ny_prev
+    read (unit_no) nz_prev
+    read (unit_no) p
+    read (unit_no) t
+    read (unit_no) dt_prev
+    read (unit_no) out_var
 
-    close (50)
+    close (unit_no)
 
     select case (scheme)
       case ('rk_adaptive')
@@ -129,110 +114,13 @@ module ic
     return
   end subroutine state_restart
   
-  subroutine inter(prev_var, nxp, nyp, nzp, out_var)
-    ! Setup for interpolating onto new grid
-    use parameters
-    implicit none
-
-    integer, intent(in) :: nxp, nyp, nzp
-    complex, dimension(0:nxp-1,0:nyp-1,0:nzp-1), intent(in) :: prev_var
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
-    integer:: i, j, k
-    real :: dx_prev, dy_prev, dz_prev
-    real, dimension(0:nxp-1) :: x_prev
-    real, dimension(0:nyp-1) :: y_prev
-    real, dimension(0:nzp-1) :: z_prev
-
-    ! Previous grid
-    dx_prev = (xr-xl) / nxp
-    dy_prev = (yr-yl) / nyp
-    dz_prev = (zr-zl) / nzp
-
-    ! Previous coordinates
-    do i=0,nxp-1
-      x_prev(i) = xl + real(i) * dx_prev
-    end do
-
-    do j=0,nyp-1
-      y_prev(j) = yl + real(j) * dy_prev
-    end do
-    
-    do k=0,nzp-1
-      z_prev(k) = zl + real(k) * dz_prev
-    end do
-
-    ! Call the interpolation routine
-    call inter_var(prev_var, x_prev, y_prev, z_prev, nxp, nyp, nzp, out_var)
-
-    return
-  end subroutine inter
-
-  subroutine inter_var(in_var, x_prev, y_prev, z_prev, nxp, nyp, nzp, out_var)
-    ! Bilinearly interpolate onto a new grid
-    ! See Numerical Recipes in Fortran77 Chap. 3.6 p.116
-    use parameters
-    implicit none
-    
-    integer, intent(in) :: nxp, nyp, nzp
-    complex, dimension(0:nxp-1,0:nyp-1,0:nzp-1), intent(in)  :: in_var
-    real, dimension(0:nxp-1), intent(in) :: x_prev
-    real, dimension(0:nyp-1), intent(in) :: y_prev
-    real, dimension(0:nzp-1), intent(in) :: z_prev
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: out_var
-    integer :: i, j, k, i2, j2, k2, i2plus, j2plus, k2plus
-    real :: c1, c2, c3, one_c1, one_c2, one_c3
-
-    do k=0,nz1   !new 'z' index
-      k2 = int(nzp*k/nz)   !old 'z' index
-      do j=0,ny1   !new 'y' index
-        j2 = int(nyp*j/ny)   !old 'y' index
-        do i=0,nx1   !new 'x' index
-          i2 = int(nxp*i/nx)   !old 'x' index
-          if (i == nx1) then
-            i2plus = 0
-          else 
-            i2plus = i2+1
-          end if
-          if (j == ny1) then
-            j2plus = 0
-          else 
-            j2plus = j2+1
-          end if
-          if (k == nz1) then
-            k2plus = 0
-          else 
-            k2plus = k2+1
-          end if
-          ! Interpolating constants
-          c1 = (x(i)-x_prev(i2)) / (x_prev(i2plus)-x_prev(i2))
-          c2 = (y(j)-y_prev(j2)) / (y_prev(j2plus)-y_prev(j2))
-          c3 = (z(k)-z_prev(k2)) / (z_prev(k2plus)-z_prev(k2))
-          one_c1 = 1.0-c1
-          one_c2 = 1.0-c2
-          one_c3 = 1.0-c3
-          ! Do the interpolation
-          out_var(i,j,k) = one_c1*one_c2*one_c3*in_var(i2,j2,k2) + &
-                           c1*one_c2*one_c3*in_var(i2+1,j2,k2) + &
-                           c1*c2*one_c3*in_var(i2+1,j2+1,k2) + &
-                           one_c1*c2*one_c3*in_var(i2,j2+1,k2) + &
-                           one_c1*one_c2*c3*in_var(i2,j2,k2+1) + &
-                           c1*one_c2*c3*in_var(i2+1,j2,k2+1) + &
-                           c1*c2*c3*in_var(i2+1,j2+1,k2+1) + &
-                           one_c1*c2*c3*in_var(i2,j2+1,k2+1)
-        end do
-      end do
-    end do
-
-    return
-  end subroutine inter_var
-
   function fermi()
     ! Thomas-Fermi initial condition
     use parameters
     implicit none
 
     real, parameter :: c=450.0
-    real, dimension(0:nx1,0:ny1,0:nz1) :: fermi, r
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: fermi, r
     real :: mu
     integer :: i, j, k
 
@@ -259,8 +147,8 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: ei
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: theta
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: ei
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: theta
     integer :: j, k
 
     do k=ksta,kend
@@ -277,8 +165,8 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,0:ny1,0:nz1) :: amp
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: amp
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: r
     real, parameter :: c1 = -0.7
     real, parameter :: c2 = 1.15
     integer :: j, k
@@ -297,22 +185,15 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_line
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
     type (line_param), intent(in) :: vl
-    real, dimension(0:nx1,0:ny1,0:nz1) :: r, theta
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
     integer :: j, k
 
     call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
     call get_theta(vl%x0, vl%y0, vl%amp, vl%ll, vl%sgn, theta)
 
-    tmp = amp(r)*ei(theta)
-    
-    do k=ksta,kend
-      do j=jsta,jend
-        vortex_line(:,j,k) = tmp(:,j,k)
-      end do
-    end do
+    vortex_line = amp(r)*ei(theta)
     
     return
   end function vortex_line
@@ -322,10 +203,10 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_ring
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
     real, intent(in) :: x0, r0
-    real, dimension(0:ny1,0:nz1) :: s
-    real, dimension(0:nx1,0:ny1,0:nz1) :: rr1, rr2, d1, d2
+    real, dimension(jsta:jend,ksta:kend) :: s
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
     integer :: i, j, k
 
     call get_s(s)
@@ -368,13 +249,13 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: pade_pulse_ring
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: pade_pulse_ring
     real, intent(in) :: x0, r0
     character(*), intent(in) :: pulse_or_ring
     real, dimension(0:nx1) :: x2
     real, dimension(0:ny1) :: y2
-    real, dimension(0:ny1,0:nz1) :: s, s2
-    real, dimension(0:nx1,0:ny1,0:nz1) :: uu, vv, denom
+    real, dimension(jsta:jend,ksta:kend) :: s, s2
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: uu, vv, denom
     real, dimension(9) :: a
     real, parameter :: pow = 7.0/4.0
     real :: one_2u, U, m
@@ -406,11 +287,7 @@ module ic
       end do
     end do
     
-    do k=ksta,kend
-      do j=jsta,jend
-        pade_pulse_ring(:,j,k) = uu(:,j,k) + eye*vv(:,j,k)
-      end do
-    end do
+    pade_pulse_ring = uu + eye*vv
 
     contains
 
@@ -447,10 +324,10 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: vortex_pair
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_pair
     real, dimension(0:nx1) :: x2, x4
     real, dimension(0:ny1) :: y2, y4
-    real, dimension(0:nx1,0:ny1) :: uu, vv, denom
+    real, dimension(0:nx1,jsta:jend) :: uu, vv, denom
     
     real, parameter :: a0 = -1.14026
     real, parameter :: a1 = -0.150112
@@ -497,7 +374,7 @@ module ic
     implicit none
 
     real, intent(in) :: x0, y0, a, ll
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: r
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
     integer :: i, j, k
 
     do k=ksta,kend
@@ -516,7 +393,7 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:ny1,0:nz1), intent(out) :: s
+    real, dimension(jsta:jend,ksta:kend), intent(out) :: s
     integer :: j, k
 
     do k=ksta,kend
@@ -534,7 +411,7 @@ module ic
     implicit none
 
     real, intent(in) :: x0, y0, a, ll, sgn
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: theta
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
     integer :: i, j, k
 
     do k=ksta,kend
@@ -553,8 +430,8 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: r
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: rr
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: r
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rr
     integer :: i, j, k
     
     do k=ksta,kend
