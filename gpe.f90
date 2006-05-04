@@ -1,5 +1,6 @@
 program gpe
-  ! Code to solve the Gross-Pitaevskii equation in 3D
+  ! Code to solve the Gross-Pitaevskii equation in 3D.  Parallelised using MPI.
+  ! See the README file for a description and usage instructions
   use parameters
   use ic
   use io
@@ -147,7 +148,7 @@ program gpe
         ! Save 2D contour data
         call save_surface(p, psi%new)
       end if
-      if (idl_contour) then
+      if (save_3d) then
         ! Save 3D isosurface data for use in IDL
         call idl_surface(p, psi%new)
         end if

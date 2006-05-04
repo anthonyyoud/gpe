@@ -10,11 +10,7 @@ LINKFLAGS	=
 #LINKFLAGS	= -i_dynamic
 COMPILER	= mpif90
 #COMPILER	= gfortran
-LDBLAS          = 
-LDSCALA         = 
-LDBLACS         = 
-
-LIBS            = $(LDSCALA) $(LDBLACS) $(LDBLAS)
+LIBS            =
 COMPFLAGS       = $(FFLAGS)
 #-----------------------------------------------------------------------
 all:	$(OBJECTS)

@@ -22,7 +22,7 @@ module parameters
   integer,      parameter :: save_rate    = 1
   integer,      parameter :: save_rate2   = 50
   logical,      parameter :: save_contour = .true.
-  logical,      parameter :: idl_contour  = .true.
+  logical,      parameter :: save_3d      = .true.
   logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'

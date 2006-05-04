@@ -1,0 +1,244 @@
+DESCRIPTION
+-----------
+Modular Gross-Pitaevskii equation solver in 3D parallelised using MPI.  The
+time stepping scheme can be either explicit second-order Euler, explicit
+fourth-order Runge-Kutta, or explicit fourth-order adaptive
+Runge-Kutta-Fehlberg using the algorithm proposed in Numerical Recipes (section
+16.2, page 708).  The spatial discretisation is via either second-order or
+fourth-order accurate centred finite differences.  The boundary conditions can
+be either periodic or reflective.  A variety of initial conditions are possible
+including vortex lines, vortex rings, and rarefaction pulses.  Any combination
+of these is possible by simply multiplying the desired initial conditions
+together.
+
+The code uses MPI (Message Passing Interface) to enable parallelism in solving
+the GP equation.
+
+IMPORTANT INFORMATION
+---------------------
+Since the code uses MPI for the parallelism, an MPI parallel environment must
+be available.  The code has been tested with the MPICH flavour of MPI (since it
+supports Fortran 90 out of the box) but it should work with other MPI
+implementations such as LAM-MPI.
+
+The code has been tested and is known to work with the Intel Fortran Compiler
+version 9.0.
+
+FILES
+-----
+gpe.f90 			- Main program file.
+
+derivs.f90			- Routines to calculate derivatives.
+
+ic.f90	        		- Routines to set up initial conditions.
+
+io.f90				- In general, routines to do with 
+				  input/output.
+
+makefile			- Makefile for easy compilation.
+
+parameters.f90			- Parameters to set (see below).
+
+README				- This file.
+
+run_script.sh			- A script for distributing data to the nodes
+                                  of a cluster.  Will need to be customised.
+
+setup				- Setup script to compile and set up 
+				  ready to run in separate directory.
+
+solve.f90			- Routines to solve the equation.
+
+variables.f90			- Types for variables declared, and other
+                                  routines to do with variables in general.
+
+MAIN PARAMETERS
+---------------
+nyprocs         - The number of processes in the y-direction.
+
+nzprocs         - The number of processes in the z-direction.
+
+There are no restrictions on the above two parameters other than that they be
+>= 1.  In general, it is recommended that nzprocs>=nyprocs for best performance
+so that fewer non-contiguous data transfers are performed.  They can both be
+set to 1 in which case the job is simply run on one process (an MPI parallel
+environment is still required though).
+
+nx		- Number of grid points in the x-direction.
+
+ny		- Number of grid points in the y-direction.
+
+nz		- Number of grid points in the z-direction.
+
+time_step	- The initial time step to try.  Setting the real part equal to
+                  zero (with real_time=.false.) will solve the equation
+                  initially in imaginary time until a steady state is reached.
+
+end_time        - The final (dimensionless) time.
+
+xr              - The coordinate of the right-hand-side of the x-direction (the
+                  left-hand-side is set to -xr).
+
+yr              - As above but for the y-direction.
+
+zr              - As above but for the z-direction.
+
+bcs             - The boundary conditions to use.  Set to 1 for periodic BCs;
+                  set to 2 for reflective BCs.
+
+order           - The order of the derivatives to use.  Set to 2 for
+                  second-order; set to 4 for fourth-order.
+
+save_rate	- The rate at which time-series data should be saved (roughly
+                  corresponding to the number of time steps).
+
+save_rate_2	- The rate at which isosurface data should be saved (3D
+                  isosurfaces, 2D surfaces).
+
+save_contour    - Should 2D contour data be saved?
+
+save_3d         - Should 3D isosurface data be saved?
+
+restart         - logical.  Is this run going to be a restart of a previous
+                  run?  If so, then the file end_state.dat should be available
+                  in each of the process directories ready for reading.
+
+real_time       - logical.  Should the run be started in real time or not?
+
+scheme          - character.  The time stepping scheme to use.  This must be
+                  set to one of:
+                  euler       - for explicit second-order Euler time stepping
+                  rk4         - for explicit fourth-order Runge-Kutta time
+                                stepping
+                  rk_adaptive - for explicit adaptive fourth-order
+                                Runge-Kutta-Fehlberg time stepping.
+
+eps             - real.  The factor by which the fourth-order RK scheme must be
+                  close to the fifth-order RKF scheme.  This determines whether
+                  a time step has been successful and hence whether to increase
+                  or decrease the time step for the next step.
+
+Two types are also defined in the parameters file in order to set up a vortex
+line or vortex ring.  Comments for how to set these up are in the parameters
+file.
+
+Other parameters not mentioned here, can be left as they are.
+
+RUN_SCRIPT.sh
+-------------
+This is a bash script that gives an example of how to distribute data across
+the nodes of a cluster.  This can be used when a queue system is not available.
+However, a queue system is the better option because of its superior load
+balancing abilities.
+
+NPROCS		- Total number of processes on which the job will be run.  This
+                  should be equal to 'nyprocs*nzprocs' in parameters.f90.
+
+EXE		- The executable that will be run.
+
+DATA		- Any files that will be copied from the submit directory to
+                  the work directory.
+
+RUN_DIR         - The directory in which the job will be run.
+
+PROC_DIR        - The prefix of the directories where each process will write
+                  its own data.  Should be equal to proc_dir in parameters.f90.
+
+MAKEFILE
+--------
+Settings here will need to be changed, depending on the architecture on which
+the code is run.
+
+OUTDIR		- The output directory of the object files and executable.
+
+OBJECTS		- The object files that should be linked.
+
+FFLAGS		- Compiler flags for the Intel Fortran Compiler.  By default
+		  these are set to very aggressive optimisations.
+		  Specifically, the -tpp7 and -xW flags optimise for P4 CPU's
+		  only.  If the code is run on any other CPU, it **will not
+		  work**.  If the CPU is not a P4 (including Xeon's) then these
+		  two flags should be changed before compilation.  The
+		  commented out FFLAGS enables debugging and will give more
+		  output in case of an error.  In this case, no optimisation is
+                  performed.
+
+LINKFLAGS	- Any extra flags required by the linker (which in most cases
+		  will be the Intel compiler) should go here.  Specifically, on
+		  some Red Hat systems and systems with certain versions of
+		  glibc (I have not checked them all) and using versions 7.0 or
+		  7.1 of IFC the -i_dynamic flag is required.  Similarly, for
+		  the same systems using versions 8.0 or 8.1 of IFC the -static
+                  flag is required.
+
+COMPILER	- This should be set to mpif90.  The actual compiler name can
+		  be used here (ifc or ifort) but then all the required MPI
+                  libraries will have to be manually specified.
+
+
+LIBS		- No changes needed.
+
+COMPFLAGS	- No changes needed.
+
+TO RUN
+------
+Set parameters.f90 and run_script.sh then use:
+	source setup <directory>
+which compiles code and copies parameters.f90 and run_script.sh and moves
+gpe to <directory>.  After customisation './run_script.sh' runs the code.
+Alternatively, the relevant command to use is 'mpiexec'.  See the man page of
+mpiexec for further instructions.
+
+If restarting from a previous run then be sure to set restart=.true. in
+parameters.f90, and have the file 'end_state.dat' from the process directories
+of the preceding run in the corresponding process directories for the new run.
+
+Errors are output if either:
+1) end_state.dat exists but restart=.false. or
+2) restart=.true. but end_state.dat does not exist.
+
+Any run should be cleanly stopped by removing the empty file 'RUNNING' which is
+present in the run directory once the job has started.  This avoids having to
+use Ctrl-C to interrupt the program.  Using this procedure will ensure that all
+run-time files are cleaned up and unneeded directories removed.
+
+OUTPUT FILES
+------------
+energy.dat      - Save the energy at each time.
+
+linelength.dat  - Saves the total line length of vortices in the condensate.
+
+momentum.dat    - Saves the three components of the momentum.
+
+save.dat        - The parameters for the most recently saved state.
+
+timestep.dat    - The imaginary and real time step at each time.
+
+u_time.dat      - Saves the real and imaginary time, the real and imaginary
+                  parts of the wavefunction, the density, and the phase.
+
+proc**          - Numbered directories corresponding to each process involved
+                  in the run.  Each of these directories contains the following
+                  files:
+                  end_state.dat         - The saved state of the run.
+
+                  im_zeros*******.dat   - The coordinates where the imaginary
+                                          part of the wavefunction goes to
+                                          zero.
+
+                  re_zeros*******.dat   - The coordinates where the real part
+                                          of the wavefunction goes to zero.
+
+                  u_idl*******.dat      - If 3D isosurfaces were requested,
+                                          they are saved in these files.
+
+                  zeros*******.dat      - The coordinates where the real and
+                                          imaginary parts of the wavefunction
+                                          simultaneously go to zero.
+
+                  In addition, if 2D contour plots were requested then, some of
+                  the process directories will contain files named
+                  u*******.dat.  These are the processes on which the 2D plane
+                  occurred.
+
+04/05/2006
