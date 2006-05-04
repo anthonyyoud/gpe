@@ -159,12 +159,12 @@ module variables
 
     call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jsend(1), ierr)
-    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_COMPLEX, zprev, 1, &
+    call MPI_ISEND(in_var(0,jsta,ksta+1), nx*jlen, MPI_COMPLEX, zprev, 1, &
                MPI_COMM_WORLD, jsend(2), ierr)
 
     call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(1), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_COMPLEX, znext, 1, &
+    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(2), ierr)
 
     call MPI_WAIT(jsend(1), istatus, ierr)
@@ -178,7 +178,7 @@ module variables
                    MPI_COMM_WORLD, jsend(4), ierr)
     call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(3), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_COMPLEX, znext, 1, &
+    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(4), ierr)
 
     call MPI_WAIT(jsend(3), istatus, ierr)
@@ -186,12 +186,27 @@ module variables
     call MPI_WAIT(jrecv(3), istatus, ierr)
     call MPI_WAIT(jrecv(4), istatus, ierr)
 
-    !if (p == 2000) then
-    !  do j=jsta,jend
-    !    do i=0,nx1
-    !      print*, in_var(i,j,kend), in_var(i,j,ksta-1)
+    !if (p == 0) then
+    !  if (myrankz == 0) then
+    !    open (27, file='z_prev.dat')
+    !    do j=jsta,jend
+    !      do i=0,nx1
+    !        !print*, in_var(i,j,kend-1), in_var(i,j,ksta-2)
+    !        write (27, '(e17.9)') in_var(i,j,kend)
+    !      end do
     !    end do
-    !  end do
+    !    close (27)
+    !  end if
+    !  if (myrankz == 1) then
+    !    open (28, file='z_next.dat')
+    !    do j=jsta,jend
+    !      do i=0,nx1
+    !        !print*, in_var(i,j,kend-1), in_var(i,j,ksta-2)
+    !        write (28, '(e17.9)') in_var(i,j,ksta-1)
+    !      end do
+    !    end do
+    !    close (28)
+    !  end if
     !end if
 
     return
@@ -516,24 +531,24 @@ module variables
       end do
     end do
 
-    tmp_var = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        tmp_var(j,k) = x_int(j,k)
-      end do
-    end do
+    !tmp_var = 0.0
+    !do k=ksta,kend
+    !  do j=jsta,jend
+    !    tmp_var(j,k) = x_int(j,k)
+    !  end do
+    !end do
 
-    call MPI_REDUCE(tmp_var, tmp, ny*nz, &
-                    MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    !call MPI_REDUCE(tmp_var, tmp, ny*nz, &
+    !                MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
-    if (myrank == 0) then
-      open (53, file='diag.dat')
-      do k=0,nz1
-        write (53, '(2i5,e17.9)') (j, k, tmp(j,k), j=0,ny1)
-        write (53, *)
-      end do
-      close (53)
-    end if
+    !if (myrank == 0) then
+    !  open (53, file='diag.dat')
+    !  do k=0,nz1
+    !    write (53, '(2i5,e17.9)') (j, k, tmp(j,k), j=0,ny1)
+    !    write (53, *)
+    !  end do
+    !  close (53)
+    !end if
 
     return
   end subroutine integrate_x
@@ -573,21 +588,21 @@ module variables
       y_int(k) = total(k) * dy
     end do
 
-    tmp_var2 = 0.0
-    do k=ksta,kend
-      tmp_var2(k) = y_int(k)
-    end do
+    !tmp_var2 = 0.0
+    !do k=ksta,kend
+    !  tmp_var2(k) = y_int(k)
+    !end do
 
-    call MPI_REDUCE(tmp_var2, tmp2, nz, &
-                    MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    !call MPI_REDUCE(tmp_var2, tmp2, nz, &
+    !                MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
-    if (myrank == 0) then
-      open (53, file='diag.dat')
-      do k=0,nz1
-        write (53, '(1i5,e17.9)') k, tmp2(k)
-      end do
-      close (53)
-    end if
+    !if (myrank == 0) then
+    !  open (53, file='diag.dat')
+    !  do k=0,nz1
+    !    write (53, '(1i5,e17.9)') k, tmp2(k)
+    !  end do
+    !  close (53)
+    !end if
 
     return
   end subroutine integrate_y

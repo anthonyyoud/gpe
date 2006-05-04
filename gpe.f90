@@ -8,7 +8,7 @@ program gpe
   use variables
   implicit none
 
-  integer :: p=0, p_start=0, i, j, k
+  integer :: p_start=0, i, j, k
   real :: norm=0.0, prev_norm=0.0
   type (var) :: psi
   logical :: run_exist, state_exist
@@ -141,7 +141,7 @@ program gpe
     call send_recv_y()
     call unpack_y(psi%old)
 
-    call save_deriv_psi(psi%old)
+    !call save_deriv_psi(psi%old)
 
     tmp_var = 0.0
     do k=ksta,kend
@@ -158,8 +158,8 @@ program gpe
     !if (mod(p, save_rate) == 0) then
       call save_energy(t, psi%old)
       call save_momentum(t, psi%old)
-      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-      stop
+      !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+      !stop
       if (myrank == 0) then
         !call save_time(t, psi%new)
         call save_time(t, tmp)

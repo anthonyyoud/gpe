@@ -823,6 +823,10 @@ module io
         write (54, '(3e17.9)') (y(j), z(k), abs(tmp(nx/2,j,k)), j=0,ny1)
         write (54, *)
       end do
+      !do j=0,ny1
+      !  write (54, '(3e17.9)') (x(i), y(j), abs(tmp(i,j,nz/2)), i=0,nx1)
+      !  write (54, *)
+      !end do
       close (54)
     end if
 
