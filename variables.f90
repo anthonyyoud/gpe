@@ -24,8 +24,8 @@ module variables
   end type deriv
 
   type, public :: re_im
-    real, dimension(0:nx1,0:ny1,0:nz1) :: re
-    real, dimension(0:nx1,0:ny1,0:nz1) :: im
+    real, allocatable, dimension(:,:,:) :: re
+    real, allocatable, dimension(:,:,:) :: im
   end type re_im
 
   integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
@@ -328,15 +328,11 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: phase
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: phase
     integer :: j, k
 
-    do k=0,nz1
-      do j=0,ny1
-        phase(:,j,k) = atan2(aimag(in_var(:,j,k))+1.0e-6, real(in_var(:,j,k)))
-      end do
-    end do
+    phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
 
     return
   end subroutine get_phase
@@ -346,15 +342,11 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: density
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: density
     integer :: j, k
 
-    do k=0,nz1
-      do j=0,ny1
-        density(:,j,k) = abs(in_var(:,j,k))
-      end do
-    end do
+    density = abs(in_var)
 
     return
   end subroutine get_density

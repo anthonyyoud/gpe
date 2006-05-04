@@ -67,9 +67,7 @@ program gpe
   end if
   
   ! Open runtime files
-  if (myrank == 0) then
-    call open_files()
-  end if
+  call open_files()
 
   ! Get the space mesh
   call get_grid()
@@ -81,7 +79,6 @@ program gpe
   ! Get zeros of the real and imaginary part
   !call get_zeros(psi%new, p)
   !call get_re_im_zeros(psi%new, p)
-  !call get_phase_zeros(psi%new, p)
   !call save_surface(p, psi%new)
   !call idl_surface(p, psi%new)
   !stop
@@ -160,9 +157,10 @@ program gpe
       call save_momentum(t, psi%old)
       !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
       !stop
+      !call test_pos()
+      call save_time(t, psi%new)
       if (myrank == 0) then
-        !call save_time(t, psi%new)
-        call save_time(t, tmp)
+        !call save_time(t, tmp)
         !call save_energy(t, psi%old)
         !call save_momentum(t, psi%old)
         !call save_linelength(t, psi%new)
@@ -172,26 +170,25 @@ program gpe
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
     if (mod(p, save_rate2) == 0) then
+      ! Find the zeros of the wave function
+      call get_zeros(psi%old, p)
+      call get_extra_zeros(psi%old, p)
+      call get_re_im_zeros(psi%old, p)
       if (myrank == 0) then
-        ! Find the zeros of the wave function
-        !call get_zeros(psi%new, p)
-        !call get_extra_zeros(psi%new, p)
-        !call get_re_im_zeros(psi%new, p)
-        call get_zeros(tmp, p)
-        call get_extra_zeros(tmp, p)
-        call get_re_im_zeros(tmp, p)
-        !call get_phase_zeros(psi%new, p)
+        !call get_zeros(tmp, p)
+        !call get_extra_zeros(tmp, p)
+        !call get_re_im_zeros(tmp, p)
         if (save_contour) then
           ! Save 2D contour data
           !call save_surface(p, psi%new)
-          call save_surface(p, tmp)
-        end if
-        if (idl_contour) then
-          ! Save 3D isosurface data for use in IDL
-          !call idl_surface(p, psi%new)
-          call idl_surface(p, tmp)
+          !ajycall save_surface(p, tmp)
         end if
       end if
+      if (idl_contour) then
+        ! Save 3D isosurface data for use in IDL
+        call idl_surface(p, psi%new)
+        !call idl_surface(p, tmp)
+        end if
     end if
 
     ! Periodically save the statea
@@ -224,11 +221,11 @@ program gpe
         real_time = .true.
         switched = .true.
         im_t = 0.0
+        call idl_surface(p, psi%new)
         if (myrank == 0) then
           !call save_surface(p, psi%new)
-          !call idl_surface(p, psi%new)
-          call save_surface(p, tmp)
-          call idl_surface(p, tmp)
+          !ajycall save_surface(p, tmp)
+          !call idl_surface(p, tmp)
           print*, 'Switching to real time'
         end if
       end if
@@ -250,18 +247,17 @@ program gpe
   
   ! Time loop finished so cleanly end the run
   call end_state(psi%new, p, 1)
+  call idl_surface(p, psi%new)
   if (myrank == 0) then
     !call save_surface(p, psi%new)
     !call idl_surface(p, psi%new)
     !call end_state(tmp, p, 1)
-    call save_surface(p, tmp)
-    call idl_surface(p, tmp)
+    !ajycall save_surface(p, tmp)
+    !call idl_surface(p, tmp)
   end if
 
   ! Close runtime files
-  if (myrank == 0) then
-    call close_files()
-  end if
+  call close_files()
 
   call MPI_FINALIZE(ierr)
 

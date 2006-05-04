@@ -5,8 +5,8 @@ module io
   private
   public :: open_files, close_files, save_time, save_energy, save_surface, &
             idl_surface, end_state, get_zeros, get_re_im_zeros, &
-            get_phase_zeros, get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs, save_deriv_psi
+            get_extra_zeros, save_linelength, save_momentum, &
+            get_dirs, save_deriv_psi, test_pos
 
   contains
 
@@ -35,14 +35,16 @@ module io
     ! Open runtime files
     implicit none
 
-    open (10, file='u_time.dat', status='unknown')
-    open (13, file='timestep.dat', status='unknown')
-    open (14, file='energy.dat', status='unknown')
-    open (20, file='linelength.dat', status='unknown')
-    open (21, file='momentum.dat', status='unknown')
-    !open (90, file='diag.dat', status='unknown')
-    open (99, file='RUNNING')
-    close (99)
+    if (myrank == 0) then
+      open (10, file='u_time.dat', status='unknown')
+      open (13, file='timestep.dat', status='unknown')
+      open (14, file='energy.dat', status='unknown')
+      open (20, file='linelength.dat', status='unknown')
+      open (21, file='momentum.dat', status='unknown')
+      !open (90, file='diag.dat', status='unknown')
+      open (99, file='RUNNING')
+      close (99)
+    end if
 
     return
   end subroutine open_files
@@ -51,12 +53,14 @@ module io
     ! Close runtime files
     implicit none
 
-    close (10)
-    close (13)
-    close (14)
-    close (20)
-    close (21)
-    !close (90)
+    if (myrank == 0) then
+      close (10)
+      close (13)
+      close (14)
+      close (20)
+      close (21)
+      !close (90)
+    end if
 
     return
   end subroutine close_files
@@ -82,9 +86,11 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:nx1,0:ny1,0:nz1) :: phase, density
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
+    complex, dimension(3) :: tmp, var
     real :: xpos, ypos, zpos
+    integer :: i, j, k
 
     call get_phase(in_var, phase)
     call get_density(in_var, density)
@@ -93,13 +99,68 @@ module io
     ypos = ny/2
     zpos = nz/2
 
-    write (10, '(6e17.9)') time, im_t, real(in_var(xpos,ypos,zpos)), &
-                           aimag(in_var(xpos,ypos,zpos)), &
-                           density(xpos,ypos,zpos), &
-                           phase(xpos,ypos,zpos)
+    tmp = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          if ((i==xpos) .and. (j==ypos) .and. (k==zpos)) then
+            tmp(1) = in_var(xpos,ypos,zpos)
+            tmp(2) = density(xpos,ypos,zpos)
+            tmp(3) = phase(xpos,ypos,zpos)
+          end if
+        end do
+      end do
+    end do
+
+    call MPI_REDUCE(tmp, var, 3, MPI_COMPLEX, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+
+    !write (10, '(6e17.9)') time, im_t, real(in_var(xpos,ypos,zpos)), &
+    !                       aimag(in_var(xpos,ypos,zpos)), &
+    !                       density(xpos,ypos,zpos), &
+    !                       phase(xpos,ypos,zpos)
+
+    if (myrank == 0) then
+      write (10, '(6e17.9)') time, im_t, real(var(1)), &
+                             aimag(var(1)), real(var(2)), real(var(3))
+    end if
 
     return
   end subroutine save_time
+
+  subroutine test_pos()
+    use parameters
+    implicit none
+
+    real, dimension(3) :: var, tmp
+    integer :: i, j, k, xpos, ypos, zpos
+
+    xpos = nx/2
+    ypos = ny/2
+    zpos = nz/2
+    
+    tmp = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          if ((i==xpos) .and. (j==ypos) .and. (k==zpos)) then
+            tmp(1) = 5.76
+            tmp(2) = 3.7
+            tmp(3) = 7.9
+          end if
+        end do
+      end do
+    end do
+
+    call MPI_REDUCE(tmp, var, 3, MPI_REAL, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+
+    if (myrank == 0) then
+      print*, var
+    end if
+    
+    return
+  end subroutine test_pos
 
   subroutine save_energy(time, in_var)
     ! Save the energy
@@ -147,24 +208,28 @@ module io
     implicit none
 
     integer, intent(in) :: p
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    real, dimension(0:nx1,0:ny1,0:nz1) :: phase, density
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
     real :: zpos
     integer :: i, j, k
 
-    open (11, status = 'unknown', file = 'u'//itos(p)//'.dat')
+    open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
     
     ! Get the phase and the density
     call get_phase(in_var, phase)
     call get_density(in_var, density)
     
     zpos = nz/2 !22 !44 !22
+
+    !do k=ksta,kend
+    !  if (k==zpos) then
+    !    tmp(:,:) = density(:,:,zpos)
     
     do i=0,nx1
-      write (11, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
+      write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
                               phase(i,j,zpos), real(in_var(i,j,zpos)), &
                               aimag(in_var(i,j,zpos)), j=0,ny1)
-      write (11, *)
+      write (unit_no, *)
     end do
     
     !do j=0,ny1
@@ -186,7 +251,7 @@ module io
     !  write (11, *)
     !end do
 
-    close (11)
+    close (unit_no)
 
     return
   end subroutine save_surface
@@ -194,23 +259,26 @@ module io
   subroutine idl_surface(p, in_var)
     ! Save 3D isosurface data for use in IDL
     use parameters
+    use variables, only : unit_no
     use ic, only : x, y, z
     implicit none
 
     integer, intent(in) :: p
-    complex, intent(in) :: in_var(0:nx1,0:ny1,0:nz1)
+    complex, intent(in) :: in_var(0:nx1,jsta:jend,ksta:kend)
     integer :: i, j, k
 
-    open (12, status = 'unknown', file = 'u_idl'//itos(p)//'.dat', &
-          form = 'unformatted')
+    open (unit_no, status='unknown', file=proc_dir//'u_idl'//itos(p)//'.dat', &
+          form='unformatted')
     
-    write (12) nx, ny, nz
-    write (12) abs(in_var)
-    write (12) x
-    write (12) y
-    write (12) z
+    write (unit_no) nx, ny, nz
+    write (unit_no) nyprocs, nzprocs
+    write (unit_no) jsta, jend, ksta, kend
+    write (unit_no) abs(in_var)
+    write (unit_no) x
+    write (unit_no) y
+    write (unit_no) z
 
-    close (12)
+    close (unit_no)
 
     return
   end subroutine idl_surface
@@ -263,29 +331,37 @@ module io
   
   subroutine get_zeros(in_var, p)
     use parameters
-    use variables, only : re_im
+    use variables, only : re_im, unit_no
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
-    real, dimension(0:nx1,0:ny1,0:nz1) :: denom
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
-    integer, parameter :: z_start=1, z_end=nz1-1
+    integer :: z_start, z_end
 
-    open (15, status = 'unknown', file = 'zeros'//itos(p)//'.dat')
+    z_start=ksta
+    z_end=kend
 
+    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    
+    open (unit_no, status='unknown', file=proc_dir//'zeros'//itos(p)//'.dat')
+    
     var%re = real(in_var)
     var%im = aimag(in_var)
 
-    write (15, *) "# i,j,k --> i+1,j,k"
+    write (unit_no, *) "# i,j,k --> i+1,j,k"
 
     !do k=nz/2+0, nz/2+0
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if (((var%re(i,j,k) == 0.0) .and. &
                (var%im(i,j,k) == 0.0)) .or. &
@@ -299,16 +375,18 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%re(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%re(i,j,k)*x(i+1)/denom(i,j,k)
-            write (15, '(5e17.9)') zero, y(j), z(k)
+            write (unit_no, '(3e17.9)') zero, y(j), z(k)
           end if
         end do
       end do
     end do
     
-    write (15, *) "# i,j,k --> i,j+1,k"
+    write (unit_no, *) "# i,j,k --> i,j+1,k"
 
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if (((var%re(i,j,k) == 0.0) .and. &
                (var%im(i,j,k) == 0.0)) .or. &
@@ -322,17 +400,19 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%re(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%re(i,j,k)*y(j+1)/denom(i,j,k)
-            write (15, '(5e17.9)') x(i), zero, z(k)
+            write (unit_no, '(3e17.9)') x(i), zero, z(k)
           end if
         end do
       end do
     end do
     
     if (z_start /= z_end) then
-      write (15, *) "# i,j,k --> i,j,k+1"
+      write (unit_no, *) "# i,j,k --> i,j,k+1"
 
-      do k=z_start, z_end
-        do j=1,ny1-1
+      do k=z_start,z_end
+        if ((k==0) .or. (k==nz1)) cycle
+        do j=jsta,jend
+          if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
             if (((var%re(i,j,k) == 0.0) .and. &
                  (var%im(i,j,k) == 0.0)) .or. &
@@ -346,45 +426,56 @@ module io
               if (denom(i,j,k) == 0.0) cycle
               zero = -var%re(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%re(i,j,k)*z(k+1)/denom(i,j,k)
-              write (15, '(5e17.9)') x(i), y(j), zero
+              write (unit_no, '(3e17.9)') x(i), y(j), zero
             end if
           end do
         end do
       end do
     end if
 
-    close (15)
+    close (unit_no)
+
+    deallocate(var%re)
+    deallocate(var%im)
 
     return
   end subroutine get_zeros
 
   subroutine get_extra_zeros(in_var, p)
     use parameters
-    use variables, only : re_im
+    use variables, only : re_im, unit_no
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real, dimension(4) :: zero
     real, dimension(2) :: m
-    real, dimension(4,0:nx1,0:ny1,0:nz1) :: denom
+    real, dimension(4,0:nx1,jsta:jend,ksta:kend) :: denom
     real :: xp, yp, zp
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
-    integer, parameter :: z_start=1, z_end=nz1-1
+    integer :: z_start, z_end
 
-    open (15, status = 'old', position='append', &
-              file = 'zeros'//itos(p)//'.dat')
+    z_start=ksta
+    z_end=kend
+
+    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+
+    open (unit_no, status='old', position='append', &
+                   file=proc_dir//'zeros'//itos(p)//'.dat')
 
     var%re = real(in_var)
     var%im = aimag(in_var)
     
-    write (15, *) "# i,j,k --> i+1,j,k --> i+1,j+1,k --> i,j+1,k"
+    write (unit_no, *) "# i,j,k --> i+1,j,k --> i+1,j+1,k --> i,j+1,k"
     
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
                (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
@@ -411,7 +502,7 @@ module io
             xp = (zero(4)-x(i)*m(2)-y(j)+zero(1)*m(1))/(m(1)-m(2))
             yp = xp*m(1)+y(j)-zero(1)*m(1)
             
-            write (15, '(5e17.9)') xp, yp, z(k)
+            write (unit_no, '(3e17.9)') xp, yp, z(k)
           else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0) .and. &
                     (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0)) .and. &
                    ((var%re(i+1,j,k)*var%re(i+1,j+1,k) < 0.0) .and. &
@@ -437,16 +528,18 @@ module io
             xp = (zero(4)-x(i)*m(2)-y(j)+zero(1)*m(1))/(m(1)-m(2))
             yp = xp*m(1)+y(j)-zero(1)*m(1)
 
-            write (15, '(5e17.9)') xp, yp, z(k)
+            write (unit_no, '(3e17.9)') xp, yp, z(k)
           end if
         end do
       end do
     end do
     
     if (z_start /= z_end) then
-      write (15, *) "# i,j,k --> i+1,j,k --> i+1,j,k+1 --> i,j,k+1"
-      do k=z_start, z_end
-        do j=1,ny1-1
+      write (unit_no, *) "# i,j,k --> i+1,j,k --> i+1,j,k+1 --> i,j,k+1"
+      do k=z_start,z_end
+        if ((k==0) .or. (k==nz1)) cycle
+        do j=jsta,jend
+          if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
             if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
                  (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
@@ -473,7 +566,7 @@ module io
               xp = (zero(4)-x(i)*m(2)-z(k)+zero(1)*m(1))/(m(1)-m(2))
               zp = xp*m(1)+z(k)-zero(1)*m(1)
               
-              write (15, '(5e17.9)') xp, y(j), zp
+              write (unit_no, '(3e17.9)') xp, y(j), zp
             else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0) .and. &
                       (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0)) .and. &
                      ((var%re(i+1,j,k)*var%re(i+1,j,k+1) < 0.0) .and. &
@@ -499,15 +592,17 @@ module io
               xp = (zero(4)-x(i)*m(2)-z(k)+zero(1)*m(1))/(m(1)-m(2))
               zp = xp*m(1)+z(k)-zero(1)*m(1)
 
-              write (15, '(5e17.9)') xp, y(j), zp
+              write (unit_no, '(3e17.9)') xp, y(j), zp
             end if
           end do
         end do
       end do
       
-      write (15, *) "# i,j,k --> i,j,k+1 --> i,j+1,k+1 --> i,j+1,k"
-      do k=z_start, z_end
-        do j=1,ny1-1
+      write (unit_no, *) "# i,j,k --> i,j,k+1 --> i,j+1,k+1 --> i,j+1,k"
+      do k=z_start,z_end
+        if ((k==0) .or. (k==nz1)) cycle
+        do j=jsta,jend
+          if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
             if (((var%re(i,j,k)*var%re(i,j,k+1) < 0.0) .and. &
                  (var%im(i,j,k)*var%im(i,j,k+1) >= 0.0)) .and. &
@@ -534,7 +629,7 @@ module io
               zp = (zero(4)-z(k)*m(2)-y(j)+zero(1)*m(1))/(m(1)-m(2))
               yp = zp*m(1)+y(j)-zero(1)*m(1)
               
-              write (15, '(5e17.9)') x(i), yp, zp
+              write (unit_no, '(3e17.9)') x(i), yp, zp
             else if (((var%im(i,j,k)*var%im(i,j,k+1) < 0.0) .and. &
                       (var%re(i,j,k)*var%re(i,j,k+1) >= 0.0)) .and. &
                      ((var%re(i,j,k+1)*var%re(i,j+1,k+1) < 0.0) .and. &
@@ -560,43 +655,51 @@ module io
               zp = (zero(4)-z(k)*m(2)-y(j)+zero(1)*m(1))/(m(1)-m(2))
               yp = zp*m(1)+y(j)-zero(1)*m(1)
               
-              write (15, '(5e17.9)') x(i), yp, zp
+              write (unit_no, '(3e17.9)') x(i), yp, zp
             end if
           end do
         end do
       end do
     end if
   
-    close (15)
+    close (unit_no)
 
     return
   end subroutine get_extra_zeros
 
   subroutine get_re_im_zeros(in_var, p)
     use parameters
-    use variables, only : re_im
+    use variables, only : re_im, unit_no
     use ic, only : x, y, z
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
-    real, dimension(0:nx1,0:ny1,0:nz1) :: denom
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
     integer :: i, j, k
-    integer, parameter :: z_start=nz/2, z_end=nz/2
-    !integer, parameter :: z_start=1, z_end=nz1-1
+    !integer, parameter :: z_start=nz/2, z_end=nz/2
+    integer :: z_start, z_end
 
-    open (16, status = 'unknown', file = 're_zeros'//itos(p)//'.dat')
-    open (17, status = 'unknown', file = 'im_zeros'//itos(p)//'.dat')
+    z_start=ksta
+    z_end=kend
+
+    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+
+    open (unit_no, status='unknown', &
+                   file=proc_dir//'re_zeros'//itos(p)//'.dat')
 
     var%re = real(in_var)
     var%im = aimag(in_var)
 
-    write (16, *) "# i,j,k --> i+1,j,k"
+    write (unit_no, *) "# i,j,k --> i+1,j,k"
 
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if ((var%re(i,j,k) == 0.0) .or. &
               (var%re(i,j,k)*var%re(i+1,j,k) < 0.0)) then
@@ -604,16 +707,18 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%re(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%re(i,j,k)*x(i+1)/denom(i,j,k)
-            write (16, '(5e17.9)') zero, y(j), z(k)
+            write (unit_no, '(3e17.9)') zero, y(j), z(k)
           end if
         end do
       end do
     end do
     
-    write (16, *) "# i,j,k --> i,j+1,k"
+    write (unit_no, *) "# i,j,k --> i,j+1,k"
 
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if ((var%re(i,j,k) == 0.0) .or. &
               (var%re(i,j,k)*var%re(i,j+1,k) < 0.0)) then
@@ -621,17 +726,19 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%re(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%re(i,j,k)*y(j+1)/denom(i,j,k)
-            write (16, '(5e17.9)') x(i), zero, z(k)
+            write (unit_no, '(3e17.9)') x(i), zero, z(k)
           end if
         end do
       end do
     end do
     
     if (z_start /= z_end) then
-      write (16, *) "# i,j,k --> i,j,k+1"
+      write (unit_no, *) "# i,j,k --> i,j,k+1"
 
-      do k=z_start, z_end
-        do j=1,ny1-1
+      do k=z_start,z_end
+        if ((k==0) .or. (k==nz1)) cycle
+        do j=jsta,jend
+          if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
             if ((var%re(i,j,k) == 0.0) .and. &
                 (var%re(i,j,k)*var%re(i,j,k+1) < 0.0)) then
@@ -639,17 +746,26 @@ module io
               if (denom(i,j,k) == 0.0) cycle
               zero = -var%re(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%re(i,j,k)*z(k+1)/denom(i,j,k)
-              write (16, '(5e17.9)') x(i), y(j), zero
+              write (unit_no, '(3e17.9)') x(i), y(j), zero
             end if
           end do
         end do
       end do
     end if
+
+    close (unit_no)
+
+    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
     
-    write (17, *) "# i,j,k --> i+1,j,k"
+    open (unit_no, status='unknown', &
+                   file=proc_dir//'im_zeros'//itos(p)//'.dat')
+                      
+    write (unit_no, *) "# i,j,k --> i+1,j,k"
     
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if ((var%im(i,j,k) == 0.0) .or. &
               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0)) then
@@ -657,16 +773,18 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%im(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%im(i,j,k)*x(i+1)/denom(i,j,k)
-            write (17, '(5e17.9)') zero, y(j), z(k)
+            write (unit_no, '(3e17.9)') zero, y(j), z(k)
           end if
         end do
       end do
     end do
     
-    write (17, *) "# i,j,k --> i,j+1,k"
+    write (unit_no, *) "# i,j,k --> i,j+1,k"
 
-    do k=z_start, z_end
-      do j=1,ny1-1
+    do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
           if ((var%im(i,j,k) == 0.0) .or. &
               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0)) then
@@ -674,17 +792,19 @@ module io
             if (denom(i,j,k) == 0.0) cycle
             zero = -var%im(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%im(i,j,k)*y(j+1)/denom(i,j,k)
-            write (17, '(5e17.9)') x(i), zero, z(k)
+            write (unit_no, '(3e17.9)') x(i), zero, z(k)
           end if
         end do
       end do
     end do
     
     if (z_start /= z_end) then
-      write (17, *) "# i,j,k --> i,j,k+1"
+      write (unit_no, *) "# i,j,k --> i,j,k+1"
 
-      do k=z_start, z_end
-        do j=1,ny1-1
+      do k=z_start,z_end
+      if ((k==0) .or. (k==nz1)) cycle
+        do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
             if ((var%im(i,j,k) == 0.0) .and. &
                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0)) then
@@ -692,95 +812,18 @@ module io
               if (denom(i,j,k) == 0.0) cycle
               zero = -var%im(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%im(i,j,k)*z(k+1)/denom(i,j,k)
-              write (17, '(5e17.9)') x(i), y(j), zero
+              write (unit_no, '(3e17.9)') x(i), y(j), zero
             end if
           end do
         end do
       end do
     end if
 
-    close (16)
-    close (17)
+    close (unit_no)
 
     return
   end subroutine get_re_im_zeros
   
-  subroutine get_phase_zeros(in_var, p)
-    use parameters
-    use variables, only : get_phase
-    use ic, only : x, y, z
-    implicit none
-
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
-    integer, intent(in) :: p
-    real :: zero
-    real, dimension(0:nx1,0:ny1,0:nz1) :: denom, phase
-    integer :: i, j, k
-    integer, parameter :: z_start=nz/2, z_end=nz/2
-    !integer, parameter :: z_start=1, z_end=nz1-1
-
-    open (18, status = 'unknown', file = 'phase_zeros'//itos(p)//'.dat')
-
-    call get_phase(in_var, phase)
-
-    write (18, *) "# i,j,k --> i+1,j,k"
-
-    do k=z_start, z_end
-      do j=1,ny1-1
-        do i=1,nx1-1
-          if ((phase(i,j,k) == 0.0) .or. &
-              (phase(i,j,k)*phase(i+1,j,k) < 0.0)) then
-            denom(i,j,k) = phase(i,j,k)-phase(i+1,j,k)
-            if (denom(i,j,k) == 0.0) cycle
-            zero = -phase(i+1,j,k)*x(i)/denom(i,j,k) + &
-                    phase(i,j,k)*x(i+1)/denom(i,j,k)
-            write (18, '(5e17.9)') zero, y(j), z(k)
-          end if
-        end do
-      end do
-    end do
-    
-    write (18, *) "# i,j,k --> i,j+1,k"
-
-    do k=z_start, z_end
-      do j=1,ny1-1
-        do i=1,nx1-1
-          if ((phase(i,j,k) == 0.0) .or. &
-              (phase(i,j,k)*phase(i,j+1,k) < 0.0)) then
-            denom(i,j,k) = phase(i,j,k)-phase(i,j+1,k)
-            if (denom(i,j,k) == 0.0) cycle
-            zero = -phase(i,j+1,k)*y(j)/denom(i,j,k) + &
-                    phase(i,j,k)*y(j+1)/denom(i,j,k)
-            write (18, '(5e17.9)') x(i), zero, z(k)
-          end if
-        end do
-      end do
-    end do
-    
-    if (z_start /= z_end) then
-      write (18, *) "# i,j,k --> i,j,k+1"
-
-      do k=z_start, z_end
-        do j=1,ny1-1
-          do i=1,nx1-1
-            if ((phase(i,j,k) == 0.0) .and. &
-                (phase(i,j,k)*phase(i,j,k+1) < 0.0)) then
-              denom(i,j,k) = phase(i,j,k)-phase(i,j,k+1)
-              if (denom(i,j,k) == 0.0) cycle
-              zero = -phase(i,j,k+1)*z(k)/denom(i,j,k) + &
-                      phase(i,j,k)*z(k+1)/denom(i,j,k)
-              write (18, '(5e17.9)') x(i), y(j), zero
-            end if
-          end do
-        end do
-      end do
-    end if
-    
-    close (18)
-
-    return
-  end subroutine get_phase_zeros
-
   subroutine save_linelength(t, in_var)
     use parameters
     use variables, only : linelength
