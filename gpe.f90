@@ -174,6 +174,7 @@ program gpe
       call get_zeros(psi%old, p)
       call get_extra_zeros(psi%old, p)
       call get_re_im_zeros(psi%old, p)
+      call save_surface(p, psi%new)
       if (myrank == 0) then
         !call get_zeros(tmp, p)
         !call get_extra_zeros(tmp, p)
@@ -181,7 +182,7 @@ program gpe
         if (save_contour) then
           ! Save 2D contour data
           !call save_surface(p, psi%new)
-          !ajycall save_surface(p, tmp)
+          !call save_surface(p, tmp)
         end if
       end if
       if (idl_contour) then
@@ -222,6 +223,7 @@ program gpe
         switched = .true.
         im_t = 0.0
         call idl_surface(p, psi%new)
+        call save_surface(p, psi%new)
         if (myrank == 0) then
           !call save_surface(p, psi%new)
           !ajycall save_surface(p, tmp)
@@ -248,6 +250,7 @@ program gpe
   ! Time loop finished so cleanly end the run
   call end_state(psi%new, p, 1)
   call idl_surface(p, psi%new)
+  call save_surface(p, psi%new)
   if (myrank == 0) then
     !call save_surface(p, psi%new)
     !call idl_surface(p, psi%new)

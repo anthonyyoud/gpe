@@ -213,7 +213,7 @@ module io
     real :: zpos
     integer :: i, j, k
 
-    open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
+    !open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
     
     ! Get the phase and the density
     call get_phase(in_var, phase)
@@ -221,16 +221,26 @@ module io
     
     zpos = nz/2 !22 !44 !22
 
-    !do k=ksta,kend
-    !  if (k==zpos) then
-    !    tmp(:,:) = density(:,:,zpos)
-    
-    do i=0,nx1
-      write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
-                              phase(i,j,zpos), real(in_var(i,j,zpos)), &
-                              aimag(in_var(i,j,zpos)), j=0,ny1)
-      write (unit_no, *)
+    do k=ksta,kend
+      if (k==zpos) then
+        open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
+        do i=0,nx1
+          write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
+                                  phase(i,j,zpos), real(in_var(i,j,zpos)), &
+                                  aimag(in_var(i,j,zpos)), j=jsta,jend)
+          write (unit_no, *)
+        end do
+        close (unit_no)
+        exit
+      end if
     end do
+    
+    !do i=0,nx1
+    !  write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
+    !                          phase(i,j,zpos), real(in_var(i,j,zpos)), &
+    !                          aimag(in_var(i,j,zpos)), j=0,ny1)
+    !  write (unit_no, *)
+    !end do
     
     !do j=0,ny1
     !  write (11, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
@@ -251,7 +261,7 @@ module io
     !  write (11, *)
     !end do
 
-    close (unit_no)
+    !close (unit_no)
 
     return
   end subroutine save_surface
