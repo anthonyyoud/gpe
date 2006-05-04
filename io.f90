@@ -37,10 +37,10 @@ module io
 
     if (myrank == 0) then
       open (10, file='u_time.dat', status='unknown')
-      open (13, file='timestep.dat', status='unknown')
-      open (14, file='energy.dat', status='unknown')
-      open (20, file='linelength.dat', status='unknown')
-      open (21, file='momentum.dat', status='unknown')
+      open (11, file='timestep.dat', status='unknown')
+      open (12, file='energy.dat', status='unknown')
+      open (13, file='linelength.dat', status='unknown')
+      open (14, file='momentum.dat', status='unknown')
       !open (90, file='diag.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
@@ -55,10 +55,10 @@ module io
 
     if (myrank == 0) then
       close (10)
+      close (11)
+      close (12)
       close (13)
       close (14)
-      close (20)
-      close (21)
       !close (90)
     end if
 
@@ -175,7 +175,7 @@ module io
     call energy(in_var, E)
     
     if (myrank == 0) then
-      write (14, '(2e17.9)') time, E
+      write (12, '(2e17.9)') time, E
     end if
 
     return
@@ -194,7 +194,7 @@ module io
     call momentum(in_var, P)
     
     if (myrank == 0) then
-      write (21, '(4e17.9)') time, P(1), P(2), P(3)
+      write (14, '(4e17.9)') time, P(1), P(2), P(3)
     end if
 
     return
@@ -839,10 +839,18 @@ module io
     use variables, only : linelength
     implicit none
 
-    complex, dimension(0:nx1,0:ny1,0:nz1), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, intent(in) :: t
+    real :: tmp, length
 
-    write (20, '(2e17.9)') t, linelength(t, in_var)
+    tmp = linelength(t, in_var)
+
+    call MPI_REDUCE(tmp, length, 1, MPI_REAL, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr) 
+
+    if (myrank == 0) then
+      write (13, '(2e17.9)') t, length
+    end if
 
     return
   end subroutine save_linelength

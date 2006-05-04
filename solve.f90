@@ -193,7 +193,7 @@ module solve
 
     if (myrank == 0) then
       !if (abs(dt) <= 1e-5) then
-        write (13, '(3e17.9)') t, im_t, abs(dt)
+        write (11, '(3e17.9)') t, im_t, abs(dt)
       !end if
     end if
 

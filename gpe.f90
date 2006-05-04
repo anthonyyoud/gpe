@@ -159,6 +159,7 @@ program gpe
       !stop
       !call test_pos()
       call save_time(t, psi%new)
+      call save_linelength(t, psi%old)
       if (myrank == 0) then
         !call save_time(t, tmp)
         !call save_energy(t, psi%old)

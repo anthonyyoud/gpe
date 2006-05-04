@@ -638,7 +638,7 @@ module variables
     implicit none
   
     real :: linelength
-    complex, intent(in) :: psi(0:nx1,0:ny1,0:nz1)
+    complex, intent(in) :: psi(0:nx1,jsta-2:jend+2,ksta-2:kend+2)
     real, intent(in) :: time
     real :: xx, yy, h, a, den
     integer :: i, j, k, n, m, p, lv, lu
@@ -650,8 +650,10 @@ module variables
     !do i=1,nx1-1
     !  do j=1,ny1-1
     !    do k=1,nz1-1
-    do k=1,nz1-1
-      do j=1,ny1-1
+    do k=ksta,kend
+      if ((k==0) .or. (k==nz1)) cycle
+      do j=jsta,jend
+        if ((j==0) .or. (j==ny1)) cycle
         iloop: do i=1,nx1-1
           m=1
           nloop: do n=1,6
@@ -897,7 +899,7 @@ module variables
       end do
     end do
     linelength = linelength*dx
-  
+
     return
   end function linelength
   
