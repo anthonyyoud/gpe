@@ -4,7 +4,7 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics, get_bcs
+  public :: get_grid, ics
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
   real, dimension(0:nz1), public :: z
@@ -12,20 +12,27 @@ module ic
   contains
 
   subroutine get_grid()
-    ! Define the space mesh on a box from xl to xr
+    ! Define the space mesh on a box from xl to xr.  x, y, and z are defined in
+    ! full on all processes because they are not 2D arrays.  If they are
+    ! distributed and any calculations are done with them (such as a sum) then
+    ! there are contributions from the processes over which x, y, z are NOT
+    ! distributed leading to erroneous results.
     use parameters
     implicit none
 
     integer :: i, j, k
 
+    ! x-coordinate
     do i=0,nx1
       x(i) = xl + real(i)*dx
     end do
 
+    ! y-coordinate
     do j=0,ny1
       y(j) = yl + real(j)*dy
     end do
     
+    ! z-coordinate
     do k=0,nz1
       z(k) = zl + real(k)*dz
     end do
@@ -49,7 +56,9 @@ module ic
       ! Exit if doing restart but end_state.dat does not exist
       if (.not. state_exist) stop 'ERROR: restart=.true.&
                                    &but end_state.dat does not exist.'
-      print*, 'Getting restart conditions'
+      if (myrank == 0) then
+        print*, 'Getting restart conditions'
+      end if
       ! Get saved data since this is a restart
       call state_restart(out_var, p)
     else
@@ -64,7 +73,7 @@ module ic
       !          pade_pulse_ring('pulse', vr2%x0, vr2%r0)
       !out_var = vortex_line(vl1) * &
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = pade_pulse_ring('ring', vr%x0, vr%r0)
+      !out_var = pade_pulse_ring('ring', vr1%x0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = vortex_line(vl1) * &
       !          vortex_line(vl3)
@@ -88,7 +97,7 @@ module ic
 
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
 
-    ! Read in the grid sizes and time step from the previous run
+    ! Read in the distributed data from the previous run
     read (unit_no) nx_prev
     read (unit_no) ny_prev
     read (unit_no) nz_prev
@@ -151,11 +160,7 @@ module ic
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: theta
     integer :: j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
-        ei(:,j,k) = cos(theta(:,j,k)) + eye*sin(theta(:,j,k))
-      end do
-    end do
+    ei = cos(theta) + eye*sin(theta)
 
     return
   end function ei
@@ -171,11 +176,7 @@ module ic
     real, parameter :: c2 = 1.15
     integer :: j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
-        amp(:,j,k) = 1.0 - exp(c1*r(:,j,k)**c2)
-      end do
-    end do
+    amp = 1.0 - exp(c1*r**c2)
 
     return
   end function amp
@@ -223,14 +224,10 @@ module ic
     call get_rr(d1,rr1)
     call get_rr(d2,rr2)
     
-    do k=ksta,kend
-      do j=jsta,jend
-        rr1(:,j,k) = sqrt( ((0.3437+0.0286*d1(:,j,k)**2)) / &
-                            (1.0+(0.3333*d1(:,j,k)**2)+(0.0286*d1(:,j,k)**4)) )
-        rr2(:,j,k) = sqrt( ((0.3437+0.0286*d2(:,j,k)**2)) / &
-                            (1.0+(0.3333*d2(:,j,k)**2)+(0.0286*d2(:,j,k)**4)) )
-      end do
-    end do
+    rr1(:,j,k) = sqrt( ((0.3437+0.0286*d1(:,j,k)**2)) / &
+                        (1.0+(0.3333*d1(:,j,k)**2)+(0.0286*d1(:,j,k)**4)) )
+    rr2(:,j,k) = sqrt( ((0.3437+0.0286*d2(:,j,k)**2)) / &
+                        (1.0+(0.3333*d2(:,j,k)**2)+(0.0286*d2(:,j,k)**4)) )
 
     do k=ksta,kend
       do j=jsta,jend
@@ -434,31 +431,10 @@ module ic
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rr
     integer :: i, j, k
     
-    do k=ksta,kend
-      do j=jsta,jend
-        rr(:,j,k) = sqrt( ((0.3437+0.0286*r(:,j,k)**2)) / &
-                           (1.0+(0.3333*r(:,j,k)**2)+(0.0286*r(:,j,k)**4)) )
-      end do
-    end do
+    rr = sqrt( ((0.3437+0.0286*r**2)) / &
+                (1.0+(0.3333*r**2)+(0.0286*r**4)) )
 
     return
   end subroutine get_rr
     
-  subroutine get_bcs(in_var)
-    ! Zero boundary conditions
-    use parameters
-    implicit none
-
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: in_var
-
-    in_var(0:2,:,:) = 0.0
-    in_var(:,0:2,:) = 0.0
-    in_var(:,:,0:2) = 0.0
-    in_var(nx-3:nx1,:,:) = 0.0
-    in_var(:,ny-3:ny1,:) = 0.0
-    in_var(:,:,nz-3:nz1) = 0.0
-
-    return
-  end subroutine get_bcs
-
 end module ic

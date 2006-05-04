@@ -128,7 +128,7 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fxx
     integer :: i, j, k
     integer, dimension(2) :: minus=0, plus=0
@@ -172,7 +172,7 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fyy
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
@@ -212,7 +212,7 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fzz
     integer :: j, k
     integer, dimension(2) :: minus=0, plus=0
@@ -262,6 +262,8 @@ module derivs
         minus(1) = indx-1
         plus(1) = indx+1
         if (x_deriv) then
+          ! Only need to define BCs for the x-direction which is not
+          ! calculated in parallel
           if (indx == 0) then
             minus(1) = n
             plus(1) = 1
@@ -305,6 +307,8 @@ module derivs
         plus(1) = indx+1
         plus(2) = indx+2
         if (x_deriv) then
+          ! Only need to define BCs for the x-direction which is not
+          ! calculated in parallel
           if (indx == 0) then
             minus(1) = n
             minus(2) = n-1

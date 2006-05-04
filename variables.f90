@@ -29,13 +29,12 @@ module variables
   end type re_im
 
   integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
-  integer, public :: unit_no, time_unit_no
+  integer, public :: unit_no
   
-  real, parameter, private   :: c1 = 3.0/8.0, &
+  ! Constants for numerical integration
+  real, parameter, private :: c1 = 3.0/8.0, &
                                 c2 = 7.0/6.0, &
                                 c3 = 23.0/24.0
-
-  !complex, dimension(0:nx1,0:ny1,0:nz1), save, public :: U
 
   contains
 
@@ -67,24 +66,27 @@ module variables
   end function laplacian
 
   subroutine get_unit_no()
+    ! Get the unit number which each process can write to
     implicit none
 
     unit_no = myrank+20
-    time_unit_no = unit_no+20
 
     return
   end subroutine get_unit_no
 
   subroutine setup_itable()
+    ! Set up the lookup table for neighbouring processes
     use parameters
     implicit none
 
     integer :: j, k, irank
 
+    ! Initially set each process position to null
     itable = MPI_PROC_NULL
 
     irank = 0
 
+    ! Fill the lookup table
     do k=0,nzprocs-1
       do j=0,nyprocs-1
         itable(j,k) = irank
@@ -96,6 +98,7 @@ module variables
       end do
     end do
 
+    ! If we have periodic BCs then fill in the boundary processes
     if (bcs == 1) then
       itable(-1,:) = itable(nyprocs-1,:)
       itable(nyprocs,:) = itable(0,:)
@@ -107,6 +110,7 @@ module variables
   end subroutine setup_itable
 
   subroutine para_range(n1, n2, nprocs, irank, ista, iend)
+    ! Determine the start and end indices of the arrays on each process
     implicit none
 
     integer, intent(in) :: n1, n2, nprocs, irank
@@ -123,6 +127,9 @@ module variables
   end subroutine para_range
 
   subroutine array_len(jlen, klen)
+    ! Determine the length of each array dimension on each process.  This 
+    ! allows for the possibility that there are references to (for example) 
+    ! j+1, k+1 simultaneously
     use parameters
     implicit none
 
@@ -137,7 +144,8 @@ module variables
   end subroutine array_len
 
   subroutine neighbours()
-  use parameters
+    ! Determine neighbouring processes for each process
+    use parameters
     implicit none
 
     znext = itable(myranky, myrankz+1)
@@ -149,85 +157,78 @@ module variables
   end subroutine neighbours
 
   subroutine send_recv_z(in_var)
+    ! Send and receive boundary elements of each process to and from
+    ! neighbouring processes in the z-direction.  This data is contiguous in
+    ! memory and so can be immediately be sent
     use parameters
     implicit none
 
-    !integer, intent(in) :: p
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     integer, dimension(4) :: jsend, jrecv
-    integer :: i, j
 
+    ! Send the data two away from the boundary (to allow for fourth order
+    ! derivatives)
     call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jsend(1), ierr)
     call MPI_ISEND(in_var(0,jsta,ksta+1), nx*jlen, MPI_COMPLEX, zprev, 1, &
-               MPI_COMM_WORLD, jsend(2), ierr)
-
+                   MPI_COMM_WORLD, jsend(2), ierr)
+                   
+    ! Receive the data two away from the boundary
     call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(1), ierr)
     call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(2), ierr)
 
+    ! Wait until all send/receive operations have been completed
     call MPI_WAIT(jsend(1), istatus, ierr)
     call MPI_WAIT(jsend(2), istatus, ierr)
     call MPI_WAIT(jrecv(1), istatus, ierr)
     call MPI_WAIT(jrecv(2), istatus, ierr)
 
+    ! Send the data one away from the boundary
     call MPI_ISEND(in_var(0,jsta,kend), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jsend(3), ierr)
     call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jsend(4), ierr)
+                   
+    ! Receive the data one away from the boundary
     call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_COMPLEX, zprev, 1, &
                    MPI_COMM_WORLD, jrecv(3), ierr)
     call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_COMPLEX, znext, 1, &
                    MPI_COMM_WORLD, jrecv(4), ierr)
 
+    ! Wait until all send/receive operations have been completed
     call MPI_WAIT(jsend(3), istatus, ierr)
     call MPI_WAIT(jsend(4), istatus, ierr)
     call MPI_WAIT(jrecv(3), istatus, ierr)
     call MPI_WAIT(jrecv(4), istatus, ierr)
 
-    !if (p == 0) then
-    !  if (myrankz == 0) then
-    !    open (27, file='z_prev.dat')
-    !    do j=jsta,jend
-    !      do i=0,nx1
-    !        !print*, in_var(i,j,kend-1), in_var(i,j,ksta-2)
-    !        write (27, '(e17.9)') in_var(i,j,kend)
-    !      end do
-    !    end do
-    !    close (27)
-    !  end if
-    !  if (myrankz == 1) then
-    !    open (28, file='z_next.dat')
-    !    do j=jsta,jend
-    !      do i=0,nx1
-    !        !print*, in_var(i,j,kend-1), in_var(i,j,ksta-2)
-    !        write (28, '(e17.9)') in_var(i,j,ksta-1)
-    !      end do
-    !    end do
-    !    close (28)
-    !  end if
-    !end if
-
     return
   end subroutine send_recv_z
 
   subroutine send_recv_y()
+    ! Send and receive boundary elements of each process to and from
+    ! neighbouring processes in the y-direction.  This data is NOT contiguous
+    ! in memory and so must first be packed into a contiguous array (see pack_y
+    ! and unpack_y below)
     use parameters
     implicit none
 
     integer, dimension(2) :: ksend, krecv
 
+    ! Send the boundary data to neighbouring processes
     call MPI_ISEND(works1(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
                    MPI_COMM_WORLD, ksend(1), ierr)
     call MPI_ISEND(works2(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
                    MPI_COMM_WORLD, ksend(2), ierr)
 
+    ! Receive the boundary data from neighbouring processes
     call MPI_IRECV(workr1(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
                    MPI_COMM_WORLD, krecv(1), ierr)
     call MPI_IRECV(workr2(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
                    MPI_COMM_WORLD, krecv(2), ierr)
 
+    ! Wait until all send/receive operations have been completed
     call MPI_WAIT(ksend(1), istatus, ierr)
     call MPI_WAIT(ksend(2), istatus, ierr)
     call MPI_WAIT(krecv(1), istatus, ierr)
@@ -237,6 +238,8 @@ module variables
   end subroutine send_recv_y
 
   subroutine pack_y(in_var)
+    ! Pack the non-contiguous boundary data for the y-direction into a
+    ! contiguous array
     use parameters
     implicit none
 
@@ -250,6 +253,8 @@ module variables
     end if
 
     if (bcs == 1) then
+      ! If using periodic BCs then make sure that the boundary processes also
+      ! pack their boundary data
       if (myranky == nyprocs-1) then
         do k=kksta,kkend
           works1(:,:,k) = in_var(:,jend-1:jend,k)
@@ -264,6 +269,8 @@ module variables
     end if
 
     if (bcs == 1) then
+      ! If using periodic BCs then make sure that the boundary processes also
+      ! pack their boundary data
       if (myranky == 0) then
         do k=kksta,kkend
           works2(:,:,k) = in_var(:,jsta:jsta+1,k)
@@ -275,25 +282,25 @@ module variables
   end subroutine pack_y
 
   subroutine unpack_y(in_var)
+    ! Unpack the contiguous boundary data back into the non-contiguous array
     use parameters
     implicit none
 
-    !integer, intent(in) :: p
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(out) :: in_var
     integer :: i, k
     
     if (myranky /= 0) then
       do k=kksta,kkend
         in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
-        !print*, workr1(1,k)
       end do
     end if
 
     if (bcs == 1) then
+      ! If using periodic BCs then make sure that the boundary processes also
+      ! unpack their boundary data
       if (myranky == 0) then
         do k=kksta,kkend
           in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
-          !print*, workr1(1,k)
         end do
       end if
     end if
@@ -305,6 +312,8 @@ module variables
     end if
 
     if (bcs == 1) then
+      ! If using periodic BCs then make sure that the boundary processes also
+      ! unpack their boundary data
       if (myranky == nyprocs-1) then
         do k=kksta,kkend
           in_var(:,jend+1:jend+2,k) = workr2(:,:,k)
@@ -312,19 +321,11 @@ module variables
       end if
     end if
 
-    !if (p == 2000) then
-    !  do k=kksta,kkend
-    !    do i=0,nx1
-    !      print*, in_var(i,jend+2,k), in_var(i,jsta+1,k)
-    !    end do
-    !  end do
-    !end if
-
     return
   end subroutine unpack_y
 
   subroutine get_phase(in_var, phase)
-    ! Phase
+    ! Calculate the phase
     use parameters
     implicit none
 
@@ -338,7 +339,7 @@ module variables
   end subroutine get_phase
 
   subroutine get_density(in_var, density)
-    ! Density
+    ! Calculate the density
     use parameters
     implicit none
 
@@ -374,26 +375,6 @@ module variables
 
     return
   end subroutine get_norm
-
-  !subroutine get_U(in_var, U)
-  !  use parameters
-  !  use derivs
-  !  implicit none
-
-  !  complex, dimension(0:nx1,-2:ny+1,-2:nz+1), intent(in) :: in_var
-  !  complex, dimension(0:nx1,0:ny1,0:nz1), intent(out) :: U
-  !  type (deriv) :: d
-
-  !  call deriv_x(in_var, d%x)
-  !  call deriv_xx(in_var, d%xx)
-  !  call deriv_yy(in_var, d%yy)
-
-  !  U = -0.5*eye * (d%xx + d%yy + (1.0-abs(in_var)**2)*in_var ) / d%x
-  !  print*, U
-  !  stop
-
-  !  return
-  !end subroutine get_U
 
   subroutine energy(in_var, E)
     ! Calculate the energy
@@ -502,13 +483,13 @@ module variables
   end subroutine momentum
 
   subroutine integrate_x(in_var, x_int)
-    ! Integrate a (3D) variable in x
+    ! Integrate a (3D) variable in x.  The x-direction is not parallelised so
+    ! this integration is straight forward
     use parameters
     implicit none
 
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(jsta:jend,ksta:kend), intent(out) :: x_int
-    real, dimension(0:ny1,0:nz1) :: tmp_var, tmp
     integer :: j, k
 
     do k=ksta,kend
@@ -523,25 +504,6 @@ module variables
       end do
     end do
 
-    !tmp_var = 0.0
-    !do k=ksta,kend
-    !  do j=jsta,jend
-    !    tmp_var(j,k) = x_int(j,k)
-    !  end do
-    !end do
-
-    !call MPI_REDUCE(tmp_var, tmp, ny*nz, &
-    !                MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-
-    !if (myrank == 0) then
-    !  open (53, file='diag.dat')
-    !  do k=0,nz1
-    !    write (53, '(2i5,e17.9)') (j, k, tmp(j,k), j=0,ny1)
-    !    write (53, *)
-    !  end do
-    !  close (53)
-    !end if
-
     return
   end subroutine integrate_x
   
@@ -553,12 +515,13 @@ module variables
     real, dimension(jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(ksta:kend), intent(out) :: y_int
     real, dimension(jsta:jend,ksta:kend) :: tmp_var
-    real, dimension(0:nz1) :: tmp, tmp2, tmp_var2, total
+    real, dimension(0:nz1) :: tmp, total
     integer :: j, k, irank
 
+    ! Create a temporary variable on which to perform operations
     tmp_var = in_var
-    !tmp_var = 5.0
     
+    ! Update the elements which must be multilpied by the integrating constants
     do j=jsta,jend
       if (j==0) tmp_var(j,:) = c1*in_var(j,:)
       if (j==1) tmp_var(j,:) = c2*in_var(j,:)
@@ -568,33 +531,21 @@ module variables
       if (j==ny-1) tmp_var(j,:) = c1*in_var(j,:)
     end do
       
+    ! Sum the variable on individual processes
     tmp = 0.0
     do k=ksta,kend
       tmp(k) = sum(tmp_var(:,k))
     end do
 
+    ! Sum the variable over all processes and make sure each process has the
+    ! result
     call MPI_ALLREDUCE(tmp, total, nz, MPI_REAL, MPI_SUM, &
                        MPI_COMM_WORLD, ierr)
 
+    ! Calculate the final integrated result
     do k=ksta,kend
       y_int(k) = total(k) * dy
     end do
-
-    !tmp_var2 = 0.0
-    !do k=ksta,kend
-    !  tmp_var2(k) = y_int(k)
-    !end do
-
-    !call MPI_REDUCE(tmp_var2, tmp2, nz, &
-    !                MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-
-    !if (myrank == 0) then
-    !  open (53, file='diag.dat')
-    !  do k=0,nz1
-    !    write (53, '(1i5,e17.9)') k, tmp2(k)
-    !  end do
-    !  close (53)
-    !end if
 
     return
   end subroutine integrate_y
@@ -610,8 +561,10 @@ module variables
     real :: tmp
     integer :: k
 
+    ! Create a temporary variable
     tmp_var = in_var
     
+    ! Update the elements which must be multilpied by the integrating constants
     do k=ksta,kend
       if (k==0) tmp_var(k) = c1*in_var(k)
       if (k==1) tmp_var(k) = c2*in_var(k)
@@ -621,19 +574,26 @@ module variables
       if (k==nz-1) tmp_var(k) = c1*in_var(k)
     end do
     
+    ! Calculate the sum on each individual process but DO NOT include those
+    ! processes over which the variable is not distributed
     tmp = sum(tmp_var)
     if (myranky /= 0) tmp = 0.0
-    !print*,tmp
 
+    ! Calculate the sum over all processes and make sure each process has the
+    ! result
     call MPI_ALLREDUCE(tmp, z_int, 1, MPI_REAL, MPI_SUM, &
                        MPI_COMM_WORLD, ierr)
 
+    ! Calculate the final result
     z_int = z_int*dz
 
     return
   end subroutine integrate_z
 
   function linelength(time, psi)
+    ! Calculate the total line length of vortices over the whole box
+    ! individually on each process.  Serial algorithm written by Natalia
+    ! Berloff in Fortran77.  Updated by me for Fortran 90
     use parameters
     implicit none
   
@@ -647,9 +607,6 @@ module variables
   ! MUST have dx=dy=dz
   
     linelength = 0.0
-    !do i=1,nx1-1
-    !  do j=1,ny1-1
-    !    do k=1,nz1-1
     do k=ksta,kend
       if ((k==0) .or. (k==nz1)) cycle
       do j=jsta,jend

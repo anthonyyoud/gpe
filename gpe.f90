@@ -8,40 +8,40 @@ program gpe
   use variables
   implicit none
 
-  integer :: p_start=0, i, j, k
+  integer :: p_start=0
   real :: norm=0.0, prev_norm=0.0
   type (var) :: psi
   logical :: run_exist, state_exist
-  !complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp, tmp_var
 
+  ! Initialise the MPI process grid
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
   call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
+  ! Find out on which host each process is running
   call system('hostname')
 
+  ! Setup the lookup table for neighbouring processes
   call setup_itable()
+  ! Calculate the start and end array indices on each process
   call para_range(0, nz1, nzprocs, myrankz, ksta, kend)
   call para_range(0, ny1, nyprocs, myranky, jsta, jend)
+  ! Calculate the array dimensions on each process
   call array_len(jlen, klen)
+  ! Get the neighbouring process rank
   call neighbours()
+  ! Get unit numbers so that files can be opened on each process
   call get_unit_no()
+  ! Get directory names for each process
   call get_dirs()
 
-  call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-
+  ! Allocate array dimensions on each process
   allocate(psi%old(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
   allocate(psi%new(0:nx1,jsta:jend,ksta:kend))
+  ! (work send and receive arrays)
   allocate(works1(0:nx1,2,kksta:kkend))
   allocate(works2(0:nx1,2,kksta:kkend))
   allocate(workr1(0:nx1,2,kksta:kkend))
   allocate(workr2(0:nx1,2,kksta:kkend))
-
-  if (myrank == 0) then
-    do k=-1,nzprocs
-      print*, (itable(j,k), j=-1,nyprocs)
-    end do
-  end if
-  print*, jsta, jend, ksta, kend, kksta, kkend, jlen, klen
 
   print*
 
@@ -74,17 +74,6 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
-  !call get_bcs(psi%new)
-
-  ! Get zeros of the real and imaginary part
-  !call get_zeros(psi%new, p)
-  !call get_re_im_zeros(psi%new, p)
-  !call save_surface(p, psi%new)
-  !call idl_surface(p, psi%new)
-  !stop
-
-  ! Get the uniform velocity U
-  !call get_U(psi%new, U)
 
   ! If this is not a restart...
   if (.not. restart) then
@@ -97,11 +86,6 @@ program gpe
   
   ! Calculate the norm of the initial condition
   call get_norm(psi%new, prev_norm)
-  if (myrank == 0) then
-    print*, "NORM:", prev_norm
-  end if
-  !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-  !stop
  
   ! Begin real time loop
   do while (t <= end_time)
@@ -113,12 +97,15 @@ program gpe
       if (.not. run_exist) then
         print*
         print*, 'Stop requested.'
+        ! Flag to send to all processes
         end_proc = 1
       end if
     end if
 
+    ! Send the end_proc flag to all processes
     call MPI_BCAST(end_proc, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     
+    ! If the end_proc flag has been set, then end the run
     if (end_proc == 1) then
       call end_state(psi%new, p, 1)
       if (myrank == 0) then
@@ -132,41 +119,22 @@ program gpe
     ! Update the variable
     psi%old(:,jsta:jend,ksta:kend) = psi%new
     
+    ! Send and receive the variable so that all processes have the boundary
+    ! data from neighbouring processes.  Since the data needing to be sent in
+    ! the y-direction is not contiguous in memory, it must first be packed into
+    ! a contiguous array, then sent, and finally unpacked.
     call send_recv_z(psi%old)
     call pack_y(psi%old)
-
     call send_recv_y()
     call unpack_y(psi%old)
 
-    !call save_deriv_psi(psi%old)
-
-    !tmp_var = 0.0
-    !do k=ksta,kend
-    !  do j=jsta,jend
-    !    tmp_var(:,j,k) = psi%new(:,j,k)
-    !  end do
-    !end do
-
-    !call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
-    !                MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-                    
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
     !if (mod(p, save_rate) == 0) then
       call save_energy(t, psi%old)
       call save_momentum(t, psi%old)
-      !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-      !stop
-      !call test_pos()
       call save_time(t, psi%new)
       call save_linelength(t, psi%old)
-      if (myrank == 0) then
-        !call save_time(t, tmp)
-        !call save_energy(t, psi%old)
-        !call save_momentum(t, psi%old)
-        !call save_linelength(t, psi%new)
-        !call save_linelength(t, tmp)
-      end if
     end if
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
@@ -175,45 +143,29 @@ program gpe
       call get_zeros(psi%old, p)
       call get_extra_zeros(psi%old, p)
       call get_re_im_zeros(psi%old, p)
-      call save_surface(p, psi%new)
-      if (myrank == 0) then
-        !call get_zeros(tmp, p)
-        !call get_extra_zeros(tmp, p)
-        !call get_re_im_zeros(tmp, p)
-        if (save_contour) then
-          ! Save 2D contour data
-          !call save_surface(p, psi%new)
-          !call save_surface(p, tmp)
-        end if
+      if (save_contour) then
+        ! Save 2D contour data
+        call save_surface(p, psi%new)
       end if
       if (idl_contour) then
         ! Save 3D isosurface data for use in IDL
         call idl_surface(p, psi%new)
-        !call idl_surface(p, tmp)
         end if
     end if
 
-    ! Periodically save the statea
+    ! Periodically save the state
     if (mod(p, save_rate2) == 0) then
+      ! 0 is a flag which means the run has not yet ended
       call end_state(psi%new, p, 0)
     end if
 
-    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-
-    !call send_recv_z(psi%old)
-    !call pack_y(psi%old)
-
-    !call send_recv_y()
-    !call unpack_y(psi%old)
-
     ! Call the solver subroutine to solve the equation
     call solver(psi%old, psi%new)
-    !call get_bcs(psi%new)
     
     ! Calculate the norm
     call get_norm(psi%new, norm)
-    !call get_norm(tmp, norm)
 
+    ! Make sure all process know what the norm is
     call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
     ! Calculate the relative difference of successive norms.  If the difference
@@ -226,9 +178,6 @@ program gpe
         call idl_surface(p, psi%new)
         call save_surface(p, psi%new)
         if (myrank == 0) then
-          !call save_surface(p, psi%new)
-          !ajycall save_surface(p, tmp)
-          !call idl_surface(p, tmp)
           print*, 'Switching to real time'
         end if
       end if
@@ -241,9 +190,10 @@ program gpe
       switched = .false.
     end if
     
-    !print*, dt, t, im_t, norm, abs(norm-prev_norm)/abs(prev_norm)
+    ! Update the norm
     prev_norm = norm
 
+    ! Update the time index
     p = p+1
 
   end do
@@ -252,17 +202,11 @@ program gpe
   call end_state(psi%new, p, 1)
   call idl_surface(p, psi%new)
   call save_surface(p, psi%new)
-  if (myrank == 0) then
-    !call save_surface(p, psi%new)
-    !call idl_surface(p, psi%new)
-    !call end_state(tmp, p, 1)
-    !ajycall save_surface(p, tmp)
-    !call idl_surface(p, tmp)
-  end if
 
   ! Close runtime files
   call close_files()
 
+  ! Stop the MPI process grid
   call MPI_FINALIZE(ierr)
 
 end program gpe

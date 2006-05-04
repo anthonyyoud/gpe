@@ -1,4 +1,5 @@
 module io
+  ! Routines for input/output
   use parameters
   implicit none
 
@@ -6,7 +7,7 @@ module io
   public :: open_files, close_files, save_time, save_energy, save_surface, &
             idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs, save_deriv_psi, test_pos
+            get_dirs
 
   contains
 
@@ -41,7 +42,6 @@ module io
       open (12, file='energy.dat', status='unknown')
       open (13, file='linelength.dat', status='unknown')
       open (14, file='momentum.dat', status='unknown')
-      !open (90, file='diag.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
     end if
@@ -59,16 +59,17 @@ module io
       close (12)
       close (13)
       close (14)
-      !close (90)
     end if
 
     return
   end subroutine close_files
 
   subroutine get_dirs()
+    ! Get named directories where each process can write its own data
     use parameters
     implicit none
 
+    ! Directory names are proc** with ** replaced by the rank of each process
     if (myrank < 10) then
       write (proc_dir(6:6), '(1i1)') myrank
       write (proc_dir(5:5), '(1i1)') 0
@@ -100,6 +101,8 @@ module io
     zpos = nz/2
 
     tmp = 0.0
+    ! Find out on which process the data occurs and copy it into a temporary
+    ! array
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
@@ -112,14 +115,11 @@ module io
       end do
     end do
 
+    ! Make sure process 0 has the correct data to write
     call MPI_REDUCE(tmp, var, 3, MPI_COMPLEX, MPI_SUM, 0, &
                     MPI_COMM_WORLD, ierr)
 
-    !write (10, '(6e17.9)') time, im_t, real(in_var(xpos,ypos,zpos)), &
-    !                       aimag(in_var(xpos,ypos,zpos)), &
-    !                       density(xpos,ypos,zpos), &
-    !                       phase(xpos,ypos,zpos)
-
+    ! Write the data to file
     if (myrank == 0) then
       write (10, '(6e17.9)') time, im_t, real(var(1)), &
                              aimag(var(1)), real(var(2)), real(var(3))
@@ -127,40 +127,6 @@ module io
 
     return
   end subroutine save_time
-
-  subroutine test_pos()
-    use parameters
-    implicit none
-
-    real, dimension(3) :: var, tmp
-    integer :: i, j, k, xpos, ypos, zpos
-
-    xpos = nx/2
-    ypos = ny/2
-    zpos = nz/2
-    
-    tmp = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        do i=0,nx1
-          if ((i==xpos) .and. (j==ypos) .and. (k==zpos)) then
-            tmp(1) = 5.76
-            tmp(2) = 3.7
-            tmp(3) = 7.9
-          end if
-        end do
-      end do
-    end do
-
-    call MPI_REDUCE(tmp, var, 3, MPI_REAL, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
-
-    if (myrank == 0) then
-      print*, var
-    end if
-    
-    return
-  end subroutine test_pos
 
   subroutine save_energy(time, in_var)
     ! Save the energy
@@ -201,7 +167,8 @@ module io
   end subroutine save_momentum
 
   subroutine save_surface(p, in_var)
-    ! Save 2D surface data for use in gnuplot
+    ! Save 2D surface data for use in gnuplot.  The data is saved separately on
+    ! each process so a shell script must be used to plot it
     use parameters
     use variables
     use ic, only : x, y, z
@@ -213,14 +180,14 @@ module io
     real :: zpos
     integer :: i, j, k
 
-    !open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
-    
     ! Get the phase and the density
     call get_phase(in_var, phase)
     call get_density(in_var, density)
     
-    zpos = nz/2 !22 !44 !22
+    zpos = nz/2
 
+    ! Write each process's own data to file, but only if 'zpos' resides on that
+    ! particular process
     do k=ksta,kend
       if (k==zpos) then
         open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
@@ -235,39 +202,13 @@ module io
       end if
     end do
     
-    !do i=0,nx1
-    !  write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
-    !                          phase(i,j,zpos), real(in_var(i,j,zpos)), &
-    !                          aimag(in_var(i,j,zpos)), j=0,ny1)
-    !  write (unit_no, *)
-    !end do
-    
-    !do j=0,ny1
-    !  write (11, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
-    !                          phase(i,j,zpos), real(in_var(i,j,zpos)), &
-    !                          aimag(in_var(i,j,zpos)), i=0,nx1)
-    !  write (11, *)
-    !end do
-    
-    !do i=0,nx1
-    !  write (11, '(4e17.9)') (x(i), z(k), density(i,ny/2,k), &
-    !                          phase(i,ny/2,k), k=0,nz1)
-    !  write (11, *)
-    !end do
-    
-    !do j=0,ny1
-    !  write (11, '(4e17.9)') (y(j), z(k), density(nx/2,j,k), &
-    !                          phase(nx/2,j,k), k=0,nz1)
-    !  write (11, *)
-    !end do
-
-    !close (unit_no)
-
     return
   end subroutine save_surface
   
   subroutine idl_surface(p, in_var)
-    ! Save 3D isosurface data for use in IDL
+    ! Save 3D isosurface data for use in IDL.  As for the gnuplot plots, this
+    ! data is saved separately for each process.  It must be read in through
+    ! IDL
     use parameters
     use variables, only : unit_no
     use ic, only : x, y, z
@@ -294,7 +235,8 @@ module io
   end subroutine idl_surface
 
   subroutine end_state(in_var, p, flag)
-    ! Save variables for use in a restarted run
+    ! Save variables for use in a restarted run.  Each process saves its own
+    ! bit
     use parameters
     use variables, only : unit_no
     implicit none
@@ -329,6 +271,7 @@ module io
     end if
     
     if (myrank == 0) then
+      ! flag = 1 if the run has been ended
       if (flag == 1) then
         ! Delete RUNNING file to cleanly terminate the run
         open (99, file = 'RUNNING')
@@ -340,6 +283,12 @@ module io
   end subroutine end_state
   
   subroutine get_zeros(in_var, p)
+    ! Find all the zeros of the wavefunction by determining where the real and
+    ! imaginary parts simultaneously go to zero.  This routine doesn't find
+    ! them all though - get_extra_zeros below finds the rest
+    
+    ! All the zeros routines are horrible - I'm sure there is a more efficient
+    ! way of calculating them
     use parameters
     use variables, only : re_im, unit_no
     use ic, only : x, y, z
@@ -354,6 +303,8 @@ module io
     !integer, parameter :: z_start=nz/2, z_end=nz/2
     integer :: z_start, z_end
 
+    ! Decide whether to find the zeros over the whole 3D box or just over a 2D
+    ! plane
     z_start=ksta
     z_end=kend
 
@@ -452,6 +403,7 @@ module io
   end subroutine get_zeros
 
   subroutine get_extra_zeros(in_var, p)
+    ! Find the zeros that the get_zeros routine did not pick up
     use parameters
     use variables, only : re_im, unit_no
     use ic, only : x, y, z
@@ -474,6 +426,7 @@ module io
     allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
     allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
 
+    ! Write these new zeros to the same file as for the get_zeros routine
     open (unit_no, status='old', position='append', &
                    file=proc_dir//'zeros'//itos(p)//'.dat')
 
@@ -678,6 +631,7 @@ module io
   end subroutine get_extra_zeros
 
   subroutine get_re_im_zeros(in_var, p)
+    ! Find where the real and imaginary parts separately go to zero
     use parameters
     use variables, only : re_im, unit_no
     use ic, only : x, y, z
@@ -765,6 +719,8 @@ module io
 
     close (unit_no)
 
+    ! Barrier here to make sure some processes don't try to open the new file
+    ! without it having been previously closed
     call MPI_BARRIER(MPI_COMM_WORLD, ierr)
     
     open (unit_no, status='unknown', &
@@ -835,6 +791,7 @@ module io
   end subroutine get_re_im_zeros
   
   subroutine save_linelength(t, in_var)
+    ! Save the total vortex line length
     use parameters
     use variables, only : linelength
     implicit none
@@ -843,8 +800,10 @@ module io
     real, intent(in) :: t
     real :: tmp, length
 
+    ! Get the line length on each individual process
     tmp = linelength(t, in_var)
 
+    ! Sum the line length over all processes and send it to process 0
     call MPI_REDUCE(tmp, length, 1, MPI_REAL, MPI_SUM, 0, &
                     MPI_COMM_WORLD, ierr) 
 
@@ -854,44 +813,5 @@ module io
 
     return
   end subroutine save_linelength
-
-  subroutine save_deriv_psi(in_var)
-    use parameters
-    use derivs
-    use ic, only : x, y, z
-    implicit none
-
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsiz
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp, tmp_var
-    integer :: i, j, k
-
-    call deriv_z(in_var, dpsiz)
-
-    tmp_var = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        tmp_var(:,j,k) = dpsiz(:,j,k)
-      end do
-    end do
-
-    call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
-                    MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-
-    if (myrank == 0) then
-      open (54, file='deriv.dat')
-      do k=0,nz1
-        write (54, '(3e17.9)') (y(j), z(k), abs(tmp(nx/2,j,k)), j=0,ny1)
-        write (54, *)
-      end do
-      !do j=0,ny1
-      !  write (54, '(3e17.9)') (x(i), y(j), abs(tmp(i,j,nz/2)), i=0,nx1)
-      !  write (54, *)
-      !end do
-      close (54)
-    end if
-
-    return
-  end subroutine save_deriv_psi
 
 end module io

@@ -5,18 +5,19 @@ module parameters
 
   include 'mpif.h'
 
-  integer :: p
   integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 3
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nzprocs      = 4
+  integer,      parameter :: nx           = 32
+  integer,      parameter :: ny           = 32
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 10.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 32.0
+  ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
+  ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
   integer,      parameter :: save_rate2   = 50
@@ -70,21 +71,21 @@ module parameters
   integer, parameter :: nz1         = nz-1
   integer, parameter :: nprocs      = nyprocs*nzprocs
   integer            :: end_proc    = 0
-  integer            :: myrank
-  integer            :: myranky
-  integer            :: myrankz
-  integer            :: jsta, jend, jlen, yprev, ynext, &
-                        ksta, kksta, kend, kkend, klen, zprev, znext, ierr
-  integer, dimension(MPI_STATUS_SIZE) :: istatus
-  integer, dimension(0:nzprocs-1)     :: jdisp, kklen
-  integer, dimension(0:nyprocs-1)     :: kdisp, jjlen
-  !complex, dimension(0:nx1,2,0:nz1) :: works1, works2, workr1, workr2
-  complex, allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2
+  integer            :: myrank, myranky, myrankz
+  integer            :: jsta, jend, jlen, yprev, ynext
+  integer            :: ksta, kksta, kend, kkend, klen, zprev, znext
+  integer            :: ierr
+  
+  integer,              dimension(MPI_STATUS_SIZE) :: istatus
+  integer,              dimension(0:nzprocs-1)     :: jdisp, kklen
+  integer,              dimension(0:nyprocs-1)     :: kdisp, jjlen
+  complex, allocatable, dimension(:,:,:)           :: works1, works2, &
+                                                      workr1, workr2
   character(7)       :: proc_dir = 'proc**/'
   logical            :: first_write = .true.
+  complex            :: dt
   real               :: t           = 0
   real               :: im_t        = 0
-  complex            :: dt
   real,    parameter :: pi          = 3.14159265358979
   real,    parameter :: xl          = -xr
   real,    parameter :: yl          = -yr
@@ -97,5 +98,6 @@ module parameters
   real,    parameter :: dz2         = dz**2
   complex, parameter :: eye         = (0.0,1.0)
   logical            :: switched    = .false.
+  integer            :: p
   
 end module parameters

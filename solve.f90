@@ -119,7 +119,8 @@ module solve
   end subroutine rk4
 
   subroutine rkqs(in_var, out_var)
-    ! Adaptive Runge-Kutta-Fehlberg time stepping
+    ! Adaptive Runge-Kutta-Fehlberg time stepping. From Numerical Recipes
+    ! section 16.2, page 708
     use parameters
     implicit none
 
@@ -142,10 +143,12 @@ module solve
     do
       ! Do a Runge-Kutta step
       call rkck(in_var, tmp_var, err_var)
-      ! Get the maximum error over the whole field
+      ! Get the maximum error over the whole field.
       errmaxs(1) = maxval(abs(err_var/psi_scal))/eps
       errmaxs(2) = 0.0
 
+      ! errmaxs/r must be 2-element arrays since the MPI function MPI_MAXLOC
+      ! calculates the array maximum as well as its location
       call MPI_ALLREDUCE(errmaxs, errmaxr, 1, MPI_2REAL, MPI_MAXLOC, &
                          MPI_COMM_WORLD, ierr)
                       
@@ -201,7 +204,8 @@ module solve
   end subroutine rkqs
 
   subroutine rkck(old, new, err)
-    ! Explicit fifth order Runge--Kutta--Fehlberg time stepping
+    ! Explicit fifth order Runge-Kutta-Fehlberg time stepping.  From Numerical
+    ! Recipes, section 16.2, page 708
     use parameters
     use variables
     implicit none
@@ -348,8 +352,6 @@ module solve
                      U*dpsidx
     !rhs = 0.5 * ( laplacian(in_var) + (1.0-abs(in_var)**2)*in_var ) - &
     !      eye*U*dpsidx
-
-    !write (90, '(2e17.9)'), rhs(nx/2,ny/2,nz/2)
 
     return
   end subroutine get_rhs
