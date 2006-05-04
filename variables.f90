@@ -728,7 +728,7 @@ module variables
                 (u(1)*u(2)<0.0 .or. u(2)*u(3)<0.0 .or. &
                  u(3)*u(4)<0.0 .or. u(4)*u(1)<0.0))) then
               linelength = linelength+0.5
-              print*, 'cycle iloop'
+              !print*, 'cycle iloop'
               a = 1.0
               cycle iloop
               !goto 200
@@ -738,7 +738,7 @@ module variables
               if(u(p)==0.0 .and. u(p+1)==0.0 .and. &
                  v(p)==0.0 .and. v(p+1)==0.0) then
                 linelength = linelength+0.25
-                print*, 'cycle iloop'
+                !print*, 'cycle iloop'
                 a = 1.0
                 cycle iloop
                 !goto 200

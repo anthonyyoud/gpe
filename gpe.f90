@@ -12,7 +12,7 @@ program gpe
   real :: norm=0.0, prev_norm=0.0
   type (var) :: psi
   logical :: run_exist, state_exist
-  complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp, tmp_var
+  !complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp, tmp_var
 
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
@@ -140,15 +140,15 @@ program gpe
 
     !call save_deriv_psi(psi%old)
 
-    tmp_var = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        tmp_var(:,j,k) = psi%new(:,j,k)
-      end do
-    end do
+    !tmp_var = 0.0
+    !do k=ksta,kend
+    !  do j=jsta,jend
+    !    tmp_var(:,j,k) = psi%new(:,j,k)
+    !  end do
+    !end do
 
-    call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
-                    MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    !call MPI_REDUCE(tmp_var, tmp, nx*ny*nz, &
+    !                MPI_COMPLEX, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
                     
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then

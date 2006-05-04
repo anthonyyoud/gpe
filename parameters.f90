@@ -8,11 +8,11 @@ module parameters
   integer :: p
   integer,      parameter :: nyprocs      = 2
   integer,      parameter :: nzprocs      = 3
-  integer,      parameter :: nx           = 32
-  integer,      parameter :: ny           = 32
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 128
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: end_time     = 10.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 32.0

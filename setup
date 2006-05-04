@@ -12,5 +12,7 @@ make
 if [ $? == 0 ]; then
   mv gpe $1
   cp parameters.f90 $1
+  cp run_script.sh $1
+  cp transfer.sh $1
   cd $1
 fi
