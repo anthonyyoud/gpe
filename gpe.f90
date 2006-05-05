@@ -75,6 +75,8 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
+  call fft(psi%new)
+  stop
 
   ! If this is not a restart...
   if (.not. restart) then

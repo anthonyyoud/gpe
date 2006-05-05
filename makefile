@@ -1,16 +1,19 @@
 OUTDIR		= ./
-OBJECTS		= parameters.o derivs.o variables.o ic.o io.o \
+OBJECTS		= parameters.o constants.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
 FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
 #FFLAGS	        = -O2
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
-#FFLAGS	        = -g -O0 -check
+#FFLAGS	        = -g -O0 #-check
 LINKFLAGS	=
 #LINKFLAGS	= -i_dynamic
 COMPILER	= mpif90
 #COMPILER	= gfortran
-LIBS            =
+#LIBS            = -L$(USER_MAINT)/fftw/lib -lsrfftw -lsfftw \
+#                                           -lsrfftw_mpi -lsfftw_mpi
+LIBS            = -L$(USER_MAINT)/fftw/lib -lsrfftw_mpi -lsfftw_mpi \
+                                           -lsrfftw -lsfftw
 COMPFLAGS       = $(FFLAGS)
 #-----------------------------------------------------------------------
 all:	$(OBJECTS)
@@ -21,6 +24,10 @@ all:	$(OBJECTS)
 #-----------------------------------------------------------------------
 parameters.o : parameters.f90
 	$(COMPILER) $(COMPFLAGS) -c parameters.f90
+
+#-----------------------------------------------------------------------
+constants.o : constants.f90
+	$(COMPILER) $(COMPFLAGS) -c constants.f90
 
 #-----------------------------------------------------------------------
 ic.o : ic.f90

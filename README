@@ -54,9 +54,9 @@ variables.f90			- Types for variables declared, and other
 
 MAIN PARAMETERS
 ---------------
-nyprocs         - The number of processes in the y-direction.
+nyprocs         - integer.  The number of processes in the y-direction.
 
-nzprocs         - The number of processes in the z-direction.
+nzprocs         - integer.  The number of processes in the z-direction.
 
 There are no restrictions on the above two parameters other than that they be
 >= 1.  In general, it is recommended that nzprocs>=nyprocs for best performance
@@ -64,40 +64,41 @@ so that fewer non-contiguous data transfers are performed.  They can both be
 set to 1 in which case the job is simply run on one process (an MPI parallel
 environment is still required though).
 
-nx		- Number of grid points in the x-direction.
+nx		- integer.  Number of grid points in the x-direction.
 
-ny		- Number of grid points in the y-direction.
+ny		- integer.  Number of grid points in the y-direction.
 
-nz		- Number of grid points in the z-direction.
+nz		- integer.  Number of grid points in the z-direction.
 
-time_step	- The initial time step to try.  Setting the real part equal to
-                  zero (with real_time=.false.) will solve the equation
-                  initially in imaginary time until a steady state is reached.
+time_step	- complex.  The initial time step to try.  Setting the real
+                  part equal to zero (with real_time=.false.) will solve the
+                  equation initially in imaginary time until a steady state is
+                  reached.
 
-end_time        - The final (dimensionless) time.
+end_time        - real.  The final (dimensionless) time.
 
-xr              - The coordinate of the right-hand-side of the x-direction (the
-                  left-hand-side is set to -xr).
+xr              - real.  The coordinate of the right-hand-side of the
+                  x-direction (the left-hand-side is set to -xr).
 
-yr              - As above but for the y-direction.
+yr              - real.  As above but for the y-direction.
 
-zr              - As above but for the z-direction.
+zr              - real.  As above but for the z-direction.
 
-bcs             - The boundary conditions to use.  Set to 1 for periodic BCs;
-                  set to 2 for reflective BCs.
+bcs             - integer.  The boundary conditions to use.  Set to 1 for
+                  periodic BCs; set to 2 for reflective BCs.
 
-order           - The order of the derivatives to use.  Set to 2 for
+order           - integer.  The order of the derivatives to use.  Set to 2 for
                   second-order; set to 4 for fourth-order.
 
-save_rate	- The rate at which time-series data should be saved (roughly
-                  corresponding to the number of time steps).
+save_rate	- integer.  The rate at which time-series data should be saved
+                  (roughly corresponding to the number of time steps).
 
-save_rate_2	- The rate at which isosurface data should be saved (3D
-                  isosurfaces, 2D surfaces).
+save_rate_2	- integer.  The rate at which isosurface data should be saved
+                  (3D isosurfaces, 2D surfaces).
 
-save_contour    - Should 2D contour data be saved?
+save_contour    - logical.  Should 2D contour data be saved?
 
-save_3d         - Should 3D isosurface data be saved?
+save_3d         - logical.  Should 3D isosurface data be saved?
 
 restart         - logical.  Is this run going to be a restart of a previous
                   run?  If so, then the file end_state.dat should be available
@@ -241,4 +242,4 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-04/05/2006
+05/05/2006

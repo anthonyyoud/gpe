@@ -4,7 +4,7 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics
+  public :: get_grid, ics, fft
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
   real, dimension(0:nz1), public :: z
@@ -437,4 +437,89 @@ module ic
     return
   end subroutine get_rr
     
+  subroutine fft(in_var)
+    use parameters
+    use constants
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: out_var
+    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
+    complex, allocatable, dimension(:) :: local_data, work
+    integer :: i, j, k
+    integer :: plan
+    integer :: loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
+
+    tmp_var = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        tmp_var(:,j,k) = in_var(:,j,k)
+      end do
+    end do 
+    
+    call MPI_ALLREDUCE(tmp_var, tmp, nx*ny*nz, & 
+                       MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+
+    
+    call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
+                                    FFTW_FORWARD, FFTW_ESTIMATE)
+
+    call fftwnd_f77_mpi_local_sizes(plan, loc_nz, loc_z_sta, &
+                                          loc_ny, loc_y_sta, &
+                                          tot_loc)
+
+    print*, loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
+
+    allocate(local_data(0:tot_loc-1))
+    allocate(work(0:tot_loc-1))
+
+    do k=0,loc_nz-1
+      do j=0,ny1
+        do i=0,nx1
+          local_data((k*ny+j)*nx+i) = tmp(i,j,k+loc_z_sta)
+          !print*, i, j, k, (k*ny+j)*nx+i
+        end do
+      end do
+    end do
+
+    call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
+    !call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_NORMAL_ORDER)
+    
+    tmp = 0.0
+    do k=0,loc_ny-1
+      do j=0,nz1
+        do i=0,nx1
+          tmp(i,k+loc_y_sta,j) = local_data((k*ny+j)*nx+i)
+          !print*, i, j, k, (k*ny+j)*nx+i
+        end do
+      end do
+    end do
+
+    call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
+                       MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+
+    do k=ksta,kend
+      do j=jsta,jend
+        out_var(:,j,k) = tmp_var(:,j,k)
+      end do
+    end do
+
+    if (myrank == 0) then
+      open (55, file='fft.dat')
+      do j=0,ny1
+        write (55, '(3e17.9)') (y(j), z(k), abs(tmp_var(nx/2,j,k)), k=0,nz1)
+        write (55, *)
+      end do
+    end if
+    
+    deallocate(local_data)
+    deallocate(work)
+                            
+    call fftwnd_f77_mpi_destroy_plan(plan)
+
+    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+    
+    return
+  end subroutine fft
+  
 end module ic
