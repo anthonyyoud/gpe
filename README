@@ -24,6 +24,10 @@ implementations such as LAM-MPI.
 The code has been tested and is known to work with the Intel Fortran Compiler
 version 9.0.
 
+A parallel FFT routine is included which uses the fftw library
+(http://www.fftw.org).  The single precision and MPI libraries will need to be
+installed and linked to as described below under the makefile heading.
+
 FILES
 -----
 gpe.f90 			- Main program file.
@@ -177,7 +181,11 @@ COMPILER	- This should be set to mpif90.  The actual compiler name can
                   libraries will have to be manually specified.
 
 
-LIBS		- No changes needed.
+LIBS		- The fftw single precision and MPI libraries will need to be
+                  specified here.  Something like
+                        -L/path/to/fftw/lib -lsrfftw_mpi -lsfftw_mpi \
+                                            -lsrfftw -lsfftw
+                  will be sufficient.
 
 COMPFLAGS	- No changes needed.
 
@@ -242,4 +250,4 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-05/05/2006
+08/05/2006
