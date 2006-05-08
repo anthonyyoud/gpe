@@ -521,7 +521,7 @@ module variables
     ! Create a temporary variable on which to perform operations
     tmp_var = in_var
     
-    ! Update the elements which must be multilpied by the integrating constants
+    ! Update the elements which must be multiplied by the integrating constants
     do j=jsta,jend
       if (j==0) tmp_var(j,:) = c1*in_var(j,:)
       if (j==1) tmp_var(j,:) = c2*in_var(j,:)
@@ -564,7 +564,7 @@ module variables
     ! Create a temporary variable
     tmp_var = in_var
     
-    ! Update the elements which must be multilpied by the integrating constants
+    ! Update the elements which must be multiplied by the integrating constants
     do k=ksta,kend
       if (k==0) tmp_var(k) = c1*in_var(k)
       if (k==1) tmp_var(k) = c2*in_var(k)

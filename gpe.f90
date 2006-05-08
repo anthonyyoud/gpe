@@ -76,7 +76,7 @@ program gpe
   ! Get the initial conditions
   call ics(psi%new, p_start)
   call fft(psi%new)
-  stop
+  !stop
 
   ! If this is not a restart...
   if (.not. restart) then
@@ -211,5 +211,7 @@ program gpe
 
   ! Stop the MPI process grid
   call MPI_FINALIZE(ierr)
+
+  print*, 'DONE!'
 
 end program gpe

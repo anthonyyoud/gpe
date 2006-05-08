@@ -87,7 +87,7 @@ module derivs
   end subroutine deriv_y
   
   subroutine deriv_z(f,fz)
-    ! First y-derivative
+    ! First z-derivative
     use parameters
     implicit none
 

@@ -5,8 +5,8 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 1
-  integer,      parameter :: nzprocs      = 1
+  integer,      parameter :: nyprocs      = 2
+  integer,      parameter :: nzprocs      = 3
   integer,      parameter :: nx           = 32
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 64
