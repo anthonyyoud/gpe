@@ -1,6 +1,6 @@
 #!/bin/sh
 #PBS -S /bin/sh
-#PBS -j oe
+#PBS -j oe -o run.log
 
 TALISMAN=master
 GIGA=giga
@@ -14,7 +14,7 @@ fi
 #****************************************************************************
 #PARAMETERS
 #****************************************************************************
-NPROCS=4
+NPROCS=32
 EXE=ulimit_hack.sh
 DATA='parameters.f90 gpe'
 DATA_DIR=`pwd`
@@ -64,8 +64,8 @@ case $HOST in
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
     mpdtrace
-    #time mpiexec -l -n $NPROCS $EXE
-    mpiexec -l -n $NPROCS date
+    time mpiexec -l -n $NPROCS $EXE
+    #mpiexec -l -n $NPROCS date
     mpdallexit
     rm $EXE $HOSTFILE
     
