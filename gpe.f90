@@ -215,6 +215,7 @@ program gpe
   end if
 
   ! Stop the MPI process grid
+  call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   call MPI_FINALIZE(ierr)
 
 end program gpe
