@@ -6,10 +6,10 @@ module parameters
   include 'mpif.h'
 
   integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 3
-  integer,      parameter :: nx           = 32
-  integer,      parameter :: ny           = 32
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nzprocs      = 4
+  integer,      parameter :: nx           = 128
+  integer,      parameter :: ny           = 128
+  integer,      parameter :: nz           = 256
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 10.0
   real,         parameter :: xr           = 16.0

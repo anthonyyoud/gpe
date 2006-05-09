@@ -44,8 +44,6 @@ program gpe
   allocate(workr1(0:nx1,2,kksta:kkend))
   allocate(workr2(0:nx1,2,kksta:kkend))
 
-  print*
-
   ! Check which time stepping scheme we're using
   if (myrank == 0) then
     select case (scheme)
@@ -209,9 +207,11 @@ program gpe
   ! Close runtime files
   call close_files()
 
+  if (myrank == 0) then
+    print*, 'DONE!'
+  end if
+
   ! Stop the MPI process grid
   call MPI_FINALIZE(ierr)
-
-  print*, 'DONE!'
 
 end program gpe

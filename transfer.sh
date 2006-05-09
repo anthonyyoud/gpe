@@ -1,7 +1,7 @@
 #!/bin/sh
 
-EXE=gpe
-DATA="parameters.f90 run_script.sh"
+EXE=ulimit_hack.sh
+DATA="gpe parameters.f90 run_script.sh"
 CUR_DIR=`pwd`
 RUN_DIR=`echo $CUR_DIR | cut -c29-`
 TAL_DIR=/local/ajy25/$RUN_DIR
