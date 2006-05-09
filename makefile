@@ -5,16 +5,16 @@ FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
 #FFLAGS	        = -O2
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
-#FFLAGS	        = -g -O0 #-check
-LINKFLAGS	=
+#FFLAGS	        = -g -O0 -check
+LINKFLAGS	= 
 #LINKFLAGS	= -i_dynamic
 COMPILER	= mpif90
 #COMPILER	= gfortran
-#LIBS            = -L$(USER_MAINT)/fftw/lib -lsrfftw -lsfftw \
-#                                           -lsrfftw_mpi -lsfftw_mpi
-LIBS            = -L$(USER_MAINT)/fftw/lib -lsrfftw_mpi -lsfftw_mpi \
-                                           -lsrfftw -lsfftw
+LIBS            =
 COMPFLAGS       = $(FFLAGS)
+LIBS            = -L$(FFTWHOME)/lib -lsrfftw_mpi -lsfftw_mpi \
+                                    -lsrfftw -lsfftw
+
 #-----------------------------------------------------------------------
 all:	$(OBJECTS)
 	$(COMPILER) $(COMPFLAGS) $(LINKFLAGS) -o \

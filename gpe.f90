@@ -73,8 +73,9 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
+  
+  ! Call the FFT routine to transform the initial condition
   call fft(psi%new)
-  !stop
 
   ! If this is not a restart...
   if (.not. restart) then
@@ -140,10 +141,12 @@ program gpe
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
     if (mod(p, save_rate2) == 0) then
-      ! Find the zeros of the wave function
-      call get_zeros(psi%old, p)
-      call get_extra_zeros(psi%old, p)
-      call get_re_im_zeros(psi%old, p)
+      if (save_zeros) then
+        ! Find the zeros of the wave function
+        call get_zeros(psi%old, p)
+        call get_extra_zeros(psi%old, p)
+        call get_re_im_zeros(psi%old, p)
+      end if
       if (save_contour) then
         ! Save 2D contour data
         call save_surface(p, psi%new)

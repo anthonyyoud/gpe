@@ -5,24 +5,25 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 256
+  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 10.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
-  real,         parameter :: zr           = 32.0
+  real,         parameter :: zr           = 16.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
-  integer,      parameter :: save_rate2   = 50
+  integer,      parameter :: save_rate2   = 5000
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
+  logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
