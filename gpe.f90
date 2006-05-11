@@ -88,6 +88,8 @@ program gpe
   
   ! Calculate the norm of the initial condition
   call get_norm(psi%new, prev_norm)
+
+  n = int(t/save_rate2)
  
   ! Begin real time loop
   do while (t <= end_time)
