@@ -66,17 +66,17 @@ module ic
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
       !out_var = vortex_ring(vr1%x0, vr1%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_ring(vr1%x0, vr1%r0) * &
-                vortex_ring(vr2%x0, vr2%r0)
+      !out_var = vortex_line(vl1) * &
+      !          vortex_ring(vr1%x0, vr1%r0) * &
+      !          vortex_ring(vr2%x0, vr2%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%r0) * &
       !          pade_pulse_ring('pulse', vr2%x0, vr2%r0)
       !out_var = vortex_line(vl1) * &
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_line(vl3)
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
     end if

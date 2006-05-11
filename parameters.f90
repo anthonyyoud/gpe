@@ -9,27 +9,27 @@ module parameters
   integer,      parameter :: nzprocs      = 8
   integer,      parameter :: nx           = 64
   integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nz           = 128
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 10.0
-  real,         parameter :: xr           = 16.0
-  real,         parameter :: yr           = 16.0
-  real,         parameter :: zr           = 16.0
+  real,         parameter :: end_time     = 100.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 64.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
-  integer,      parameter :: save_rate2   = 5000
+  real,         parameter :: save_rate2   = 2.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
-  logical                 :: real_time    = .false.
+  logical                 :: real_time    = .true.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-8
+  real, parameter :: eps              = 1e-6
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -45,7 +45,7 @@ module parameters
     real :: sgn         ! sign of the argument of the line
   end type line_param
 
-  type (line_param), parameter :: vl1 = line_param( 3.0, 3.0, 0.0,33.0, 1.0)
+  type (line_param), parameter :: vl1 = line_param( 0.0, 3.0, 0.1,33.0, 1.0)
   type (line_param), parameter :: vl2 = line_param(-3.0, 3.0,-0.0,33.0,-1.0)
   type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
   type (line_param), parameter :: vl4 = line_param(-3.0,-3.0,-0.0,33.0, 1.0)

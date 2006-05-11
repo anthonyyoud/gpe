@@ -341,7 +341,7 @@ module solve
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rhs
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx, dpsidz
     integer :: j, k
-    real :: U=0.0 !0.18
+    real :: U=0.18
     
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)

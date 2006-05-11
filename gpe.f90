@@ -9,7 +9,7 @@ program gpe
   use variables
   implicit none
 
-  integer :: p_start=0
+  integer :: p_start=0, n=0
   real :: norm=0.0, prev_norm=0.0
   type (var) :: psi
   logical :: run_exist, state_exist
@@ -140,7 +140,8 @@ program gpe
     end if
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
-    if (mod(p, save_rate2) == 0) then
+    !if (mod(p, save_rate2) == 0) then
+    if (t+im_t >= save_rate2*n) then
       if (save_zeros) then
         ! Find the zeros of the wave function
         call get_zeros(psi%old, p)
@@ -154,11 +155,13 @@ program gpe
       if (save_3d) then
         ! Save 3D isosurface data for use in IDL
         call idl_surface(p, psi%new)
-        end if
+      end if
+      n = n+1
     end if
 
     ! Periodically save the state
-    if (mod(p, save_rate2) == 0) then
+    !if (mod(p, save_rate2) == 0) then
+    if (t+im_t >= 10.0*n) then
       ! 0 is a flag which means the run has not yet ended
       call end_state(psi%new, p, 0)
     end if
