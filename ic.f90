@@ -65,8 +65,10 @@ module ic
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0) !* &
-                !vortex_ring(vr2%x0, vr2%y0, vr2%r0)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) * &
+                vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
+                vortex_ring2(vr3%x0, vr3%y0, vr3%r0, vr3%dir) * &
+                vortex_ring2(vr4%x0, vr4%y0, vr4%r0, vr4%dir)
       !out_var = vortex_line(vl1) * &
       !          vortex_ring(vr1%x0, vr1%r0) * &
       !          vortex_ring(vr2%x0, vr2%r0)
@@ -76,8 +78,8 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl3)
+      !out_var = vortex_line(vl1) * &
+      !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
     end if
@@ -200,13 +202,13 @@ module ic
     return
   end function vortex_line
   
-  function vortex_ring(x0, y0, r0)
+  function vortex_ring(x0, y0, r0, dir)
     ! Vortex ring initial condition
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
-    real, intent(in) :: x0, y0, r0
+    real, intent(in) :: x0, y0, r0, dir
     real, dimension(jsta:jend,ksta:kend) :: s
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
     integer :: i, j, k
@@ -233,14 +235,57 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          vortex_ring(i,j,k) = rr1(i,j,k)*((x(i)-x0)+eye*(s(j,k)+r0)) * &
-                               rr2(i,j,k)*((x(i)-x0)-eye*(s(j,k)-r0))
+          vortex_ring(i,j,k) = rr1(i,j,k)*((x(i)-x0)+dir*eye*(s(j,k)+r0)) * &
+                               rr2(i,j,k)*((x(i)-x0)-dir*eye*(s(j,k)-r0))
         end do
       end do
     end do
 
     return
   end function vortex_ring
+  
+  function vortex_ring2(x0, y0, r0, dir)
+    ! Vortex ring initial condition
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring2
+    real, intent(in) :: x0, y0, r0, dir
+    real, dimension(0:nx1,ksta:kend) :: s
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
+    integer :: i, j, k
+
+    do k=ksta,kend
+      do i=0,nx1
+        s(i,k) = sqrt((x(i)-x0)**2 + z(k)**2)
+      end do
+    end do
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          d1(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)+r0)**2 )
+          d2(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)-r0)**2 )
+        end do
+      end do
+    end do
+    
+    rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
+                        (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
+    rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
+                        (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
+
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          vortex_ring2(i,j,k) = rr1(i,j,k)*((y(j)-y0)+dir*eye*(s(i,k)+r0)) * &
+                                rr2(i,j,k)*((y(j)-y0)-dir*eye*(s(i,k)-r0))
+        end do
+      end do
+    end do
+
+    return
+  end function vortex_ring2
   
   function pade_pulse_ring(pulse_or_ring, x0, y0, r0)
     ! Pade approximation vortex ring or pulse initial condition

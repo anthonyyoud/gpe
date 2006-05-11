@@ -5,22 +5,22 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 2
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nx           = 80
+  integer,      parameter :: ny           = 80
+  integer,      parameter :: nz           = 80
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 0.5
-  real,         parameter :: xr           = 32.0
-  real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 64.0
+  real,         parameter :: end_time     = 500.0
+  real,         parameter :: xr           = 20.0
+  real,         parameter :: yr           = 20.0
+  real,         parameter :: zr           = 20.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
-  real,         parameter :: save_rate2   = 1.0
+  real,         parameter :: save_rate2   = 5.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_zeros   = .false.
@@ -58,12 +58,13 @@ module parameters
     real :: x0          ! x position
     real :: y0          ! y position
     real :: r0          ! radius
+    real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param(10.0,17.0,10.0)
-  !type (ring_param), parameter :: vr1 = ring_param(5.0,0.0,0.0)
-  type (ring_param), parameter :: vr2 = ring_param(-10.0,0.0,7.0)
-  !type (ring_param), parameter :: vr2 = ring_param(-5.0,0.0,0.0)
+  type (ring_param), parameter :: vr1 = ring_param( 10.0,  1.0,10.0, 1.0)
+  type (ring_param), parameter :: vr2 = ring_param(-10.0, -1.0,10.0,-1.0)
+  type (ring_param), parameter :: vr3 = ring_param(  1.0,-10.0,10.0,-1.0)
+  type (ring_param), parameter :: vr4 = ring_param( -1.0, 10.0,10.0, 1.0)
   !
   ! *************************************************************************
 
