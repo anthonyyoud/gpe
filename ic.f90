@@ -5,6 +5,7 @@ module ic
 
   private
   public :: get_grid, ics, fft
+
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
   real, dimension(0:nz1), public :: z
@@ -45,8 +46,8 @@ module ic
     use parameters
     implicit none
 
-    integer, intent(out) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    integer,                                       intent(out) :: p
     logical :: state_exist
 
     ! If this is a restarted run...
@@ -65,10 +66,10 @@ module ic
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) * &
-                vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
-                vortex_ring2(vr3%x0, vr3%y0, vr3%r0, vr3%dir) * &
-                vortex_ring2(vr4%x0, vr4%y0, vr4%r0, vr4%dir)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
+      !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
+      !          vortex_ring2(vr3%x0, vr3%y0, vr3%r0, vr3%dir) * &
+      !          vortex_ring2(vr4%x0, vr4%y0, vr4%r0, vr4%dir)
       !out_var = vortex_line(vl1) * &
       !          vortex_ring(vr1%x0, vr1%r0) * &
       !          vortex_ring(vr2%x0, vr2%r0)
@@ -93,10 +94,10 @@ module ic
     use variables
     implicit none
 
-    integer, intent(out) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    integer,                                       intent(out) :: p
+    real    :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev
-    real :: dt_prev
 
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
 
@@ -131,10 +132,10 @@ module ic
     use parameters
     implicit none
 
-    real, parameter :: c=450.0
+    real, parameter                            :: c=450.0
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: fermi, r
-    real :: mu
-    integer :: i, j, k
+    real                                       :: mu
+    integer                                    :: i, j, k
 
     mu = sqrt(c/pi)
 
@@ -159,9 +160,9 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: ei
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: theta
-    integer :: j, k
+    complex, dimension(0:nx1,jsta:jend,ksta:kend)             :: ei
+    real,    dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: theta
+    integer                                                   :: j, k
 
     ei = cos(theta) + eye*sin(theta)
 
@@ -173,11 +174,11 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: amp
+    real, dimension(0:nx1,jsta:jend,ksta:kend)             :: amp
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: r
-    real, parameter :: c1 = -0.7
-    real, parameter :: c2 = 1.15
-    integer :: j, k
+    real, parameter                                        :: c1 = -0.7
+    real, parameter                                        :: c2 = 1.15
+    integer                                                :: j, k
 
     amp = 1.0 - exp(c1*r**c2)
 
@@ -189,10 +190,10 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
-    type (line_param), intent(in) :: vl
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
-    integer :: j, k
+    complex,           dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
+    type (line_param), intent(in)                           :: vl
+    real,              dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
+    integer                                                 :: j, k
 
     call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
     call get_theta(vl%x0, vl%y0, vl%amp, vl%ll, vl%sgn, theta)
@@ -208,10 +209,10 @@ module ic
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
-    real, intent(in) :: x0, y0, r0, dir
-    real, dimension(jsta:jend,ksta:kend) :: s
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
-    integer :: i, j, k
+    real,    intent(in)                           :: x0, y0, r0, dir
+    real,    dimension(jsta:jend,ksta:kend)       :: s
+    real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
+    integer                                       :: i, j, k
 
     call get_s(s, y0)
     
@@ -250,10 +251,10 @@ module ic
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring2
-    real, intent(in) :: x0, y0, r0, dir
-    real, dimension(0:nx1,ksta:kend) :: s
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
-    integer :: i, j, k
+    real,    intent(in)                           :: x0, y0, r0, dir
+    real,    dimension(0:nx1,ksta:kend)           :: s
+    real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
+    integer                                       :: i, j, k
 
     do k=ksta,kend
       do i=0,nx1
@@ -292,16 +293,16 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: pade_pulse_ring
-    real, intent(in) :: x0, y0, r0
-    character(*), intent(in) :: pulse_or_ring
-    real, dimension(0:nx1) :: x2
-    real, dimension(jsta:jend,ksta:kend) :: s, s2
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: uu, vv, denom
-    real, dimension(9) :: a
-    real, parameter :: pow = 7.0/4.0
-    real :: one_2u, U, m
-    integer :: i, j, k
+    complex,      dimension(0:nx1,jsta:jend,ksta:kend) :: pade_pulse_ring
+    real,         intent(in)                           :: x0, y0, r0
+    character(*), intent(in)                           :: pulse_or_ring
+    real,         dimension(0:nx1,jsta:jend,ksta:kend) :: uu, vv, denom
+    real,         dimension(jsta:jend,ksta:kend)       :: s, s2
+    real,         dimension(0:nx1)                     :: x2
+    real,         dimension(9)                         :: a
+    real,         parameter                            :: pow = 7.0/4.0
+    real                                               :: one_2u, U, m
+    integer                                            :: i, j, k
 
     call get_s(s, y0)
     call get_consts(pulse_or_ring, a, U, m)
@@ -336,9 +337,9 @@ module ic
       ! Get constants required to set up the vortex ring or pulse
       implicit none
 
-      character(*), intent(in) :: flag
-      real, dimension(9), intent(out) :: consts
-      real, intent(out) :: vel, mom
+      character(*),               intent(in)  :: flag
+      real,         dimension(9), intent(out) :: consts
+      real,                       intent(out) :: vel, mom
 
       select case (flag)
         case ('ring')
@@ -366,23 +367,21 @@ module ic
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_pair
-    real, dimension(0:nx1) :: x2, x4
-    real, dimension(0:ny1) :: y2, y4
-    real, dimension(0:nx1,jsta:jend) :: uu, vv, denom
-    
-    real, parameter :: a0 = -1.14026
-    real, parameter :: a1 = -0.150112
-    real, parameter :: a2 = -0.0294564
-    real, parameter :: b0 = -0.830953
-    real, parameter :: b1 = -0.108296
-    real, parameter :: b2 = -0.073641
-    real, parameter :: c0 = 0.35022
-    real, parameter :: c1 = 0.03032
-    real, parameter :: c2 = 0.15905
-    real, parameter :: c3 = 0.04123
-    real, parameter :: c4 = 0.01402
-
-    integer :: i, j, k
+    real,    dimension(0:nx1,jsta:jend)           :: uu, vv, denom
+    real,    dimension(0:nx1)                     :: x2, x4
+    real,    dimension(0:ny1)                     :: y2, y4
+    real,    parameter                            :: a0 = -1.14026
+    real,    parameter                            :: a1 = -0.150112
+    real,    parameter                            :: a2 = -0.0294564
+    real,    parameter                            :: b0 = -0.830953
+    real,    parameter                            :: b1 = -0.108296
+    real,    parameter                            :: b2 = -0.073641
+    real,    parameter                            :: c0 = 0.35022
+    real,    parameter                            :: c1 = 0.03032
+    real,    parameter                            :: c2 = 0.15905
+    real,    parameter                            :: c3 = 0.04123
+    real,    parameter                            :: c4 = 0.01402
+    integer                                       :: i, j, k
 
     x2 = x**2
     x4 = x**4
@@ -414,9 +413,9 @@ module ic
     use parameters
     implicit none
 
-    real, intent(in) :: x0, y0, a, ll
+    real,                                       intent(in)  :: x0, y0, a, ll
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
-    integer :: i, j, k
+    integer                                                 :: i, j, k
 
     do k=ksta,kend
       do j=jsta,jend
@@ -434,9 +433,9 @@ module ic
     use parameters
     implicit none
 
+    real,                                 intent(in)  :: y0
     real, dimension(jsta:jend,ksta:kend), intent(out) :: s
-    real, intent(in) :: y0
-    integer :: j, k
+    integer                                           :: j, k
 
     do k=ksta,kend
       do j=jsta,jend
@@ -454,7 +453,7 @@ module ic
 
     real, intent(in) :: x0, y0, a, ll, sgn
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
-    integer :: i, j, k
+    integer                                                 :: i, j, k
 
     do k=ksta,kend
       do j=jsta,jend
@@ -472,9 +471,9 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: r
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in)  :: r
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rr
-    integer :: i, j, k
+    integer                                                 :: i, j, k
     
     rr = sqrt( ((0.3437+0.0286*r**2)) / &
                 (1.0+(0.3333*r**2)+(0.0286*r**4)) )
@@ -491,7 +490,7 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: in_var
     complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
-    complex, allocatable, dimension(:) :: local_data, work
+    complex, allocatable, dimension(:)    :: local_data, work
     integer :: i, j, k, plan, iplan
     integer :: loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
 

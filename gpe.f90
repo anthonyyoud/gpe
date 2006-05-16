@@ -9,10 +9,10 @@ program gpe
   use variables
   implicit none
 
-  integer :: p_start=0, n=0
-  real :: norm=0.0, prev_norm=0.0
+  integer    :: p_start=0, n=0
+  real       :: norm=0.0, prev_norm=0.0
   type (var) :: psi
-  logical :: run_exist, state_exist
+  logical    :: run_exist, state_exist
 
   ! Initialise the MPI process grid
   call MPI_INIT(ierr)

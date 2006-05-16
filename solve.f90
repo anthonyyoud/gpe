@@ -341,7 +341,6 @@ module solve
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rhs
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx, dpsidz
     integer :: j, k
-    real :: U=0.0 !0.18
     
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)
@@ -349,7 +348,7 @@ module solve
     rhs = 0.5*eye * ( laplacian(in_var) + &
                     (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                              in_var(:,jsta:jend,ksta:kend) ) + &
-                     U*dpsidx
+                     Urhs*dpsidx
     !rhs = 0.5 * ( laplacian(in_var) + (1.0-abs(in_var)**2)*in_var ) - &
     !      eye*U*dpsidx
 

@@ -13,10 +13,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fx
-    integer :: i, j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fx
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: i, j, k
 
     select case (order)
       case (2)
@@ -54,10 +54,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fy
-    integer :: j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fy
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: j, k
 
     select case (order)
       case (2)
@@ -91,10 +91,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fz
-    integer :: j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fz
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: j, k
 
     select case (order)
       case (2)
@@ -128,10 +128,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fxx
-    integer :: i, j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fxx
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: i, j, k
 
     select case (order)
       case (2)
@@ -172,10 +172,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fyy
-    integer :: j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fyy
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: j, k
 
     select case (order)
       case (2)
@@ -212,10 +212,10 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: fzz
-    integer :: j, k
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fzz
     integer, dimension(2) :: minus=0, plus=0
+    integer               :: j, k
 
     select case (order)
       case (2)
@@ -252,8 +252,8 @@ module derivs
     ! reflective boundaries are chosen in the case of second order differences
     implicit none
 
-    integer, intent(in) :: indx, n
-    logical, intent(in) :: x_deriv
+    integer,               intent(in)  :: indx, n
+    logical,               intent(in)  :: x_deriv
     integer, dimension(2), intent(out) :: minus, plus
     
     select case (bcs)
@@ -295,8 +295,8 @@ module derivs
     ! reflective boundaries are chosen in the case of fourth order differences
     implicit none
 
-    integer, intent(in) :: indx, n
-    logical, intent(in) :: x_deriv
+    integer,               intent(in)  :: indx, n
+    logical,               intent(in)  :: x_deriv
     integer, dimension(2), intent(out) :: minus, plus
     
     select case (bcs)

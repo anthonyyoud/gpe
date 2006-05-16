@@ -7,14 +7,15 @@ module parameters
 
   integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 8
-  integer,      parameter :: nx           = 80
-  integer,      parameter :: ny           = 80
-  integer,      parameter :: nz           = 80
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 500.0
-  real,         parameter :: xr           = 20.0
-  real,         parameter :: yr           = 20.0
-  real,         parameter :: zr           = 20.0
+  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 32.0
+  real,         parameter :: Urhs         = 23.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
@@ -29,7 +30,7 @@ module parameters
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-6
+  real, parameter :: eps              = 1e-7
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -61,10 +62,11 @@ module parameters
     real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param( 10.0,  1.0,10.0, 1.0)
-  type (ring_param), parameter :: vr2 = ring_param(-10.0, -1.0,10.0,-1.0)
-  type (ring_param), parameter :: vr3 = ring_param(  1.0,-10.0,10.0,-1.0)
-  type (ring_param), parameter :: vr4 = ring_param( -1.0, 10.0,10.0, 1.0)
+  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,8.0,-1.0)
+  !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
+  type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
+  type (ring_param), parameter :: vr3 = ring_param(  1.0,-30.1,30.1,-1.0)
+  type (ring_param), parameter :: vr4 = ring_param( -1.0, 30.1,30.1, 1.0)
   !
   ! *************************************************************************
 
