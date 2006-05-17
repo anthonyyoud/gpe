@@ -15,7 +15,7 @@ module parameters
   real,         parameter :: xr           = 32.0
   real,         parameter :: yr           = 32.0
   real,         parameter :: zr           = 32.0
-  real,         parameter :: Urhs         = 23.0
+  real,         parameter :: Urhs         = 0.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
@@ -27,6 +27,7 @@ module parameters
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .true.
+  logical                 :: diagnostic   = .true.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping

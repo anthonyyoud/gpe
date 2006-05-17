@@ -37,6 +37,9 @@ program gpe
 
   ! Allocate array dimensions on each process
   allocate(psi%old(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+  if (diagnostic) then
+    allocate(psi%old2(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+  end if
   allocate(psi%new(0:nx1,jsta:jend,ksta:kend))
   ! (work send and receive arrays)
   allocate(works1(0:nx1,2,kksta:kkend))
@@ -121,8 +124,11 @@ program gpe
     end if
 
     ! Update the variable
+    if (diagnostic) then
+      psi%old2 = psi%old
+    end if
     psi%old(:,jsta:jend,ksta:kend) = psi%new
-    
+
     ! Send and receive the variable so that all processes have the boundary
     ! data from neighbouring processes.  Since the data needing to be sent in
     ! the y-direction is not contiguous in memory, it must first be packed into
@@ -171,6 +177,12 @@ program gpe
     ! Call the solver subroutine to solve the equation
     call solver(psi%old, psi%new)
     
+    if (t+im_t >= save_rate2*n) then
+      if (diagnostic) then
+        call diag(psi%old2, psi%old, psi%new, p)
+      end if
+    end if
+    
     ! Calculate the norm
     call get_norm(psi%new, norm)
 
@@ -214,6 +226,17 @@ program gpe
 
   ! Close runtime files
   call close_files()
+  
+  ! Deallocate arrays
+  deallocate(psi%old)
+  if (diagnostic) then
+    deallocate(psi%old2)
+  end if
+  deallocate(psi%new)
+  deallocate(works1)
+  deallocate(works2)
+  deallocate(workr1)
+  deallocate(workr2)
 
   if (myrank == 0) then
     print*, 'DONE!'

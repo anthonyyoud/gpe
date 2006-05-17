@@ -523,7 +523,7 @@ module ic
                                           loc_ny, loc_y_sta, &
                                           tot_loc)
 
-    print*, loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
+    !print*, loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
 
     ! Allocate the array sizes
     allocate(local_data(0:tot_loc-1))

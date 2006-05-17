@@ -12,6 +12,7 @@ module variables
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
     complex, allocatable, dimension(:,:,:) :: old
+    complex, allocatable, dimension(:,:,:) :: old2
   end type var
 
   type, public :: deriv

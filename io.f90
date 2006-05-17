@@ -7,7 +7,7 @@ module io
   public :: open_files, close_files, save_time, save_energy, save_surface, &
             idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs
+            get_dirs, diag
 
   contains
 
@@ -814,4 +814,42 @@ module io
     return
   end subroutine save_linelength
 
+  subroutine diag(old2, old, new, p)
+    use parameters
+    use variables
+    use ic, only : x, y, z
+    implicit none
+    
+    integer, intent(in) :: p
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old, &
+                                                                         old2
+    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(in) :: new
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: lhs, rhs
+    real :: zpos
+    integer :: i, j, k
+    
+    lhs = 0.5*(new-old2(:,jsta:jend,ksta:kend))/dt
+    
+    rhs = 0.5*(eye+0.01) * ( laplacian(old) + &
+                           (1.0-abs(old(:,jsta:jend,ksta:kend))**2)*&
+                                    old(:,jsta:jend,ksta:kend) )
+
+    zpos = nz/2
+
+    do k=ksta,kend
+      if (k==zpos) then
+        open (unit_no, status='unknown', file=proc_dir//'diag'//itos(p)//'.dat')
+        do i=0,nx1
+          write (unit_no, '(3e17.9)') (x(i), y(j), &
+                 abs(rhs(i,j,zpos)-lhs(i,j,zpos)), j=jsta,jend)
+          write (unit_no, *)
+        end do
+        close (unit_no)
+        exit
+      end if
+    end do
+
+    return
+  end subroutine diag
+    
 end module io
