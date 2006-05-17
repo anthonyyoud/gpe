@@ -335,17 +335,35 @@ module solve
     use parameters
     use variables
     use derivs
+    use ic, only : x, y, z
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rhs
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx, dpsidz
-    integer :: j, k
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: diss
+    real, parameter :: amp = 0.005
+    real :: a, b, c
+    integer :: i, j, k
     
+    a = x(nx-3)
+    b = y(ny-3)
+    c = z(nz-3)
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          diss(i,j,k) = amp*(1.0+tanh(x(i)-a)*tanh(x(i)+a)) + &
+                        amp*(1.0+tanh(y(j)-b)*tanh(y(j)+b)) + &
+                        amp*(1.0+tanh(z(k)-c)*tanh(z(k)+c))
+        end do
+      end do
+    end do
+      
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)
     
-    rhs = 0.5*(eye+0.01) * ( laplacian(in_var) + &
+    rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
                     (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                              in_var(:,jsta:jend,ksta:kend) ) + &
                      Urhs*dpsidx

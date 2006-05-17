@@ -66,7 +66,7 @@ module ic
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
       !          vortex_ring2(vr3%x0, vr3%y0, vr3%r0, vr3%dir) * &
       !          vortex_ring2(vr4%x0, vr4%y0, vr4%r0, vr4%dir)
@@ -79,8 +79,8 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_line(vl3)
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
     end if
