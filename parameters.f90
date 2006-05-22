@@ -9,15 +9,15 @@ module parameters
   integer,      parameter :: nzprocs      = 8
   integer,      parameter :: nx           = 64
   integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 1000.0
   real,         parameter :: xr           = 32.0
   real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 64.0
+  real,         parameter :: zr           = 32.0
   real,         parameter :: Urhs         = 0.00
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
@@ -65,7 +65,8 @@ module parameters
     real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,8.0,-1.0)
+  !type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,8.0,-1.0)
+  type (ring_param), parameter :: vr1 = ring_param(-20.0,0.0,6.0,-1.0)
   !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
   type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
   type (ring_param), parameter :: vr3 = ring_param(  1.0,-30.1,30.1,-1.0)

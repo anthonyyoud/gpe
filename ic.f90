@@ -79,10 +79,14 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl3)
+      !out_var = vortex_line(vl1) * &
+      !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
+      !out_var = sphere() !* &
+                !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      out_var = wall() * &
+                vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
     end if
   
     return
@@ -407,6 +411,48 @@ module ic
 
     return
   end function vortex_pair
+
+  function sphere()
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere
+    real, parameter :: rad = 10.0
+    integer :: i, j, k
+
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          sphere(i,j,k) = 0.5*(1.0+tanh(x(i)**2+y(j)**2+z(k)**2-rad**2))
+        end do
+      end do
+    end do
+
+    return
+  end function sphere
+  
+  function wall()
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: wall
+    real, parameter :: pos = -30.0
+    integer :: i, j, k
+
+    do k=ksta,kend
+      wall(:,:,k) = 0.5*(1.0+tanh(z(k)-pos))
+    end do
+    
+    !do k=ksta,kend
+    !  if (z(k) <= pos) then
+    !    wall(:,:,k) = 0.0
+    !  else
+    !    wall(:,:,k) = 1.0
+    !  end if
+    !end do
+
+    return
+  end function wall
 
   subroutine get_r(x0, y0, a, ll, r)
     ! Get the cylindrical-polar radius r**2=x**2+y**2
