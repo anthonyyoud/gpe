@@ -78,7 +78,7 @@ program gpe
   call ics(psi%new, p_start)
   
   ! Call the FFT routine to transform the initial condition
-  call fft(psi%new)
+  !call fft(psi%new)
 
   ! If this is not a restart...
   if (.not. restart) then
@@ -142,9 +142,11 @@ program gpe
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
     !if (mod(p, save_rate) == 0) then
       call save_energy(t, psi%old)
+      !call save_mass(t, psi%new)
       call save_momentum(t, psi%old)
       call save_time(t, psi%new)
       call save_linelength(t, psi%old)
+      !call condensed_particles(t, psi%new)
     end if
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then

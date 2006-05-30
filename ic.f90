@@ -85,8 +85,9 @@ module ic
       !          vortex_line(vl4)
       !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      out_var = wall() * &
-                vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      !out_var = wall() * &
+      !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      call random_phase(out_var)
     end if
   
     return
@@ -130,7 +131,32 @@ module ic
 
     return
   end subroutine state_restart
+
+  subroutine random_phase(out_var)
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
+    real :: phi
+    integer :: i, j, k, amp
+
+    call random_seed()
+
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          call random_number(phi)
+          a(i,j,k) = amp*exp(2.0*pi*eye*phi)
+        end do
+      end do
+    end do
+
+    call fft(a, out_var, 'forward', .false.)
   
+    return
+  end subroutine random_phase
+
   function fermi()
     ! Thomas-Fermi initial condition
     use parameters
@@ -527,14 +553,17 @@ module ic
     return
   end subroutine get_rr
     
-  subroutine fft(in_var)
+  subroutine fft(in_var, out_var, dir, particles)
     ! Calculate the FFT (and inverse) of a variable
     use parameters
     use constants
     use variables, only : unit_no
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    character(*), intent(in) :: dir
+    logical, intent(in) :: particles
     complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
     complex, allocatable, dimension(:)    :: local_data, work
     integer :: i, j, k, plan, iplan
@@ -553,16 +582,25 @@ module ic
     call MPI_ALLREDUCE(tmp_var, tmp, nx*ny*nz, & 
                        MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
                        
-    open (unit_no, file=proc_dir//'orig.dat')
-    do j=0,ny1
-      write (unit_no, '(3e17.9)') (y(j), z(k), abs(tmp(nx/2,j,k)), k=0,nz1)
-      write (unit_no, *)
-    end do
-    close (unit_no)
+    !open (unit_no, file=proc_dir//'orig.dat')
+    !do j=0,ny1
+    !  write (unit_no, '(3e17.9)') (y(j), z(k), abs(tmp(nx/2,j,k)), k=0,nz1)
+    !  write (unit_no, *)
+    !end do
+    !close (unit_no)
 
-    ! Create the plan for the forward transform
-    call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
-                                    FFTW_FORWARD, FFTW_ESTIMATE)
+    select case (dir)
+      case ('forward')
+        ! Create the plan for a forward transform
+        call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
+                                        FFTW_FORWARD, FFTW_ESTIMATE)
+      case ('backward')
+        ! Create the plan for a backward transform
+        call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
+                                        FFTW_BACKWARD, FFTW_ESTIMATE)
+      case default
+        stop 'ERROR: Not a valid direction for FFT!'
+    end select
 
     ! Get the sizes of the arrays local to each process
     call fftwnd_f77_mpi_local_sizes(plan, loc_nz, loc_z_sta, &
@@ -588,28 +626,34 @@ module ic
     ! Call the parallel FFT routine to do the transform
     call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
     
-    ! Set up another temporary array to (eventually) get the transformed data
-    ! back into the original distribution scheme
-    !tmp = 0.0
-    !do k=0,loc_ny-1
-    !  do j=0,nz1
-    !    do i=0,nx1
-    !      tmp(i,k+loc_y_sta,j) = local_data((k*ny+j)*nx+i)
-    !      !print*, i, j, k, (k*ny+j)*nx+i
-    !    end do
-    !  end do
-    !end do
-    
-    ! Make sure all processes have the temporary variable
-    !call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
-    !                   MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+    ! If we're not just finding out the occupation number then distribute
+    if (.not. particles) then
+      ! Set up another temporary array to (eventually) get the transformed data
+      ! back into the original distribution scheme
+      tmp = 0.0
+      do k=0,loc_ny-1
+        do j=0,nz1
+          do i=0,nx1
+            tmp(i,k+loc_y_sta,j) = local_data((k*ny+j)*nx+i)
+      !      !print*, i, j, k, (k*ny+j)*nx+i
+          end do
+        end do
+      end do
+      
+      ! Make sure all processes have the temporary variable
+      call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
+                         MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 
-    ! Distribute the transformed data
-    !do k=ksta,kend
-    !  do j=jsta,jend
-    !    out_var(:,j,k) = tmp_var(:,j,k)
-    !  end do
-    !end do
+      ! Distribute the transformed data
+      do k=ksta,kend
+        do j=jsta,jend
+          out_var(:,j,k) = tmp_var(:,j,k)
+        end do
+      end do
+    else
+      ! Just fill the output with the zero mode complex amplitude
+      out_var = local_data(0)
+    end if
 
     !open (unit_no, file=proc_dir//'fft.dat')
     !do j=0,ny1
@@ -618,58 +662,62 @@ module ic
     !end do
     !close (unit_no)
     
+    ! Deallocate the allocated arrays
+    deallocate(local_data)
+    deallocate(work)
+    
     ! Destroy the forward transform plan
     call fftwnd_f77_mpi_destroy_plan(plan)
 
     ! Wait before starting the inverse transform
-    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-    
-    ! Create a plan for the inverse transform
-    call fftw3d_f77_mpi_create_plan(iplan, MPI_COMM_WORLD, nx, nz, ny, &
-                                    FFTW_BACKWARD, FFTW_ESTIMATE)
+    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+    !
+    !! Create a plan for the inverse transform
+    !call fftw3d_f77_mpi_create_plan(iplan, MPI_COMM_WORLD, nx, nz, ny, &
+    !                                FFTW_BACKWARD, FFTW_ESTIMATE)
 
-    ! Call the FFT routine to do the inverse transform
-    call fftwnd_f77_mpi(iplan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
-    
-    ! Set up another temporary array
-    tmp = 0.0
-    do k=0,loc_nz-1
-      do j=0,ny1
-        do i=0,nx1
-          tmp(i,j,k+loc_z_sta) = local_data((k*ny+j)*nx+i)
-          !print*, i, j, k, (k*ny+j)*nx+i
-        end do
-      end do
-    end do
-    
-    ! Make sure all processes have the temporary array
-    call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
-                       MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+    !! Call the FFT routine to do the inverse transform
+    !call fftwnd_f77_mpi(iplan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
+    !
+    !! Set up another temporary array
+    !tmp = 0.0
+    !do k=0,loc_nz-1
+    !  do j=0,ny1
+    !    do i=0,nx1
+    !      tmp(i,j,k+loc_z_sta) = local_data((k*ny+j)*nx+i)
+    !      !print*, i, j, k, (k*ny+j)*nx+i
+    !    end do
+    !  end do
+    !end do
+    !
+    !! Make sure all processes have the temporary array
+    !call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
+    !                   MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 
-    ! Renormalise
-    tmp_var = tmp_var / (nx*ny*nz)
+    !! Renormalise
+    !tmp_var = tmp_var / (nx*ny*nz)
 
-    ! Redistribute the transformed data
-    in_var = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        in_var(:,j,k) = tmp_var(:,j,k)
-      end do
-    end do
+    !! Redistribute the transformed data
+    !in_var = 0.0
+    !do k=ksta,kend
+    !  do j=jsta,jend
+    !    in_var(:,j,k) = tmp_var(:,j,k)
+    !  end do
+    !end do
 
-    open (unit_no, file=proc_dir//'fft.dat')
-    do j=0,ny1
-      write (unit_no, '(3e17.9)') (y(j), z(k), abs(tmp_var(nx/2,j,k)), k=0,nz1)
-      write (unit_no, *)
-    end do
-    close (unit_no)
+    !!open (unit_no, file=proc_dir//'fft.dat')
+    !!do j=0,ny1
+    !!  write (unit_no, '(3e17.9)') (y(j), z(k), abs(tmp_var(nx/2,j,k)), k=0,nz1)
+    !!  write (unit_no, *)
+    !!end do
+    !!close (unit_no)
 
-    ! Deallocate the allocated arrays
-    deallocate(local_data)
-    deallocate(work)
+    !! Deallocate the allocated arrays
+    !deallocate(local_data)
+    !deallocate(work)
 
-    ! Destroy the inverse transform plan
-    call fftwnd_f77_mpi_destroy_plan(iplan)
+    !! Destroy the inverse transform plan
+    !call fftwnd_f77_mpi_destroy_plan(iplan)
 
     !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
     

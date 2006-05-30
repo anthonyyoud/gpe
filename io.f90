@@ -4,10 +4,10 @@ module io
   implicit none
 
   private
-  public :: open_files, close_files, save_time, save_energy, save_surface, &
-            idl_surface, end_state, get_zeros, get_re_im_zeros, &
+  public :: open_files, close_files, save_time, save_energy, &
+            save_surface, idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs, diag
+            get_dirs, diag, condensed_particles
 
   contains
 
@@ -42,6 +42,7 @@ module io
       open (12, file='energy.dat', status='unknown')
       open (13, file='linelength.dat', status='unknown')
       open (14, file='momentum.dat', status='unknown')
+      open (15, file='mass.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
     end if
@@ -59,6 +60,7 @@ module io
       close (12)
       close (13)
       close (14)
+      close (15)
     end if
 
     return
@@ -146,6 +148,48 @@ module io
 
     return
   end subroutine save_energy
+  
+  !subroutine save_mass(time, in_var)
+  !  ! Save the mass
+  !  use parameters
+  !  use variables, only : mass
+  !  implicit none
+
+  !  real, intent(in) :: time
+  !  complex, dimension(0:nx1,jsta:jsta,ksta:kend), intent(in) :: in_var
+  !  real :: M
+
+  !  call mass(in_var, M)
+  !  
+  !  if (myrank == 0) then
+  !    write (15, '(2e17.9)') time, M
+  !  end if
+
+  !  return
+  !end subroutine save_mass
+  
+  subroutine condensed_particles(time, in_var)
+    ! Save the mass
+    use parameters
+    use ic, only : fft
+    use variables, only : mass
+    implicit none
+
+    real, intent(in) :: time
+    complex, dimension(0:nx1,jsta:jsta,ksta:kend), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jsta,ksta:kend) :: a
+    real :: M, n0
+
+    call fft(in_var, a, 'backward', .true.)
+    n0 = abs(a(0,0,0))**2
+    call mass(in_var, M)
+    
+    if (myrank == 0) then
+      write (15, '(2e17.9)') time, M, n0/M
+    end if
+
+    return
+  end subroutine condensed_particles
   
   subroutine save_momentum(time, in_var)
     ! Save the momentum

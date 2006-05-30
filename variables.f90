@@ -5,7 +5,7 @@ module variables
 
   private
   public :: laplacian, get_density, get_phase, get_norm, &
-            energy, momentum, linelength, setup_itable, para_range, &
+            energy, mass, momentum, linelength, setup_itable, para_range, &
             array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
             unpack_y, get_unit_no
 
@@ -404,6 +404,30 @@ module variables
 
     return
   end subroutine energy
+  
+  subroutine mass(in_var, M)
+    ! Calculate the mass
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, intent(out) :: M
+    real :: int_z
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
+    real, dimension(jsta:jend,ksta:kend) :: int_x
+    real, dimension(ksta:kend) :: int_y
+    integer :: j, k
+
+    int_var = abs(in_var)**2
+
+    call integrate_x(int_var, int_x)
+    call integrate_y(int_x, int_y)
+    call integrate_z(int_y, int_z)
+    
+    M = int_z
+
+    return
+  end subroutine mass
   
   subroutine momentum(in_var, P)
     ! Calculate the momentum
