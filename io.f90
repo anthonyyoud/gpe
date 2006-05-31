@@ -176,16 +176,23 @@ module io
     implicit none
 
     real, intent(in) :: time
-    complex, dimension(0:nx1,jsta:jsta,ksta:kend), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jsta,ksta:kend) :: a
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     real :: M, n0
+    integer :: j, k
 
     call fft(in_var, a, 'backward', .true.)
-    n0 = abs(a(0,0,0))**2
+    do k=ksta,kend
+      do j=jsta,jend
+        if ((j==0) .and. (k==0)) then
+          n0 = abs(a(0,0,0))**2
+        end if
+      end do
+    end do
     call mass(in_var, M)
     
     if (myrank == 0) then
-      write (15, '(2e17.9)') time, M, n0/M
+      write (15, '(3e17.9)') time, M, n0
     end if
 
     return

@@ -7,14 +7,14 @@ module parameters
 
   integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 8
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nx           = 32
+  integer,      parameter :: ny           = 32
+  integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 100.0
-  real,         parameter :: xr           = 32.0
-  real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 32.0
+  real,         parameter :: end_time     = 0.0 !1000.0
+  real,         parameter :: xr           = 16.0
+  real,         parameter :: yr           = 16.0
+  real,         parameter :: zr           = 16.0
   real,         parameter :: Urhs         = 0.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
@@ -31,7 +31,7 @@ module parameters
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-8
+  real, parameter :: eps              = 1e-7
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20

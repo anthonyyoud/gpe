@@ -76,6 +76,9 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
+  !call condensed_particles(t, psi%new)
+  !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  !stop
   
   ! Call the FFT routine to transform the initial condition
   !call fft(psi%new)
@@ -146,7 +149,7 @@ program gpe
       call save_momentum(t, psi%old)
       call save_time(t, psi%new)
       call save_linelength(t, psi%old)
-      !call condensed_particles(t, psi%new)
+      call condensed_particles(t, psi%new)
     end if
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then

@@ -133,15 +133,27 @@ module ic
   end subroutine state_restart
 
   subroutine random_phase(out_var)
+    ! Strongly nonequilibrium initial condition
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
-    real :: phi
-    integer :: i, j, k, amp
+    integer, dimension(1) :: seed
+    real, parameter :: amp = 1.0
+    real :: phi, rand
+    integer :: i, j, k, irand
 
-    call random_seed()
+    if (myrank == 0) then
+      call random_seed()
+      call random_number(rand)
+      irand = int(rand*100000)
+    end if
+
+    call MPI_BCAST(irand, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+
+    seed(1) = myrank+irand
+    call random_seed(put=seed)
 
     do k=ksta,kend
       do j=jsta,jend
@@ -151,7 +163,9 @@ module ic
         end do
       end do
     end do
+    print*, phi
 
+    !out_var = a
     call fft(a, out_var, 'forward', .false.)
   
     return
@@ -644,6 +658,11 @@ module ic
       call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
                          MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 
+      !if (dir == 'backward') then
+        ! Renormalise
+        tmp_var = tmp_var / (nx*ny*nz)
+      !end if
+
       ! Distribute the transformed data
       do k=ksta,kend
         do j=jsta,jend
@@ -652,7 +671,7 @@ module ic
       end do
     else
       ! Just fill the output with the zero mode complex amplitude
-      out_var = local_data(0)
+      out_var = local_data(0) !/ (nx*ny*nz)
     end if
 
     !open (unit_no, file=proc_dir//'fft.dat')
