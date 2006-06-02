@@ -176,19 +176,18 @@ module io
       write (15, '(3e17.9)') time, M, n0
     end if
     
-    open (unit_no, status='unknown', &
-                   file=proc_dir//'spectrum'//itos(p)//'.dat')
     do k=ksta,kend
       do j=jsta,jend
         if (j/=k) cycle
         do i=0,nx1
           if (i/=j) cycle
+          open (unit_no, position='append', &
+                         file=proc_dir//'spectrum'//itos(p)//'.dat')
           write (unit_no, '(3i5,e17.9)') i, j, k, abs(a(i,j,k))**2
+          close (unit_no)
         end do
       end do
     end do
-    
-    close (unit_no)
     
     return
   end subroutine condensed_particles

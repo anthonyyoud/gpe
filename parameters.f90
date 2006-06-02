@@ -11,7 +11,7 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: end_time     = 20.0 !1000.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 16.0
