@@ -67,7 +67,7 @@ module parameters
   end type ring_param
 
   !type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,8.0,-1.0)
-  type (ring_param), parameter :: vr1 = ring_param(-20.0,0.0,6.0,-1.0)
+  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,4.0,-1.0)
   !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
   type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
   type (ring_param), parameter :: vr3 = ring_param(  1.0,-30.1,30.1,-1.0)

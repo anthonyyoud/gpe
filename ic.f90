@@ -48,6 +48,7 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     integer,                                       intent(out) :: p
+    complex, dimension(0:nx1,jsta:jend,ksta:kend)              :: tmp_var
     logical :: state_exist
 
     ! If this is a restarted run...
@@ -87,7 +88,8 @@ module ic
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !out_var = wall() * &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      call random_phase(out_var)
+      call random_phase(tmp_var)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
     end if
   
     return
