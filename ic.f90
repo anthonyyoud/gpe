@@ -140,10 +140,17 @@ module ic
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     integer, dimension(1) :: seed
-    real, parameter :: amp = 1.0
-    real :: phi, rand
-    integer :: i, j, k, irand
+    real :: phi, rand, nv, enerv, ev, amp, kc2
+    integer :: i, j, k, ii2, jj2, kk2, irand
+    
+    nv = 0.5
+    enerv = 0.8
+    ev = ((0.5*nx/pi)**2)*enerv
+    amp = sqrt(((0.11095279993106999*nv**2.5)*(nx*ny*nz))/(ev**1.5))
+    kc2 = (1.666666666666666*ev)/nv
 
+    print*, amp, kc2
+    
     if (myrank == 0) then
       call random_seed()
       call random_number(rand)
@@ -156,14 +163,32 @@ module ic
     call random_seed(put=seed)
 
     do k=ksta,kend
+      if (k <= nz1/2+1) then
+        kk2 = k**2
+      else
+        kk2 = (nz1-k)**2
+      end if
       do j=jsta,jend
+        if (j <= ny1/2+1) then
+          jj2 = j**2
+        else
+          jj2 = (ny1-j)**2
+        end if
         do i=0,nx1
-          call random_number(phi)
-          a(i,j,k) = amp*exp(2.0*pi*eye*phi)
+          if (i <= nx1/2+1) then
+            ii2 = i**2
+          else
+            ii2 = (nx1-i)**2
+          end if
+          if ((ii2 + jj2 + kk2) <= kc2) then
+            call random_number(phi)
+            a(i,j,k) = amp*exp(2.0*pi*eye*phi)
+          else
+            a(i,j,k) = 0.0
+          end if
         end do
       end do
     end do
-    print*, phi
 
     !out_var = a
     call fft(a, out_var, 'forward', .false.)
@@ -641,7 +666,7 @@ module ic
     call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
     
     ! If we're not just finding out the occupation number then distribute
-    if (.not. particles) then
+    !if (.not. particles) then
       ! Set up another temporary array to (eventually) get the transformed data
       ! back into the original distribution scheme
       tmp = 0.0
@@ -660,7 +685,7 @@ module ic
 
       !if (dir == 'backward') then
         ! Renormalise
-        tmp_var = tmp_var / (nx*ny*nz)
+        tmp_var = tmp_var / sqrt(real(nx*ny*nz))
       !end if
 
       ! Distribute the transformed data
@@ -669,10 +694,10 @@ module ic
           out_var(:,j,k) = tmp_var(:,j,k)
         end do
       end do
-    else
-      ! Just fill the output with the zero mode complex amplitude
-      out_var = local_data(0) !/ (nx*ny*nz)
-    end if
+    !else
+    !  ! Just fill the output with the zero mode complex amplitude
+    !  out_var = local_data(0) !/ (nx*ny*nz)
+    !end if
 
     !open (unit_no, file=proc_dir//'fft.dat')
     !do j=0,ny1

@@ -9,7 +9,7 @@ program gpe
   use variables
   implicit none
 
-  integer    :: p_start=0, n=0
+  integer    :: p_start=0, n=0, m=0
   real       :: norm=0.0, prev_norm=0.0
   type (var) :: psi
   logical    :: run_exist, state_exist
@@ -96,6 +96,7 @@ program gpe
   call get_norm(psi%new, prev_norm)
 
   n = int(t/save_rate2)
+  m = int(t/save_rate3)
  
   ! Begin real time loop
   do while (t <= end_time)
@@ -149,12 +150,18 @@ program gpe
       call save_momentum(t, psi%old)
       call save_time(t, psi%new)
       call save_linelength(t, psi%old)
+      !call condensed_particles(t, psi%new)
+    end if
+    
+    if (t+im_t >= save_rate3*m) then
       call condensed_particles(t, psi%new)
+      m = m+1
     end if
     
     !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
     !if (mod(p, save_rate2) == 0) then
     if (t+im_t >= save_rate2*n) then
+      !call condensed_particles(t, psi%new)
       if (save_zeros) then
         ! Find the zeros of the wave function
         call get_zeros(psi%old, p)

@@ -172,14 +172,14 @@ module io
     ! Save the mass
     use parameters
     use ic, only : fft
-    use variables, only : mass
+    use variables, only : mass, unit_no
     implicit none
 
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     real :: M, n0
-    integer :: j, k
+    integer :: i, j, k, xpos, ypos, zpos
 
     call fft(in_var, a, 'backward', .true.)
     do k=ksta,kend
@@ -194,7 +194,38 @@ module io
     if (myrank == 0) then
       write (15, '(3e17.9)') time, M, n0
     end if
+    
+    ypos = ny/2
+    zpos = nz/2
 
+    !do k=ksta,kend
+    !  do j=jsta,jend
+    !    if ((j==ypos) .and. (k==zpos)) then
+    !      open (unit_no, status='unknown', &
+    !                     file=proc_dir//'spectrum'//itos(p)//'.dat')
+    !      do i=0,nx1
+    !        write (unit_no, '(i5,e17.9)') i, abs(a(i,ypos,zpos))**2
+    !      end do
+    !      close (unit_no)
+    !    exit
+    !    end if
+    !  end do
+    !end do
+    
+    open (unit_no, status='unknown', &
+                   file=proc_dir//'spectrum'//itos(p)//'.dat')
+    do k=ksta,kend
+      do j=jsta,jend
+        if (j/=k) cycle
+        do i=0,nx1
+          if (i/=j) cycle
+          write (unit_no, '(3i5,e17.9)') i, j, k, abs(a(i,j,k))**2
+        end do
+      end do
+    end do
+    
+    close (unit_no)
+    
     return
   end subroutine condensed_particles
   

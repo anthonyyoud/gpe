@@ -11,7 +11,7 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 0.0 !1000.0
+  real,         parameter :: end_time     = 1000.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 16.0
@@ -21,7 +21,8 @@ module parameters
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
-  real,         parameter :: save_rate2   = 5.0
+  real,         parameter :: save_rate2   = 10.0
+  real,         parameter :: save_rate3   = 1.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_zeros   = .false.
