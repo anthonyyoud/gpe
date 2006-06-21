@@ -348,7 +348,7 @@ module variables
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: density
     integer :: j, k
 
-    density = abs(in_var)
+    density = abs(in_var)**2
 
     return
   end subroutine get_density

@@ -353,9 +353,9 @@ module solve
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          diss(i,j,k) = amp*(1.0+tanh(x(i)-a)*tanh(x(i)+a)) + &
-                        amp*(1.0+tanh(y(j)-b)*tanh(y(j)+b)) + &
-                        amp*(1.0+tanh(z(k)-c)*tanh(z(k)+c))
+          diss(i,j,k) = amp*((1.0+tanh(x(i)-a)*tanh(x(i)+a)) + &
+                             (1.0+tanh(y(j)-b)*tanh(y(j)+b)) + &
+                             (1.0+tanh(z(k)-c)*tanh(z(k)+c)))
         end do
       end do
     end do

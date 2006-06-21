@@ -76,6 +76,7 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
+  !call idl_surface(p, psi%new)
   !call condensed_particles(t, psi%new)
   !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   !stop
@@ -181,7 +182,7 @@ program gpe
 
     ! Periodically save the state
     !if (mod(p, save_rate2) == 0) then
-    if (t+im_t >= 10.0*n) then
+    if (t+im_t >= 1.0*n) then
       ! 0 is a flag which means the run has not yet ended
       call end_state(psi%new, p, 0)
     end if

@@ -11,10 +11,10 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 20.0 !1000.0
-  real,         parameter :: xr           = 16.0
-  real,         parameter :: yr           = 16.0
-  real,         parameter :: zr           = 16.0
+  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: xr           = 8.0
+  real,         parameter :: yr           = 8.0
+  real,         parameter :: zr           = 8.0
   real,         parameter :: Urhs         = 0.0
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
@@ -48,11 +48,12 @@ module parameters
     real :: sgn         ! sign of the argument of the line
   end type line_param
 
-  !type (line_param), parameter :: vl1 = line_param( 0.0, 3.0, 0.1,33.0, 1.0)
-  type (line_param), parameter :: vl1 = line_param( 0.0, 1.1, 0.1,14.6, 1.0)
+  !type (line_param), parameter :: vl1 = line_param( 0.0, 0.0, 0.0,33.0, 1.0)
+  type (line_param), parameter :: vl1 = line_param( 0.0, 3.0, 0.1,33.0, 1.0)
+  !type (line_param), parameter :: vl1 = line_param( 0.0, 1.1, 0.1,14.6, 1.0)
   type (line_param), parameter :: vl2 = line_param(-3.0, 3.0,-0.0,33.0,-1.0)
-  !type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
-  type (line_param), parameter :: vl3 = line_param( 0.0,-1.1,-0.1,14.6,-1.0)
+  type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
+  !type (line_param), parameter :: vl3 = line_param( 0.0,-1.1,-0.1,14.6,-1.0)
   type (line_param), parameter :: vl4 = line_param(-3.0,-3.0,-0.0,33.0, 1.0)
   !  
   ! *************************************************************************

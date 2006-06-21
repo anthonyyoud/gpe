@@ -163,6 +163,24 @@ module io
     integer :: i, j, k
 
     call fft(in_var, a, 'backward', .true.)
+    
+    !call fft(a, in_var, 'forward', .true.)
+    !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
+    !      form='unformatted')
+    !
+    !write (unit_no) nx, ny, nz
+    !write (unit_no) nyprocs, nzprocs
+    !write (unit_no) jsta, jend, ksta, kend
+    !write (unit_no) abs(in_var)
+    !write (unit_no) x
+    !write (unit_no) y
+    !write (unit_no) z
+
+    !close (unit_no)
+
+    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+    !stop
+    
     do k=ksta,kend
       do j=jsta,jend
         if ((j==0) .and. (k==0)) then
@@ -269,7 +287,7 @@ module io
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) abs(in_var)
+    write (unit_no) abs(in_var)**2
     write (unit_no) x
     write (unit_no) y
     write (unit_no) z
