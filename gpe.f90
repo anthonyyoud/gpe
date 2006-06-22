@@ -11,7 +11,7 @@ program gpe
 
   integer    :: p_start=0, n=0, m=0
   real       :: norm=0.0, prev_norm=0.0
-  type (var) :: psi
+  type (var) :: psi, test
   logical    :: run_exist, state_exist
 
   ! Initialise the MPI process grid
@@ -41,6 +41,7 @@ program gpe
     allocate(psi%old2(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
   end if
   allocate(psi%new(0:nx1,jsta:jend,ksta:kend))
+  allocate(test%new(0:nx1,jsta:jend,ksta:kend))
   ! (work send and receive arrays)
   allocate(works1(0:nx1,2,kksta:kkend))
   allocate(works2(0:nx1,2,kksta:kkend))
@@ -76,7 +77,9 @@ program gpe
 
   ! Get the initial conditions
   call ics(psi%new, p_start)
-  !call idl_surface(p, psi%new)
+  call idl_surface(p, psi%new)
+  !call fft(psi%new, test%new, 'forward', .false.)
+  !call fft(test%new, psi%new, 'backward', .false.)
   !call condensed_particles(t, psi%new)
   !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   !stop

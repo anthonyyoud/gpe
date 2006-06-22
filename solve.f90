@@ -342,7 +342,6 @@ module solve
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rhs
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidx, dpsidz
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: diss
-    real, parameter :: amp = 0.005
     real :: a, b, c
     integer :: i, j, k
     
@@ -353,9 +352,9 @@ module solve
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          diss(i,j,k) = amp*((1.0+tanh(x(i)-a)*tanh(x(i)+a)) + &
-                             (1.0+tanh(y(j)-b)*tanh(y(j)+b)) + &
-                             (1.0+tanh(z(k)-c)*tanh(z(k)+c)))
+          diss(i,j,k) = diss_amp*((1.0+tanh(x(i)-a)*tanh(x(i)+a)) + &
+                                  (1.0+tanh(y(j)-b)*tanh(y(j)+b)) + &
+                                  (1.0+tanh(z(k)-c)*tanh(z(k)+c)))
         end do
       end do
     end do

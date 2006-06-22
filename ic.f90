@@ -62,7 +62,8 @@ module ic
         print*, 'Getting restart conditions'
       end if
       ! Get saved data since this is a restart
-      call state_restart(out_var, p)
+      call state_restart(tmp_var, p)
+      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
     else
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
@@ -680,6 +681,19 @@ module ic
         out_var(:,j,k) = tmp_var(:,j,k)
       end do
     end do
+
+    !if (dir == 'backward') then
+    !  open (60, file=proc_dir//'fft0000000.dat', form='unformatted')
+    !  write (60) nx, ny, nz
+    !  write (60) nyprocs, nzprocs
+    !  write (60) jsta, jend, ksta, kend
+    !  write (60) abs(out_var)**2
+    !  write (60) x
+    !  write (60) y
+    !  write (60) z
+    !  close (60)
+    !end if
+        
     
     ! Deallocate the allocated arrays
     deallocate(local_data)

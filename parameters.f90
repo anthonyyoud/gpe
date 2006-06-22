@@ -11,11 +11,12 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 8.0
-  real,         parameter :: yr           = 8.0
-  real,         parameter :: zr           = 8.0
-  real,         parameter :: Urhs         = 0.0
+  real,         parameter :: end_time     = 2000.0
+  real,         parameter :: xr           = 16.0
+  real,         parameter :: yr           = 16.0
+  real,         parameter :: zr           = 16.0
+  real,         parameter :: Urhs         = 0.35
+  real,         parameter :: diss_amp     = 0.005
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
@@ -26,7 +27,7 @@ module parameters
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .false.
+  logical,      parameter :: restart      = .true.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'

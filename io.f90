@@ -159,8 +159,8 @@ module io
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
-    real :: M, n0
-    integer :: i, j, k
+    real :: M, n0, temp, tot, tmp, rho0
+    integer :: i, j, k, k2, k4
 
     call fft(in_var, a, 'backward', .true.)
     
@@ -185,14 +185,36 @@ module io
       do j=jsta,jend
         if ((j==0) .and. (k==0)) then
           n0 = abs(a(0,0,0))**2
+          exit
         end if
       end do
     end do
     call mass(in_var, M)
     
+    call MPI_BCAST(n0, 1, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
+
+    tmp = 0.0
+    rho0 = n0/(nx*ny*nz)
+    
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          if (i==0 .and. j==0 .and. k==0) cycle
+          k2 = i**2 + j**2 + k**2
+          k4 = k2**2
+          tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
+        end do
+      end do
+    end do
+    
+    call MPI_REDUCE(tmp, tot, 1, MPI_REAL, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+
     if (myrank == 0) then
-      write (15, '(3e17.9)') time, M, n0
+      temp = (M-n0)/tot
+      write (15, '(4e17.9)') time, M, n0, temp
     end if
+
     
     do k=ksta,kend
       do j=jsta,jend
