@@ -15,8 +15,8 @@ fi
 #PARAMETERS
 #****************************************************************************
 NPROCS=32
-EXE=ulimit_hack.sh
-DATA='parameters.f90 gpe'
+EXE=gpe
+DATA='parameters.f90'
 DATA_DIR=`pwd`
 PROC_DIR=proc
 case $HOST in
@@ -62,11 +62,10 @@ case $HOST in
     done
     uniq $PBS_NODEFILE > $HOSTFILE
     NUMHOSTS=`cat $HOSTFILE | wc -l`
-    mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
-    mpdtrace
+    #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
+    #mpdtrace
     time mpiexec -l -n $NPROCS $EXE
-    #mpiexec -l -n $NPROCS date
-    mpdallexit
+    #mpdallexit
     rm $EXE $HOSTFILE
     
     TARFILE=data.tar

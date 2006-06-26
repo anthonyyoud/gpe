@@ -362,15 +362,15 @@ module solve
     call deriv_x(in_var, dpsidx)
     !call deriv_z(in_var, dz)
     
-    !rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
-    !                (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
-    !                         in_var(:,jsta:jend,ksta:kend) ) + &
-    !                 Urhs*dpsidx
-                     
-    rhs = eye * ( laplacian(in_var) - &
-                    (abs(in_var(:,jsta:jend,ksta:kend))**2)*&
-                         in_var(:,jsta:jend,ksta:kend) ) + &
+    rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
+                    (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+                             in_var(:,jsta:jend,ksta:kend) ) + &
                      Urhs*dpsidx
+                     
+    !rhs = eye * ( laplacian(in_var) - &
+    !                (abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+    !                     in_var(:,jsta:jend,ksta:kend) ) + &
+    !                 Urhs*dpsidx
 
     return
   end subroutine get_rhs

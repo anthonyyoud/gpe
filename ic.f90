@@ -89,8 +89,8 @@ module ic
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !out_var = wall() * &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      call random_phase(tmp_var)
-      out_var = tmp_var !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      !call random_phase(tmp_var)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
     end if
   
     return

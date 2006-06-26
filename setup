@@ -14,6 +14,5 @@ if [ $? == 0 ]; then
   cp parameters.f90 $1
   cp run_script.sh $1
   cp transfer.sh $1
-  cp ulimit_hack.sh $1
   cd $1
 fi

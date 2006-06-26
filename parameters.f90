@@ -11,7 +11,7 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 2000.0
+  real,         parameter :: end_time     = 200.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 16.0
@@ -27,7 +27,7 @@ module parameters
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .true.
+  logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
