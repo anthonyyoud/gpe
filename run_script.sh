@@ -3,6 +3,7 @@
 #PBS -j oe -o run.log
 
 TALISMAN=master
+NODED=noded
 GIGA=giga
 HOST=`hostname -s` && HOST=${HOST/[0-9]*}
 
@@ -29,6 +30,15 @@ case $HOST in
   ;;
   $TALISMAN)
     RUN_DIR=`pwd`
+    EXE=ulimit_hack.sh
+    DATA='parameters.f90 gpe'
+    HOSTFILE=mpd.hosts
+  ;;
+  $NODED)
+    RUN_DIR=`pwd`
+    EXE=ulimit_hack.sh
+    DATA='parameters.f90 gpe'
+    HOSTFILE=mpd.hosts.64
   ;;
 esac
 
@@ -87,7 +97,7 @@ case $HOST in
     done
     rm -rf $RUN_DIR
   ;;
-  $TALISMAN)
+  $TALISMAN|$NODED)
     for i in `seq 0 $(( $NPROCS-1 ))`
     do
       if [ $i -lt 10 ]; then
@@ -98,7 +108,7 @@ case $HOST in
     done
     
     echo Making directories and copying files...
-    for node in `cat ${HOME}/mpd.hosts`
+    for node in `cat ${HOME}/$HOSTFILE`
     do
       ssh $node "mkdir -p $RUN_DIR"
       if [ $? -eq 0 ]; then
@@ -111,18 +121,23 @@ case $HOST in
     echo Done
     
     echo Starting job...
-    time mpiexec -1 -l -n $NPROCS $EXE
+    if [ $HOST = $TALISMAN ]; then
+      time mpiexec -1 -l -n $NPROCS $EXE
+    else
+      time mpiexec -l -n $NPROCS $EXE
+    fi
     echo Done
     
     echo Tarring up directories and copying back to master...
-    for node in `cat ${HOME}/mpd.hosts`
+    TARFILE=dirs.tar
+    for node in `cat ${HOME}/$HOSTFILE | grep -v noded1`
     do
-      ssh $node "cd $RUN_DIR && tar cvf dirs.tar $PROC_DIR* &> /dev/null \
+      ssh $node "cd $RUN_DIR && tar cvf $TARFILE $PROC_DIR* &> /dev/null \
                  && rm -r $PROC_DIR*"
       if [ $? -eq 0 ]; then
         scp $node:$RUN_DIR/* $RUN_DIR &> /dev/null && \
-        tar xvf dirs.tar &> /dev/null && \
-        rm dirs.tar && \
+        tar xvf $TARFILE &> /dev/null && \
+        rm $TARFILE && \
         ssh $node "rm -r $RUN_DIR"
       else
         echo "ERROR: tar failed on node $node"
