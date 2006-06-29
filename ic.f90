@@ -4,7 +4,7 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics, fft
+  public :: get_grid, ics, fft, wall, sphere
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
@@ -85,12 +85,14 @@ module ic
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
-      !out_var = sphere() !* &
+      out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      !out_var = wall() * &
+      !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) * &
+      !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
+      !          vortex_line(vl1)
     end if
   
     return
@@ -104,7 +106,7 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     integer,                                       intent(out) :: p
-    real    :: dt_prev
+    complex :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev
 
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
@@ -119,6 +121,10 @@ module ic
     read (unit_no) out_var
 
     close (unit_no)
+
+    if (real(dt_prev) == 0.0) then
+      dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+    end if
 
     select case (scheme)
       case ('rk_adaptive')
@@ -506,17 +512,17 @@ module ic
     real, parameter :: pos = -30.0
     integer :: i, j, k
 
-    do k=ksta,kend
-      wall(:,:,k) = 0.5*(1.0+tanh(z(k)-pos))
-    end do
-    
     !do k=ksta,kend
-    !  if (z(k) <= pos) then
-    !    wall(:,:,k) = 0.0
-    !  else
-    !    wall(:,:,k) = 1.0
-    !  end if
+    !  wall(:,:,k) = 0.5*(1.0+tanh(z(k)-pos))
     !end do
+    
+    do k=ksta,kend
+      if (z(k) <= pos) then
+        wall(:,:,k) = 0.0
+      else
+        wall(:,:,k) = 1.0
+      end if
+    end do
 
     return
   end function wall

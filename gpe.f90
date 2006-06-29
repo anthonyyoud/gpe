@@ -207,18 +207,18 @@ program gpe
 
     ! Calculate the relative difference of successive norms.  If the difference
     ! is small enough switch to real time
-    if (.not. real_time) then
-      if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
-        real_time = .true.
-        switched = .true.
-        im_t = 0.0
-        call idl_surface(p, psi%new)
-        call save_surface(p, psi%new)
-        if (myrank == 0) then
-          print*, 'Switching to real time'
-        end if
-      end if
-    end if
+    !if (.not. real_time) then
+    !  if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
+    !    real_time = .true.
+    !    switched = .true.
+    !    im_t = 0.0
+    !    call idl_surface(p, psi%new)
+    !    call save_surface(p, psi%new)
+    !    if (myrank == 0) then
+    !      print*, 'Switching to real time'
+    !    end if
+    !  end if
+    !end if
     
     ! Flag to denote whether this is the first time step after switching to
     ! real time

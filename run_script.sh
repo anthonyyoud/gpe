@@ -9,15 +9,15 @@ HOST=`hostname -s` && HOST=${HOST/[0-9]*}
 
 if [ $HOST == $GIGA ]; then
   cd $PBS_O_WORKDIR
-  uniq $PBS_NODEFILE
+  #uniq $PBS_NODEFILE
 fi
 
 #****************************************************************************
 #PARAMETERS
 #****************************************************************************
-NPROCS=32
-EXE=gpe
-DATA='parameters.f90'
+NPROCS=16
+EXE=ulimit_hack.sh #gpe
+DATA='parameters.f90 gpe'
 DATA_DIR=`pwd`
 PROC_DIR=proc
 case $HOST in
@@ -65,7 +65,6 @@ case $HOST in
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
-        ulimit -s
         $SSH $NODE "mkdir $RUN_DIR"
         $SCP -r $PROC_DIR* $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
       fi
