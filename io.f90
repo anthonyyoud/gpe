@@ -212,7 +212,7 @@ module io
 
     if (myrank == 0) then
       temp = (M-n0)/tot
-      write (15, '(4e17.9)') time, M, n0, temp
+      write (15, '(4e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), temp
     end if
 
     

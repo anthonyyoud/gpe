@@ -85,11 +85,12 @@ module ic
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
-      out_var = sphere() !* &
+      !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      !call random_phase(tmp_var)
+      call random_phase(tmp_var)
+      out_var = tmp_var
       !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) * &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
       !          vortex_line(vl1)
@@ -496,7 +497,7 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          sphere(i,j,k) = 0.5*(1.0+tanh(x(i)**2+y(j)**2+z(k)**2-rad**2))
+          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad))
         end do
       end do
     end do
