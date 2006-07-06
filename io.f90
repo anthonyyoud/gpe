@@ -152,13 +152,13 @@ module io
   subroutine condensed_particles(time, in_var)
     ! Save the mass
     use parameters
-    use ic, only : fft
+    use ic, only : fft, x, y, z
     use variables, only : mass, unit_no
     implicit none
 
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
     real :: M, n0, temp, tot, tmp, rho0
     integer :: i, j, k, k2, k4
 
@@ -181,6 +181,7 @@ module io
     !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
     !stop
     
+    ! Calculate the number of condensed particles
     do k=ksta,kend
       do j=jsta,jend
         if ((j==0) .and. (k==0)) then
@@ -189,13 +190,17 @@ module io
         end if
       end do
     end do
+
+    ! Calculate the mass
     call mass(in_var, M)
     
     call MPI_BCAST(n0, 1, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
 
     tmp = 0.0
+    ! Density of condensed particles
     rho0 = n0/(nx*ny*nz)
     
+    ! Temperature (?)
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
@@ -215,7 +220,7 @@ module io
       write (15, '(4e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), temp
     end if
 
-    
+    ! Save the spectrum
     do k=ksta,kend
       do j=jsta,jend
         if (j/=k) cycle
@@ -228,6 +233,34 @@ module io
         end do
       end do
     end do
+    
+    ! Save a filtered isosurface.  High-frequency harmonics are filtered
+    if (save_filter) then
+      do k=ksta,kend
+        do j=jsta,jend
+          do i=0,nx1
+            k2 = i**2 + j**2 + k**2
+            a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+          end do
+        end do
+      end do
+      
+      call fft(a, filtered, 'forward', .true.)
+      
+      open (unit_no, status='unknown', &
+                     file=proc_dir//'filtered'//itos(p)//'.dat', &
+                     form='unformatted')
+      
+      write (unit_no) nx, ny, nz
+      write (unit_no) nyprocs, nzprocs
+      write (unit_no) jsta, jend, ksta, kend
+      write (unit_no) abs(filtered)**2
+      write (unit_no) x
+      write (unit_no) y
+      write (unit_no) z
+
+      close (unit_no)
+    end if
     
     return
   end subroutine condensed_particles

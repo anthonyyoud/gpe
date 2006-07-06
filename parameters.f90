@@ -5,18 +5,19 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nyprocs      = 2
   integer,      parameter :: nzprocs      = 6
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nx           = 32
+  integer,      parameter :: ny           = 32
+  integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 16.0
-  real,         parameter :: yr           = 16.0
-  real,         parameter :: zr           = 16.0
+  real,         parameter :: xr           = 8.0
+  real,         parameter :: yr           = 8.0
+  real,         parameter :: zr           = 8.0
   real,         parameter :: Urhs         = 0.0 !0.24
   real,         parameter :: diss_amp     = 0.005
+  real,         parameter :: scal         = 0.632455532 !0.920540862
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
@@ -26,8 +27,9 @@ module parameters
   real,         parameter :: save_rate3   = 5.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
+  logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .false.
+  logical,      parameter :: restart      = .true.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
@@ -68,8 +70,8 @@ module parameters
     real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  !type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,8.0,-1.0)
-  type (ring_param), parameter :: vr1 = ring_param(-20.0, 0.0, 15.0, -1.0)
+  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,4.0,-1.0)
+  !type (ring_param), parameter :: vr1 = ring_param(-20.0, 0.0, 15.0, -1.0)
   !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
   !type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
   type (ring_param), parameter :: vr2 = ring_param(32.0, 6.0, 8.0, 1.0)
@@ -97,8 +99,10 @@ module parameters
   character(7)       :: proc_dir = 'proc**/'
   logical            :: first_write = .true.
   complex            :: dt
-  real               :: t           = 0
-  real               :: im_t        = 0
+  real               :: t           = 0.0
+  real               :: im_t        = 0.0
+  real               :: kc2         = 0.0
+  real               :: comp_amp    = 0.0
   real,    parameter :: pi          = 3.14159265358979
   real,    parameter :: xl          = -xr
   real,    parameter :: yl          = -yr

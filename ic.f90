@@ -4,7 +4,7 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics, fft, wall, sphere
+  public :: get_grid, ics, fft, get_kc_amp, wall, sphere
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
@@ -81,7 +81,7 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = vortex_line(vl1) * &
+      !out_var = vortex_line(vl1) !* &
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
@@ -91,7 +91,7 @@ module ic
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       call random_phase(tmp_var)
       out_var = tmp_var
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) * &
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
       !          vortex_line(vl1)
     end if
@@ -150,16 +150,10 @@ module ic
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     integer, dimension(1) :: seed
-    real :: phi, rand, nv, enerv, ev, amp, kc2
+    real :: phi, rand
     integer :: i, j, k, ii2, jj2, kk2, irand
     
-    nv = 0.5
-    enerv = 0.8
-    ev = ((0.5*nx/pi)**2)*enerv
-    amp = sqrt(((0.11095279993106999*nv**2.5)*(nx*ny*nz))/(ev**1.5))
-    kc2 = (1.666666666666666*ev)/nv
-
-    print*, amp, kc2
+    print*, comp_amp, kc2
     
     if (myrank == 0) then
       call random_seed()
@@ -192,7 +186,7 @@ module ic
           end if
           if ((ii2 + jj2 + kk2) <= kc2) then
             call random_number(phi)
-            a(i,j,k) = amp*exp(2.0*pi*eye*phi)
+            a(i,j,k) = comp_amp*exp(2.0*pi*eye*phi)
           else
             a(i,j,k) = 0.0
           end if
@@ -204,6 +198,22 @@ module ic
   
     return
   end subroutine random_phase
+
+  subroutine get_kc_amp()
+    ! Get the cutoff wavenumber and amplitude of the random phase IC
+    use parameters
+    implicit none
+    
+    real :: nv, enerv, ev
+    
+    nv = 0.5
+    enerv = 0.8
+    ev = ((0.5*nx/pi)**2)*enerv
+    comp_amp = sqrt(((0.11095279993106999*nv**2.5)*(nx*ny*nz))/(ev**1.5))
+    kc2 = (1.666666666666666*ev)/nv
+
+    return
+  end subroutine get_kc_amp
 
   function fermi()
     ! Thomas-Fermi initial condition
@@ -297,8 +307,8 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          d1(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)+r0)**2 )
-          d2(i,j,k) = sqrt( (x(i)-x0)**2 + (s(j,k)-r0)**2 )
+          d1(i,j,k) = sqrt( (scal*(x(i)-x0))**2 + (scal*(s(j,k)+r0))**2 )
+          d2(i,j,k) = sqrt( (scal*(x(i)-x0))**2 + (scal*(s(j,k)-r0))**2 )
         end do
       end do
     end do
@@ -314,8 +324,8 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          vortex_ring(i,j,k) = rr1(i,j,k)*((x(i)-x0)+dir*eye*(s(j,k)+r0)) * &
-                               rr2(i,j,k)*((x(i)-x0)-dir*eye*(s(j,k)-r0))
+          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(x(i)-x0))+dir*eye*(scal*(s(j,k)+r0))) * &
+                               rr2(i,j,k)*((scal*(x(i)-x0))-dir*eye*(scal*(s(j,k)-r0)))
         end do
       end do
     end do

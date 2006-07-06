@@ -75,12 +75,15 @@ program gpe
   ! Get the space mesh
   call get_grid()
 
+  ! Get the cutoff wavenumber and amplitude
+  call get_kc_amp()
+
   ! Get the initial conditions
   call ics(psi%new, p_start)
   call idl_surface(p, psi%new)
   !call fft(psi%new, test%new, 'forward', .false.)
   !call fft(test%new, psi%new, 'backward', .false.)
-  !call condensed_particles(t, psi%new)
+  call condensed_particles(t, psi%new)
   !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   !stop
   
