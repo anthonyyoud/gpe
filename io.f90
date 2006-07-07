@@ -333,8 +333,13 @@ module io
     implicit none
 
     integer, intent(in) :: p
-    complex, intent(in) :: in_var(0:nx1,jsta:jend,ksta:kend)
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: density
     integer :: i, j, k
+
+    density = abs(in_var)**2
+
+    call get_minmax(density, 'dens')
 
     open (unit_no, status='unknown', file=proc_dir//'u_idl'//itos(p)//'.dat', &
           form='unformatted')
@@ -342,7 +347,7 @@ module io
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) abs(in_var)**2
+    write (unit_no) density
     write (unit_no) x
     write (unit_no) y
     write (unit_no) z
@@ -352,6 +357,44 @@ module io
     return
   end subroutine idl_surface
 
+  subroutine get_minmax(in_var, var)
+    use parameters
+    implicit none
+
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(2) :: maxs, maxr, mins, minr
+    character(*), intent(in) :: var
+    
+    maxs(1) = maxval(in_var)
+    maxs(2) = 0.0
+    mins(1) = minval(in_var)
+    mins(2) = 0.0
+    
+    call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
+                       MPI_COMM_WORLD, ierr)
+                       
+    call MPI_ALLREDUCE(mins, minr, 1, MPI_2REAL, MPI_MINLOC, &
+                       MPI_COMM_WORLD, ierr)
+
+    if (minr(1) < minvar) then
+      minvar = minr(1)
+    end if
+
+    if (maxr(1) > maxvar) then
+      maxvar = maxr(1)
+    end if
+    
+    if (myrank == 0) then
+      print*, minvar, maxvar
+      open (16, file='minmax_'//var//'.dat', form='unformatted')
+      write (16) minvar
+      write (16) maxvar
+      close (16)
+    end if
+
+    return
+  end subroutine get_minmax
+    
   subroutine end_state(in_var, p, flag)
     ! Save variables for use in a restarted run.  Each process saves its own
     ! bit

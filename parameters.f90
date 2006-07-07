@@ -6,20 +6,20 @@ module parameters
   include 'mpif.h'
 
   integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 6
-  integer,      parameter :: nx           = 32
-  integer,      parameter :: ny           = 32
-  integer,      parameter :: nz           = 32
+  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 8.0
-  real,         parameter :: yr           = 8.0
-  real,         parameter :: zr           = 8.0
+  real,         parameter :: end_time     = 2000.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 32.0
   real,         parameter :: Urhs         = 0.0 !0.24
   real,         parameter :: diss_amp     = 0.005
-  real,         parameter :: scal         = 0.632455532 !0.920540862
+  real,         parameter :: scal         = 1.0 !0.632455532 !0.920540862
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
@@ -27,7 +27,7 @@ module parameters
   real,         parameter :: save_rate3   = 5.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
-  logical,      parameter :: save_filter  = .true.
+  logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .true.
   logical                 :: real_time    = .true.
@@ -35,7 +35,7 @@ module parameters
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-7
+  real, parameter :: eps              = 1e-4
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -51,8 +51,8 @@ module parameters
     real :: sgn         ! sign of the argument of the line
   end type line_param
 
-  type (line_param), parameter :: vl1 = line_param( 0.0, 0.0, 0.0,33.0, 1.0)
-  !type (line_param), parameter :: vl1 = line_param( 0.0, 3.0, 0.1,33.0, 1.0)
+  !type (line_param), parameter :: vl1 = line_param( 0.0, 0.0, 0.0,33.0, 1.0)
+  type (line_param), parameter :: vl1 = line_param(-20.0, 0.0, 0.0,33.0, 1.0)
   !type (line_param), parameter :: vl1 = line_param( 0.0, 1.1, 0.1,14.6, 1.0)
   type (line_param), parameter :: vl2 = line_param(-3.0, 3.0,-0.0,33.0,-1.0)
   type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
@@ -70,8 +70,8 @@ module parameters
     real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,4.0,-1.0)
-  !type (ring_param), parameter :: vr1 = ring_param(-20.0, 0.0, 15.0, -1.0)
+  !type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,4.0,-1.0)
+  type (ring_param), parameter :: vr1 = ring_param(-20.0, 0.0, 15.0, -1.0)
   !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
   !type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
   type (ring_param), parameter :: vr2 = ring_param(32.0, 6.0, 8.0, 1.0)
@@ -103,6 +103,8 @@ module parameters
   real               :: im_t        = 0.0
   real               :: kc2         = 0.0
   real               :: comp_amp    = 0.0
+  real               :: maxvar     = 0.0
+  real               :: minvar     = 0.0
   real,    parameter :: pi          = 3.14159265358979
   real,    parameter :: xl          = -xr
   real,    parameter :: yl          = -yr

@@ -367,15 +367,15 @@ module solve
     !                         in_var(:,jsta:jend,ksta:kend) ) + &
     !                 Urhs*dpsidx
                      
-    rhs = eye * ( laplacian(in_var) - &
-                    (abs(in_var(:,jsta:jend,ksta:kend))**2)*&
-                         in_var(:,jsta:jend,ksta:kend) ) + &
-                     Urhs*dpsidx
+    !rhs = eye * ( laplacian(in_var) - &
+    !                (abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+    !                     in_var(:,jsta:jend,ksta:kend) ) + &
+    !                 Urhs*dpsidx
     
-    !rhs = (0.5*(eye+diss) * ( laplacian(in_var) + &
-    !                (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
-    !                         in_var(:,jsta:jend,ksta:kend) ) + &
-    !                 Urhs*dpsidx) * sphere()
+    rhs = (0.5*(eye+diss) * ( laplacian(in_var) + &
+                    (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+                             in_var(:,jsta:jend,ksta:kend) ) + &
+                     Urhs*dpsidx) * sphere()
 
     return
   end subroutine get_rhs
