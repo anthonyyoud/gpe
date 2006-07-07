@@ -66,6 +66,8 @@ module variables
     return
   end function laplacian
 
+! ***************************************************************************  
+
   subroutine get_unit_no()
     ! Get the unit number which each process can write to
     implicit none
@@ -74,6 +76,8 @@ module variables
 
     return
   end subroutine get_unit_no
+
+! ***************************************************************************  
 
   subroutine setup_itable()
     ! Set up the lookup table for neighbouring processes
@@ -110,6 +114,8 @@ module variables
     return
   end subroutine setup_itable
 
+! ***************************************************************************  
+
   subroutine para_range(n1, n2, nprocs, irank, ista, iend)
     ! Determine the start and end indices of the arrays on each process
     implicit none
@@ -126,6 +132,8 @@ module variables
 
     return
   end subroutine para_range
+
+! ***************************************************************************  
 
   subroutine array_len(jlen, klen)
     ! Determine the length of each array dimension on each process.  This 
@@ -144,6 +152,8 @@ module variables
     return
   end subroutine array_len
 
+! ***************************************************************************  
+
   subroutine neighbours()
     ! Determine neighbouring processes for each process
     use parameters
@@ -156,6 +166,8 @@ module variables
 
     return
   end subroutine neighbours
+
+! ***************************************************************************  
 
   subroutine send_recv_z(in_var)
     ! Send and receive boundary elements of each process to and from
@@ -207,6 +219,8 @@ module variables
     return
   end subroutine send_recv_z
 
+! ***************************************************************************  
+
   subroutine send_recv_y()
     ! Send and receive boundary elements of each process to and from
     ! neighbouring processes in the y-direction.  This data is NOT contiguous
@@ -237,6 +251,8 @@ module variables
 
     return
   end subroutine send_recv_y
+
+! ***************************************************************************  
 
   subroutine pack_y(in_var)
     ! Pack the non-contiguous boundary data for the y-direction into a
@@ -282,6 +298,8 @@ module variables
     return
   end subroutine pack_y
 
+! ***************************************************************************  
+
   subroutine unpack_y(in_var)
     ! Unpack the contiguous boundary data back into the non-contiguous array
     use parameters
@@ -325,6 +343,8 @@ module variables
     return
   end subroutine unpack_y
 
+! ***************************************************************************  
+
   subroutine get_phase(in_var, phase)
     ! Calculate the phase
     use parameters
@@ -339,6 +359,8 @@ module variables
     return
   end subroutine get_phase
 
+! ***************************************************************************  
+
   subroutine get_density(in_var, density)
     ! Calculate the density
     use parameters
@@ -352,6 +374,8 @@ module variables
 
     return
   end subroutine get_density
+
+! ***************************************************************************  
 
   subroutine get_norm(in_var, norm)
     ! Calculate the norm
@@ -376,6 +400,8 @@ module variables
 
     return
   end subroutine get_norm
+
+! ***************************************************************************  
 
   subroutine energy(in_var, E)
     ! Calculate the energy
@@ -405,6 +431,8 @@ module variables
     return
   end subroutine energy
   
+! ***************************************************************************  
+
   subroutine mass(in_var, M)
     ! Calculate the mass
     use parameters
@@ -429,6 +457,8 @@ module variables
     return
   end subroutine mass
   
+! ***************************************************************************  
+
   subroutine momentum(in_var, P)
     ! Calculate the momentum
     use parameters
@@ -507,6 +537,8 @@ module variables
     return
   end subroutine momentum
 
+! ***************************************************************************  
+
   subroutine integrate_x(in_var, x_int)
     ! Integrate a (3D) variable in x.  The x-direction is not parallelised so
     ! this integration is straight forward
@@ -532,6 +564,8 @@ module variables
     return
   end subroutine integrate_x
   
+! ***************************************************************************  
+
   subroutine integrate_y(in_var, y_int)
     ! Integrate a (2D) variable in y
     use parameters
@@ -575,6 +609,8 @@ module variables
     return
   end subroutine integrate_y
   
+! ***************************************************************************  
+
   subroutine integrate_z(in_var, z_int)
     ! Integrate a (1D) variable in z
     use parameters
@@ -614,6 +650,8 @@ module variables
 
     return
   end subroutine integrate_z
+
+! ***************************************************************************  
 
   function linelength(time, psi)
     ! Calculate the total line length of vortices over the whole box
@@ -884,5 +922,7 @@ module variables
 
     return
   end function linelength
+
+! ***************************************************************************  
 
 end module variables

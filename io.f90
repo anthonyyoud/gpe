@@ -32,6 +32,8 @@ module io
     return
   end function itos
 
+! ***************************************************************************  
+
   subroutine open_files()
     ! Open runtime files
     implicit none
@@ -50,6 +52,8 @@ module io
     return
   end subroutine open_files
 
+! ***************************************************************************  
+
   subroutine close_files()
     ! Close runtime files
     implicit none
@@ -66,6 +70,8 @@ module io
     return
   end subroutine close_files
 
+! ***************************************************************************  
+
   subroutine get_dirs()
     ! Get named directories where each process can write its own data
     use parameters
@@ -81,6 +87,8 @@ module io
 
     return
   end subroutine get_dirs
+
+! ***************************************************************************  
 
   subroutine save_time(time, in_var)
     ! Save time-series data
@@ -130,6 +138,8 @@ module io
     return
   end subroutine save_time
 
+! ***************************************************************************  
+
   subroutine save_energy(time, in_var)
     ! Save the energy
     use parameters
@@ -149,6 +159,8 @@ module io
     return
   end subroutine save_energy
   
+! ***************************************************************************  
+
   subroutine condensed_particles(time, in_var)
     ! Save the mass
     use parameters
@@ -265,6 +277,8 @@ module io
     return
   end subroutine condensed_particles
   
+! ***************************************************************************  
+
   subroutine save_momentum(time, in_var)
     ! Save the momentum
     use parameters
@@ -283,6 +297,8 @@ module io
 
     return
   end subroutine save_momentum
+
+! ***************************************************************************  
 
   subroutine save_surface(p, in_var)
     ! Save 2D surface data for use in gnuplot.  The data is saved separately on
@@ -323,6 +339,8 @@ module io
     return
   end subroutine save_surface
   
+! ***************************************************************************  
+
   subroutine idl_surface(p, in_var)
     ! Save 3D isosurface data for use in IDL.  As for the gnuplot plots, this
     ! data is saved separately for each process.  It must be read in through
@@ -357,25 +375,34 @@ module io
     return
   end subroutine idl_surface
 
+! ***************************************************************************  
+
   subroutine get_minmax(in_var, var)
+    ! Find the minimum and maximum values of a variable over time, and save the
+    ! overall maximum to file
     use parameters
     implicit none
 
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(2) :: maxs, maxr, mins, minr
     character(*), intent(in) :: var
-    
+
+    ! maxs/r and mins/r are arrays of length 2 because the MPI functions find
+    ! the max/min value as well as its location
+    ! Find max/min on each process
     maxs(1) = maxval(in_var)
     maxs(2) = 0.0
     mins(1) = minval(in_var)
     mins(2) = 0.0
     
+    ! Find max/min over whole array
     call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
                        MPI_COMM_WORLD, ierr)
                        
     call MPI_ALLREDUCE(mins, minr, 1, MPI_2REAL, MPI_MINLOC, &
                        MPI_COMM_WORLD, ierr)
 
+    ! Update max/min if correct conditions are met
     if (minr(1) < minvar) then
       minvar = minr(1)
     end if
@@ -384,6 +411,7 @@ module io
       maxvar = maxr(1)
     end if
     
+    ! Save current max/min to file
     if (myrank == 0) then
       print*, minvar, maxvar
       open (16, file='minmax_'//var//'.dat', form='unformatted')
@@ -395,6 +423,8 @@ module io
     return
   end subroutine get_minmax
     
+! ***************************************************************************  
+
   subroutine end_state(in_var, p, flag)
     ! Save variables for use in a restarted run.  Each process saves its own
     ! bit
@@ -443,6 +473,8 @@ module io
     return
   end subroutine end_state
   
+! ***************************************************************************  
+
   subroutine get_zeros(in_var, p)
     ! Find all the zeros of the wavefunction by determining where the real and
     ! imaginary parts simultaneously go to zero.  This routine doesn't find
@@ -562,6 +594,8 @@ module io
 
     return
   end subroutine get_zeros
+
+! ***************************************************************************  
 
   subroutine get_extra_zeros(in_var, p)
     ! Find the zeros that the get_zeros routine did not pick up
@@ -791,6 +825,8 @@ module io
     return
   end subroutine get_extra_zeros
 
+! ***************************************************************************  
+
   subroutine get_re_im_zeros(in_var, p)
     ! Find where the real and imaginary parts separately go to zero
     use parameters
@@ -951,6 +987,8 @@ module io
     return
   end subroutine get_re_im_zeros
   
+! ***************************************************************************  
+
   subroutine save_linelength(t, in_var)
     ! Save the total vortex line length
     use parameters
@@ -974,6 +1012,8 @@ module io
 
     return
   end subroutine save_linelength
+
+! ***************************************************************************  
 
   subroutine diag(old2, old, new, p)
     use parameters
@@ -1013,4 +1053,6 @@ module io
     return
   end subroutine diag
     
+! ***************************************************************************  
+
 end module io

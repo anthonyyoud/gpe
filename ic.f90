@@ -41,6 +41,8 @@ module ic
     return
   end subroutine get_grid
 
+! ***************************************************************************  
+
   subroutine ics(out_var, p)
     ! Set up the initial conditions
     use parameters
@@ -63,8 +65,8 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      !out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      out_var = tmp_var*vortex_line(vl1)
+      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
@@ -100,6 +102,8 @@ module ic
     return
   end subroutine ics
   
+! ***************************************************************************  
+
   subroutine state_restart(out_var, p)
     ! Get restart data
     use parameters
@@ -142,6 +146,8 @@ module ic
 
     return
   end subroutine state_restart
+
+! ***************************************************************************  
 
   subroutine random_phase(out_var)
     ! Strongly nonequilibrium initial condition
@@ -200,6 +206,8 @@ module ic
     return
   end subroutine random_phase
 
+! ***************************************************************************  
+
   subroutine get_kc_amp()
     ! Get the cutoff wavenumber and amplitude of the random phase IC
     use parameters
@@ -215,6 +223,8 @@ module ic
 
     return
   end subroutine get_kc_amp
+
+! ***************************************************************************  
 
   function fermi()
     ! Thomas-Fermi initial condition
@@ -244,6 +254,8 @@ module ic
     return
   end function fermi
 
+! ***************************************************************************  
+
   function ei(theta)
     ! exp(i*theta) where theta is the argument arctan(y/x)
     use parameters
@@ -258,6 +270,8 @@ module ic
     return
   end function ei
   
+! ***************************************************************************  
+
   function amp(r)
     ! Amplitude of a vortex line
     use parameters
@@ -274,6 +288,8 @@ module ic
     return
   end function amp
   
+! ***************************************************************************  
+
   function vortex_line(vl)
     ! Vortex line initial condition
     use parameters
@@ -292,6 +308,8 @@ module ic
     return
   end function vortex_line
   
+! ***************************************************************************  
+
   function vortex_ring(x0, y0, r0, dir)
     ! Vortex ring initial condition
     use parameters
@@ -334,6 +352,8 @@ module ic
     return
   end function vortex_ring
   
+! ***************************************************************************  
+
   function vortex_ring2(x0, y0, r0, dir)
     ! Vortex ring initial condition
     use parameters
@@ -377,6 +397,8 @@ module ic
     return
   end function vortex_ring2
   
+! ***************************************************************************  
+
   function pade_pulse_ring(pulse_or_ring, x0, y0, r0)
     ! Pade approximation vortex ring or pulse initial condition
     use parameters
@@ -450,6 +472,8 @@ module ic
 
   end function pade_pulse_ring
   
+! ***************************************************************************  
+
   function vortex_pair()
     ! Vortex pair initial condition
     use parameters
@@ -497,6 +521,8 @@ module ic
     return
   end function vortex_pair
 
+! ***************************************************************************  
+
   function sphere()
     use parameters
     implicit none
@@ -516,6 +542,8 @@ module ic
     return
   end function sphere
   
+! ***************************************************************************  
+
   function wall()
     use parameters
     implicit none
@@ -539,6 +567,8 @@ module ic
     return
   end function wall
 
+! ***************************************************************************  
+
   subroutine get_r(x0, y0, a, ll, r)
     ! Get the cylindrical-polar radius r**2=x**2+y**2
     use parameters
@@ -559,6 +589,8 @@ module ic
     return
   end subroutine get_r
   
+! ***************************************************************************  
+
   subroutine get_s(s, y0)
     ! Another radial variable
     use parameters
@@ -576,6 +608,8 @@ module ic
 
     return
   end subroutine get_s
+
+! ***************************************************************************  
 
   subroutine get_theta(x0, y0, a, ll, sgn, theta)
     ! Get the argument theta=arctan(y/x)
@@ -597,6 +631,8 @@ module ic
     return
   end subroutine get_theta
 
+! ***************************************************************************  
+
   subroutine get_rr(r,rr)
     ! R in psi=R(r)exp(i*theta)
     use parameters
@@ -612,6 +648,8 @@ module ic
     return
   end subroutine get_rr
     
+! ***************************************************************************  
+
   subroutine fft(in_var, out_var, dir, particles)
     ! Calculate the FFT (or inverse) of a variable
     use parameters
@@ -723,4 +761,6 @@ module ic
     return
   end subroutine fft
   
+! ***************************************************************************  
+
 end module ic

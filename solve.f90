@@ -34,6 +34,8 @@ module solve
     return
   end subroutine solver
 
+! ***************************************************************************  
+
   subroutine euler(old, new)
     ! Explicit Euler time stepping
     use parameters
@@ -53,6 +55,8 @@ module solve
     return
   end subroutine euler
   
+! ***************************************************************************  
+
   subroutine rk4(old, new)
     ! Explicit fourth order Runge-Kutta time stepping
     use parameters
@@ -117,6 +121,8 @@ module solve
 
     return
   end subroutine rk4
+
+! ***************************************************************************  
 
   subroutine rkqs(in_var, out_var)
     ! Adaptive Runge-Kutta-Fehlberg time stepping. From Numerical Recipes
@@ -202,6 +208,8 @@ module solve
 
     return
   end subroutine rkqs
+
+! ***************************************************************************  
 
   subroutine rkck(old, new, err)
     ! Explicit fifth order Runge-Kutta-Fehlberg time stepping.  From Numerical
@@ -330,6 +338,8 @@ module solve
     return
   end subroutine rkck
   
+! ***************************************************************************  
+
   subroutine get_rhs(in_var, rhs)
     ! Get the right-hand-side of the equation
     use parameters
@@ -380,4 +390,6 @@ module solve
     return
   end subroutine get_rhs
     
+! ***************************************************************************  
+
 end module solve

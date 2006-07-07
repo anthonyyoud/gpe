@@ -49,6 +49,8 @@ module derivs
     return
   end subroutine deriv_x
   
+! ***************************************************************************  
+  
   subroutine deriv_y(f,fy)
     ! First y-derivative
     use parameters
@@ -86,6 +88,8 @@ module derivs
     return
   end subroutine deriv_y
   
+! ***************************************************************************  
+
   subroutine deriv_z(f,fz)
     ! First z-derivative
     use parameters
@@ -122,6 +126,8 @@ module derivs
 
     return
   end subroutine deriv_z
+
+! ***************************************************************************  
 
   subroutine deriv_xx(f,fxx)
     ! Second x-derivative
@@ -167,6 +173,8 @@ module derivs
     return
   end subroutine deriv_xx
 
+! ***************************************************************************  
+
   subroutine deriv_yy(f,fyy)
     ! Second y-derivative
     use parameters
@@ -207,6 +215,8 @@ module derivs
     return
   end subroutine deriv_yy
   
+! ***************************************************************************  
+
   subroutine deriv_zz(f,fzz)
     ! Second z-derivative
     use parameters
@@ -246,6 +256,8 @@ module derivs
 
     return
   end subroutine deriv_zz
+
+! ***************************************************************************  
 
   subroutine second_index(indx, n, minus, plus, x_deriv)
     ! Determine the indices at the boundaries depending on whether periodic or
@@ -290,6 +302,8 @@ module derivs
     return
   end subroutine second_index
   
+! ***************************************************************************  
+
   subroutine fourth_index(indx, n, minus, plus, x_deriv)
     ! Determine the indices at the boundaries depending on whether periodic or
     ! reflective boundaries are chosen in the case of fourth order differences
@@ -368,5 +382,7 @@ module derivs
 
     return
   end subroutine fourth_index
+
+! ***************************************************************************  
 
 end module derivs
