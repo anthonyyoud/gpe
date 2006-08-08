@@ -529,12 +529,16 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere
     real, parameter :: rad = 10.0
+    real, parameter :: eps = 2.0
     integer :: i, j, k
 
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad))
+          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad-eps))
+          !sphere(i,j,k) = max(0.5*(1.0+&
+          !                         tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad)-&
+          !                         eps),0.0)
         end do
       end do
     end do

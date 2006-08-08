@@ -15,7 +15,7 @@ fi
 #****************************************************************************
 #PARAMETERS
 #****************************************************************************
-NPROCS=16
+NPROCS=32
 EXE=ulimit_hack.sh #gpe
 DATA='parameters.f90 gpe'
 DATA_DIR=`pwd`
@@ -79,17 +79,17 @@ case $HOST in
     
     TARFILE=data.tar
     cd $RUN_DIR
-    tar cvf $TARFILE * &> /dev/null
+    tar cf $TARFILE * &> /dev/null
     cp $TARFILE $DATA_DIR
-    cd $DATA_DIR && tar xvf $TARFILE &> /dev/null
+    cd $DATA_DIR && tar xf $TARFILE &> /dev/null
     rm $TARFILE
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
         $SSH $NODE "cd $RUN_DIR && \
-                    tar cvf $TARFILE * &> /dev/null && \
+                    tar cf $TARFILE * &> /dev/null && \
                     cp $TARFILE $DATA_DIR && \
-                    cd $DATA_DIR && tar xvf $TARFILE &> /dev/null && \
+                    cd $DATA_DIR && tar xf $TARFILE &> /dev/null && \
                     rm $TARFILE"
         $SSH $NODE "rm -rf $RUN_DIR"
       fi
@@ -131,11 +131,11 @@ case $HOST in
     TARFILE=dirs.tar
     for node in `cat ${HOME}/$HOSTFILE | grep -v noded1`
     do
-      ssh $node "cd $RUN_DIR && tar cvf $TARFILE $PROC_DIR* &> /dev/null \
+      ssh $node "cd $RUN_DIR && tar cf $TARFILE $PROC_DIR* &> /dev/null \
                  && rm -r $PROC_DIR*"
       if [ $? -eq 0 ]; then
         scp $node:$RUN_DIR/* $RUN_DIR &> /dev/null && \
-        tar xvf $TARFILE &> /dev/null && \
+        tar xf $TARFILE &> /dev/null && \
         rm $TARFILE && \
         ssh $node "rm -r $RUN_DIR"
       else
