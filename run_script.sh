@@ -81,16 +81,16 @@ case $HOST in
     cd $RUN_DIR
     tar cf $TARFILE * &> /dev/null
     cp $TARFILE $DATA_DIR
-    cd $DATA_DIR && tar xf $TARFILE &> /dev/null
-    rm $TARFILE
+    $SSH giga01 "cd $DATA_DIR && tar xf $TARFILE &> /dev/null && rm $TARFILE"
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
         $SSH $NODE "cd $RUN_DIR && \
                     tar cf $TARFILE * &> /dev/null && \
                     cp $TARFILE $DATA_DIR && \
-                    cd $DATA_DIR && tar xf $TARFILE &> /dev/null && \
-                    rm $TARFILE"
+                    $SSH giga01 \"cd $DATA_DIR && \
+                                 tar xf $TARFILE &> /dev/null && \
+                                 rm $TARFILE\""
         $SSH $NODE "rm -rf $RUN_DIR"
       fi
     done

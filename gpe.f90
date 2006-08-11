@@ -47,6 +47,7 @@ program gpe
   allocate(works2(0:nx1,2,kksta:kkend))
   allocate(workr1(0:nx1,2,kksta:kkend))
   allocate(workr2(0:nx1,2,kksta:kkend))
+  allocate(ave(0:nx1,jsta:jend,ksta:kend))
 
   ! Check which time stepping scheme we're using
   if (myrank == 0) then
@@ -104,6 +105,7 @@ program gpe
 
   n = int(t/save_rate2)
   m = int(t/save_rate3)
+  ave = 0.0
  
   ! Begin real time loop
   do while (t <= end_time)
@@ -182,6 +184,7 @@ program gpe
       if (save_3d) then
         ! Save 3D isosurface data for use in IDL
         call idl_surface(p, psi%new)
+        call average(psi%new)
       end if
       n = n+1
     end if

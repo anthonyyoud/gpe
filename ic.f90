@@ -65,7 +65,7 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
@@ -84,7 +84,7 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = vortex_line(vl1) !* &
+      out_var = vortex_line(vl1) !* &
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
@@ -92,8 +92,8 @@ module ic
                 !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      call random_phase(tmp_var)
-      out_var = tmp_var
+      !call random_phase(tmp_var)
+      !out_var = tmp_var
       !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
       !          vortex_line(vl1)

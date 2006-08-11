@@ -5,21 +5,21 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 6
+  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nzprocs      = 8
   integer,      parameter :: nx           = 32
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 8.0
-  real,         parameter :: yr           = 8.0
-  real,         parameter :: zr           = 8.0
+  real,         parameter :: end_time     = 0.0
+  real,         parameter :: xr           = 16.0
+  real,         parameter :: yr           = 16.0
+  real,         parameter :: zr           = 16.0
   real,         parameter :: Urhs         = 0.0 !0.24
   real,         parameter :: diss_amp     = 0.005
-  real,         parameter :: scal         = 0.632455532 !0.920540862
+  real,         parameter :: scal         = 0.64315009229562
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
@@ -29,13 +29,13 @@ module parameters
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .true.
+  logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-7
+  real, parameter :: eps              = 1e-5
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -51,8 +51,8 @@ module parameters
     real :: sgn         ! sign of the argument of the line
   end type line_param
 
-  !type (line_param), parameter :: vl1 = line_param( 0.0, 0.0, 0.0,33.0, 1.0)
-  type (line_param), parameter :: vl1 = line_param(-20.0, 0.0, 0.0,33.0, 1.0)
+  type (line_param), parameter :: vl1 = line_param( 0.0, 0.0, 0.0,33.0, 1.0)
+  !type (line_param), parameter :: vl1 = line_param(-20.0, 0.0, 0.0,33.0, 1.0)
   !type (line_param), parameter :: vl1 = line_param( 0.0, 1.1, 0.1,14.6, 1.0)
   type (line_param), parameter :: vl2 = line_param(-3.0, 3.0,-0.0,33.0,-1.0)
   type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
@@ -96,6 +96,7 @@ module parameters
   integer,              dimension(0:nyprocs-1)     :: kdisp, jjlen
   complex, allocatable, dimension(:,:,:)           :: works1, works2, &
                                                       workr1, workr2
+  real,    allocatable, dimension(:,:,:)           :: ave
   character(7)       :: proc_dir = 'proc**/'
   logical            :: first_write = .true.
   complex            :: dt

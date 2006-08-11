@@ -7,8 +7,8 @@ module io
   public :: open_files, close_files, save_time, save_energy, &
             save_surface, idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs, diag, condensed_particles
-
+            get_dirs, diag, condensed_particles, average
+  
   contains
 
   function itos(n)
@@ -171,8 +171,8 @@ module io
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
-    real :: M, n0, temp, tot, tmp, rho0
-    integer :: i, j, k, k2, k4
+    real :: M, n0, temp, temp2, tot, tmp, rho0
+    integer :: i, j, k, k2, k4, ii2, jj2, kk2
 
     call fft(in_var, a, 'backward', .true.)
     
@@ -229,7 +229,8 @@ module io
 
     if (myrank == 0) then
       temp = (M-n0)/tot
-      write (15, '(4e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), temp
+      temp2 = ((M/(8.0*xr*yr*zr))-(n0/(nx*ny*nz)))/tot
+      write (15, '(5e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), temp, temp2
     end if
 
     ! Save the spectrum
@@ -249,10 +250,30 @@ module io
     ! Save a filtered isosurface.  High-frequency harmonics are filtered
     if (save_filter) then
       do k=ksta,kend
+        if (k <= nz1/2+1) then
+          kk2 = k**2
+        else
+          kk2 = (nz1-k)**2
+        end if
         do j=jsta,jend
+          if (j <= ny1/2+1) then
+            jj2 = j**2
+          else
+            jj2 = (ny1-j)**2
+          end if
           do i=0,nx1
-            k2 = i**2 + j**2 + k**2
-            a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+            if (i <= nx1/2+1) then
+              ii2 = i**2
+            else
+              ii2 = (nx1-i)**2
+            end if
+            k2 = ii2 + jj2 + kk2
+            !if (k2 <= kc2) then
+              a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+              !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/8.0),0.0)
+            !else
+            !  a(i,j,k) = 0.0
+            !end if
           end do
         end do
       end do
@@ -1055,4 +1076,31 @@ module io
     
 ! ***************************************************************************  
 
+  subroutine average(in_var)
+    use parameters
+    use ic, only : x, y, z
+    use variables, only : unit_no
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    integer :: j, k
+
+    ave = ave + abs(in_var)**2
+    
+    open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
+          form='unformatted')
+
+    write (unit_no) nx, ny, nz
+    write (unit_no) nyprocs, nzprocs
+    write (unit_no) jsta, jend, ksta, kend
+    write (unit_no) ave
+    write (unit_no) x
+    write (unit_no) y
+    write (unit_no) z
+
+    close (unit_no)
+
+    return
+  end subroutine average
+  
 end module io
