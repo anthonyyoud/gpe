@@ -105,8 +105,8 @@ module parameters
   real               :: im_t        = 0.0
   real               :: kc2         = 0.0
   real               :: comp_amp    = 0.0
-  real               :: maxvar     = 0.0
-  real               :: minvar     = 0.0
+  real, dimension(3) :: maxvar      = 0.0
+  real, dimension(3) :: minvar      = 0.0
   real,    parameter :: pi          = 3.14159265358979
   real,    parameter :: xl          = -xr
   real,    parameter :: yl          = -yr

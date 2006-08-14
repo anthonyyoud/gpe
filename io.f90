@@ -293,6 +293,8 @@ module io
       write (unit_no) z
 
       close (unit_no)
+
+      call get_minmax(abs(filtered)**2, 'filtered')
     end if
     
     return
@@ -380,7 +382,7 @@ module io
 
     call get_minmax(density, 'dens')
 
-    open (unit_no, status='unknown', file=proc_dir//'u_idl'//itos(p)//'.dat', &
+    open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
           form='unformatted')
     
     write (unit_no) nx, ny, nz
@@ -424,23 +426,64 @@ module io
                        MPI_COMM_WORLD, ierr)
 
     ! Update max/min if correct conditions are met
-    if (minr(1) < minvar) then
-      minvar = minr(1)
-    end if
+    select case (var)
+      case ('dens')
+        if (minr(1) < minvar(1)) then
+          minvar(1) = minr(1)
+        end if
 
-    if (maxr(1) > maxvar) then
-      maxvar = maxr(1)
-    end if
+        if (maxr(1) > maxvar(1)) then
+          maxvar(1) = maxr(1)
+        end if
+        
+        ! Save current max/min to file
+        if (myrank == 0) then
+          print*, minvar(1), maxvar(1)
+          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          write (16) minvar(1)
+          write (16) maxvar(1)
+          close (16)
+        end if
+        
+      case ('ave')
+        if (minr(1) < minvar(2)) then
+          minvar(2) = minr(1)
+        end if
+
+        if (maxr(1) > maxvar(2)) then
+          maxvar(2) = maxr(1)
+        end if
+        
+        ! Save current max/min to file
+        if (myrank == 0) then
+          print*, minvar(2), maxvar(2)
+          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          write (16) minvar(2)
+          write (16) maxvar(2)
+          close (16)
+        end if
+        
+      case ('filtered')
+        if (minr(1) < minvar(3)) then
+          minvar(3) = minr(1)
+        end if
+
+        if (maxr(1) > maxvar(3)) then
+          maxvar(3) = maxr(1)
+        end if
+        
+        ! Save current max/min to file
+        if (myrank == 0) then
+          print*, minvar(3), maxvar(3)
+          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          write (16) minvar(3)
+          write (16) maxvar(3)
+          close (16)
+        end if
+      case default
+        STOP 'ERROR: Unrecognised variable (get_minmax)'
+    end select
     
-    ! Save current max/min to file
-    if (myrank == 0) then
-      print*, minvar, maxvar
-      open (16, file='minmax_'//var//'.dat', form='unformatted')
-      write (16) minvar
-      write (16) maxvar
-      close (16)
-    end if
-
     return
   end subroutine get_minmax
     
@@ -1100,6 +1143,8 @@ module io
     write (unit_no) z
 
     close (unit_no)
+
+    call get_minmax(ave, 'ave')
 
     print*, snapshots
     snapshots = snapshots+1
