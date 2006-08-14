@@ -184,6 +184,9 @@ program gpe
       if (save_3d) then
         ! Save 3D isosurface data for use in IDL
         call idl_surface(p, psi%new)
+      end if
+      if (save_average) then
+        ! Save time-averaged data
         call average(psi%new)
       end if
       n = n+1

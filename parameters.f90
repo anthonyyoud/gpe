@@ -11,7 +11,7 @@ module parameters
   integer,      parameter :: ny           = 32
   integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 0.0
+  real,         parameter :: end_time     = 1001.0
   real,         parameter :: xr           = 16.0
   real,         parameter :: yr           = 16.0
   real,         parameter :: zr           = 16.0
@@ -19,23 +19,24 @@ module parameters
   real,         parameter :: diss_amp     = 0.005
   real,         parameter :: scal         = 0.64315009229562
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 2
+  integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 1
-  real,         parameter :: save_rate2   = 5.0
-  real,         parameter :: save_rate3   = 5.0
+  real,         parameter :: save_rate2   = 0.005 !5.0
+  real,         parameter :: save_rate3   = 0.005
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .true.
+  logical,      parameter :: save_average = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .false.
+  logical,      parameter :: restart      = .true.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-5
+  real, parameter :: eps              = 1e-7
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -119,5 +120,6 @@ module parameters
   complex, parameter :: eye         = (0.0,1.0)
   logical            :: switched    = .false.
   integer            :: p
+  integer            :: snapshots   = 1
   
 end module parameters

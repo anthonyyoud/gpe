@@ -268,11 +268,11 @@ module io
               ii2 = (nx1-i)**2
             end if
             k2 = ii2 + jj2 + kk2
-            !if (k2 <= kc2) then
+            !if (k2 < kc2) then
               a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
               !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/8.0),0.0)
             !else
-            !  a(i,j,k) = 0.0
+            !  a(i,j,k) = cmplx(0.0,0.0)
             !end if
           end do
         end do
@@ -1077,6 +1077,7 @@ module io
 ! ***************************************************************************  
 
   subroutine average(in_var)
+    ! Save time-averaged data
     use parameters
     use ic, only : x, y, z
     use variables, only : unit_no
@@ -1085,7 +1086,7 @@ module io
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     integer :: j, k
 
-    ave = ave + abs(in_var)**2
+    ave = (ave + abs(in_var)**2) / real(snapshots)
     
     open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
           form='unformatted')
@@ -1099,6 +1100,9 @@ module io
     write (unit_no) z
 
     close (unit_no)
+
+    print*, snapshots
+    snapshots = snapshots+1
 
     return
   end subroutine average
