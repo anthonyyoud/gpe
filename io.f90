@@ -409,14 +409,18 @@ module io
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(2) :: maxs, maxr, mins, minr
     character(*), intent(in) :: var
+    integer :: k
 
     ! maxs/r and mins/r are arrays of length 2 because the MPI functions find
     ! the max/min value as well as its location
     ! Find max/min on each process
-    maxs(1) = maxval(in_var)
-    maxs(2) = 0.0
-    mins(1) = minval(in_var)
-    mins(2) = 0.0
+    do k=ksta,kend
+      if (k /= nz/2) cycle
+      maxs(1) = maxval(in_var(:,:,nz/2))
+      maxs(2) = 0.0
+      mins(1) = minval(in_var(:,:,nz/2))
+      mins(2) = 0.0
+    end do
     
     ! Find max/min over whole array
     call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
@@ -1129,7 +1133,7 @@ module io
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     integer :: j, k
 
-    ave = (ave + abs(in_var)**2) / real(snapshots)
+    ave = ave + abs(in_var)**2
     
     open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
           form='unformatted')
@@ -1137,7 +1141,7 @@ module io
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) ave
+    write (unit_no) ave / real(snapshots)
     write (unit_no) x
     write (unit_no) y
     write (unit_no) z
