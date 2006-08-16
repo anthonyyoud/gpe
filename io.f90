@@ -230,7 +230,7 @@ module io
     if (myrank == 0) then
       temp = (M-n0)/tot
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/(nx*ny*nz)))/tot
-      write (15, '(5e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), temp, temp2
+      write (15, '(7e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), M, n0, temp, temp2
     end if
 
     ! Save the spectrum
@@ -442,7 +442,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, minvar(1), maxvar(1)
+          print*, 'dens', minvar(1), maxvar(1)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(1)
           write (16) maxvar(1)
@@ -460,7 +460,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, minvar(2), maxvar(2)
+          print*, 'ave', minvar(2), maxvar(2)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(2)
           write (16) maxvar(2)
@@ -478,7 +478,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, minvar(3), maxvar(3)
+          print*, 'filtered', minvar(3), maxvar(3)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(3)
           write (16) maxvar(3)
@@ -1148,7 +1148,7 @@ module io
 
     close (unit_no)
 
-    call get_minmax(ave, 'ave')
+    call get_minmax(ave / real(snapshots), 'ave')
 
     print*, snapshots
     snapshots = snapshots+1

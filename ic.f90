@@ -84,7 +84,7 @@ module ic
       !          pade_pulse_ring('pulse', vr%x0, vr%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
-      out_var = vortex_line(vl1) !* &
+      !out_var = vortex_line(vl1) !* &
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
@@ -93,9 +93,10 @@ module ic
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
-      !out_var = tmp_var
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
+      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
+      !          vortex_ring(vr3%x0, vr3%y0, vr3%r0, vr3%dir) !* &
       !          vortex_line(vl1)
     end if
   
