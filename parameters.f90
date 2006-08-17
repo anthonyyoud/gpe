@@ -7,14 +7,14 @@ module parameters
 
   integer,      parameter :: nyprocs      = 1
   integer,      parameter :: nzprocs      = 1
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nx           = 32
+  integer,      parameter :: ny           = 32
+  integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 0.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
+  real,         parameter :: xr           = 16.0
+  real,         parameter :: yr           = 16.0
+  real,         parameter :: zr           = 16.0
   real,         parameter :: Urhs         = 0.0 !0.24
   real,         parameter :: diss_amp     = 0.005
   real,         parameter :: scal         = 1.0 !0.65 !0.64315009229562
@@ -67,17 +67,20 @@ module parameters
   type :: ring_param
     real :: x0          ! x position
     real :: y0          ! y position
+    real :: z0          ! z position
     real :: r0          ! radius
     real :: dir         ! Propagation direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param(0.0,0.0,4.0,-1.0)
-  !type (ring_param), parameter :: vr1 = ring_param(-20.0, 0.0, 15.0, -1.0)
-  !type (ring_param), parameter :: vr1 = ring_param( 30.1,  1.0,30.1, 1.0)
-  !type (ring_param), parameter :: vr2 = ring_param(-30.1, -1.0,30.1,-1.0)
-  type (ring_param), parameter :: vr2 = ring_param(-128.0, 0.0, 4.0, -1.0)
-  type (ring_param), parameter :: vr3 = ring_param( 128.0, 0.0, 4.0, -1.0)
-  type (ring_param), parameter :: vr4 = ring_param( -1.0, 30.1,30.1, 1.0)
+  type (ring_param), parameter :: vr1 = ring_param(   0.0,    0.0,    0.0, 4.0, -1.0)
+  type (ring_param), parameter :: vr2 = ring_param( -32.0,    0.0,    0.0, 4.0, 1.0)
+  type (ring_param), parameter :: vr3 = ring_param(  32.0,    0.0,    0.0, 4.0, 1.0)
+  !type (ring_param), parameter :: vr2 = ring_param(-128.0,    0.0,    0.0, 4.0, -1.0)
+  !type (ring_param), parameter :: vr3 = ring_param( 128.0,    0.0,    0.0, 4.0, -1.0)
+  type (ring_param), parameter :: vr4 = ring_param(   0.0, -128.0,    0.0, 4.0, -1.0)
+  type (ring_param), parameter :: vr5 = ring_param(   0.0,  128.0,    0.0, 4.0, -1.0)
+  type (ring_param), parameter :: vr6 = ring_param(   0.0,    0.0, -128.0, 4.0, -1.0)
+  type (ring_param), parameter :: vr7 = ring_param(   0.0,    0.0,  128.0, 4.0, -1.0)
   !
   ! *************************************************************************
 

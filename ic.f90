@@ -65,38 +65,42 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
-      !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
-      !          vortex_ring2(vr3%x0, vr3%y0, vr3%r0, vr3%dir) * &
-      !          vortex_ring2(vr4%x0, vr4%y0, vr4%r0, vr4%dir)
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
+      !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+      !          vortex_ring2(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
+      !          vortex_ring2(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir)
       !out_var = vortex_line(vl1) * &
-      !          vortex_ring(vr1%x0, vr1%r0) * &
-      !          vortex_ring(vr2%x0, vr2%r0)
-      !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%r0) * &
-      !          pade_pulse_ring('pulse', vr2%x0, vr2%r0)
+      !          vortex_ring(vr1%x0, vr1%z0, vr1%r0) * &
+      !          vortex_ring(vr2%x0, vr2%z0, vr2%r0)
+      !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0) * &
+      !          pade_pulse_ring('pulse', vr2%x0, vr2%y0, vr2%z0, vr2%r0)
       !out_var = vortex_line(vl1) * &
-      !          pade_pulse_ring('pulse', vr%x0, vr%r0)
-      !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%r0)
-      !out_var = pade_pulse_ring('pulse', vr%x0, vr%r0)
+      !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
+      !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
+      !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = vortex_line(vl1) !* &
       !          vortex_line(vl3)
       !          vortex_line(vl3) * &
       !          vortex_line(vl4)
       !out_var = sphere() !* &
-                !vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+                !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
-      !          vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
+      !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir)
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%r0, vr1%dir) !* &
-      !          vortex_ring(vr2%x0, vr2%y0, vr2%r0, vr2%dir) * &
-      !          vortex_ring(vr3%x0, vr3%y0, vr3%r0, vr3%dir) !* &
+      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
+                vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+                vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
+                !vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
+                !vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
+                !vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
+                !vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
       !          vortex_line(vl1)
     end if
   
@@ -311,18 +315,18 @@ module ic
   
 ! ***************************************************************************  
 
-  function vortex_ring(x0, y0, r0, dir)
+  function vortex_ring(x0, y0, z0, r0, dir)
     ! Vortex ring initial condition
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
-    real,    intent(in)                           :: x0, y0, r0, dir
+    real,    intent(in)                           :: x0, y0, z0, r0, dir
     real,    dimension(jsta:jend,ksta:kend)       :: s
     real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
     integer                                       :: i, j, k
 
-    call get_s(s, y0)
+    call get_s(s, y0, z0)
     
     do k=ksta,kend
       do j=jsta,jend
@@ -355,20 +359,20 @@ module ic
   
 ! ***************************************************************************  
 
-  function vortex_ring2(x0, y0, r0, dir)
+  function vortex_ring2(x0, y0, z0, r0, dir)
     ! Vortex ring initial condition
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring2
-    real,    intent(in)                           :: x0, y0, r0, dir
+    real,    intent(in)                           :: x0, y0, z0, r0, dir
     real,    dimension(0:nx1,ksta:kend)           :: s
     real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
     integer                                       :: i, j, k
 
     do k=ksta,kend
       do i=0,nx1
-        s(i,k) = sqrt((x(i)-x0)**2 + z(k)**2)
+        s(i,k) = sqrt((x(i)-x0)**2 + (z(k)-z0)**2)
       end do
     end do
     
@@ -400,13 +404,13 @@ module ic
   
 ! ***************************************************************************  
 
-  function pade_pulse_ring(pulse_or_ring, x0, y0, r0)
+  function pade_pulse_ring(pulse_or_ring, x0, y0, z0, r0)
     ! Pade approximation vortex ring or pulse initial condition
     use parameters
     implicit none
 
     complex,      dimension(0:nx1,jsta:jend,ksta:kend) :: pade_pulse_ring
-    real,         intent(in)                           :: x0, y0, r0
+    real,         intent(in)                           :: x0, y0, z0, r0
     character(*), intent(in)                           :: pulse_or_ring
     real,         dimension(0:nx1,jsta:jend,ksta:kend) :: uu, vv, denom
     real,         dimension(jsta:jend,ksta:kend)       :: s, s2
@@ -416,7 +420,7 @@ module ic
     real                                               :: one_2u, U, m
     integer                                            :: i, j, k
 
-    call get_s(s, y0)
+    call get_s(s, y0, z0)
     call get_consts(pulse_or_ring, a, U, m)
     
     one_2u = 1.0-2.0*U**2
@@ -596,18 +600,18 @@ module ic
   
 ! ***************************************************************************  
 
-  subroutine get_s(s, y0)
+  subroutine get_s(s, y0, z0)
     ! Another radial variable
     use parameters
     implicit none
 
-    real,                                 intent(in)  :: y0
+    real,                                 intent(in)  :: y0, z0
     real, dimension(jsta:jend,ksta:kend), intent(out) :: s
     integer                                           :: j, k
 
     do k=ksta,kend
       do j=jsta,jend
-        s(j,k) = sqrt((y(j)-y0)**2 + z(k)**2)
+        s(j,k) = sqrt((y(j)-y0)**2 + (z(k)-z0)**2)
       end do
     end do
 
