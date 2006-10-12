@@ -108,7 +108,7 @@ program gpe
   ave = 0.0
  
   ! Begin real time loop
-  do while (t <= end_time)
+  do while (t+im_t <= end_time)
 
     ! Check to see whether the RUNNING file exists
     if (myrank == 0) then
