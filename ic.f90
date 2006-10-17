@@ -65,8 +65,8 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = tmp_var*vortex_line(vl1)
+      !out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      out_var = tmp_var*vortex_line(vl1)*vortex_line(vl2)
     else
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
@@ -92,16 +92,16 @@ module ic
                 !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
-                vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-                vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
-                !vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
-                !vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
-                !vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
-                !vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
-      !          vortex_line(vl1)
+      call random_phase(tmp_var)
+      out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      !out_var = scal * vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
+      !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+      !          vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
+      !          vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
+      !          vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) !* &
+      !          vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
+      !          vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
+      !out_var = scal !* vortex_line(vl1) * vortex_line(vl2)
     end if
   
     return
@@ -590,7 +590,8 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          r(i,j,k) = sqrt((x(i)-x0)**2 + (y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2)
+          r(i,j,k) = sqrt(scal*(x(i)-x0)**2 + &
+                         (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2))
         end do
       end do
     end do
@@ -632,7 +633,8 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          theta(i,j,k) = sgn * atan2(y(j)-y0-a*cos(2.0*pi*z(k)/ll), x(i)-x0)
+          theta(i,j,k) = sgn * atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll)), &
+                                     scal*(x(i)-x0))
         end do
       end do
     end do
