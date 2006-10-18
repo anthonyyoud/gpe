@@ -59,6 +59,7 @@ case $HOST in
     cp $EXE $RUN_DIR
     cp $DATA $RUN_DIR
     cp -rf $PROC_DIR* $RUN_DIR
+    rm -rf $PROC_DIR*
     cd $RUN_DIR
     
     echo No. processors = $NPROCS
@@ -79,6 +80,13 @@ case $HOST in
     
     TARFILE=data.tar
     cd $RUN_DIR
+    for dir in $PROC_DIR*
+    do
+      num_files=$(ls -1 $dir | wc -l)
+      if [ $num_files -eq 1 ]; then
+        rm -r $dir
+      fi
+    done
     tar cf $TARFILE * &> /dev/null
     cp $TARFILE $DATA_DIR
     $SSH giga01 "cd $DATA_DIR && tar xf $TARFILE &> /dev/null && rm $TARFILE"
@@ -86,6 +94,13 @@ case $HOST in
     do
       if [ `hostname` != $NODE ]; then
         $SSH $NODE "cd $RUN_DIR && \
+                    for dir in $PROC_DIR*
+                    do
+                      num_files=\$(ls \$dir | wc -l)
+                      if [ $num_files -eq 1 ]; then
+                        rm -r $dir
+                      fi
+                    done && \
                     tar cf $TARFILE * &> /dev/null && \
                     cp $TARFILE $DATA_DIR && \
                     $SSH giga01 \"cd $DATA_DIR && \
