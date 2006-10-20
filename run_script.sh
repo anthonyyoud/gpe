@@ -97,8 +97,8 @@ case $HOST in
                     for dir in $PROC_DIR*
                     do
                       num_files=\$(ls \$dir | wc -l)
-                      if [ $num_files -eq 1 ]; then
-                        rm -r $dir
+                      if [ \$num_files -eq 1 ]; then
+                        rm -r \$dir
                       fi
                     done && \
                     tar cf $TARFILE * &> /dev/null && \
