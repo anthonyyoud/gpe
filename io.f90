@@ -171,8 +171,8 @@ module io
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
-    real :: M, n0, temp, temp2, tot, tmp, rho0
-    integer :: i, j, k, k2, k4, ii2, jj2, kk2
+    real :: M, n0, temp, temp2, tot, tmp, rho0, E0, H, k2, k4
+    integer :: i, j, k, ii2, jj2, kk2
 
     call fft(in_var, a, 'backward', .true.)
     
@@ -212,12 +212,20 @@ module io
     ! Density of condensed particles
     rho0 = n0/(nx*ny*nz)
     
-    ! Temperature (?)
+    ! Total energy <H>, and temperature T (?)
+    tmp = 0.0
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
           if (i==0 .and. j==0 .and. k==0) cycle
-          k2 = i**2 + j**2 + k**2
+          k2 = (1.0/12.0) * &
+               ( ((-2.0*cos(2.0*real(i)*dx) + &
+                   32.0*cos(real(i)*dx) + 30.0) / dx2) + &
+                 ((-2.0*cos(2.0*real(j)*dy) + &
+                   32.0*cos(real(j)*dy) + 30.0) / dy2) + &
+                 ((-2.0*cos(2.0*real(k)*dz) + &
+                   32.0*cos(real(k)*dz) + 30.0) / dz2) )
+
           k4 = k2**2
           tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
         end do
@@ -229,8 +237,12 @@ module io
 
     if (myrank == 0) then
       temp = (M-n0)/tot
+      print*, M, n0, tot
+      E0 = real(1.0/(2*nx*ny*nz))*(M**2+(M-n0)**2)
+      H = E0 + temp*real(nx1*ny1*nz1)
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/(nx*ny*nz)))/tot
-      write (15, '(7e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), M, n0, temp, temp2
+      write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), M, n0, &
+                             temp, temp2, H/(nx*ny*nz)
     end if
 
     ! Save the spectrum
