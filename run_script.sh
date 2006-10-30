@@ -58,7 +58,7 @@ case $HOST in
     done
     cp $EXE $RUN_DIR
     cp $DATA $RUN_DIR
-    cp -rf $PROC_DIR* $RUN_DIR
+    cp -r $PROC_DIR* $RUN_DIR 2> /dev/null
     rm -rf $PROC_DIR*
     cd $RUN_DIR
     
@@ -74,7 +74,7 @@ case $HOST in
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
     #mpdtrace
-    time mpiexec -l -n $NPROCS $EXE
+    #time mpiexec -l -n $NPROCS $EXE
     #mpdallexit
     rm $EXE $HOSTFILE
     
