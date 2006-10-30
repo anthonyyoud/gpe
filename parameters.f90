@@ -5,36 +5,36 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nyprocs      = 8
   integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 32
-  integer,      parameter :: ny           = 32
-  integer,      parameter :: nz           = 32
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 64
   complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 2400.0
-  real,         parameter :: xr           = 16.0
-  real,         parameter :: yr           = 16.0
-  real,         parameter :: zr           = 16.0
-  real,         parameter :: Urhs         = 0.35
+  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 32.0
+  real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
   real,         parameter :: enerv        = 0.75
   ! see bottom of solve.f90 for possible values
-  integer,      parameter :: eqn_to_solve = 1
+  integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
-  integer,      parameter :: save_rate    = 1
-  real,         parameter :: save_rate2   = 1.0
-  real,         parameter :: save_rate3   = 1.0
+  integer,      parameter :: save_rate    = 100
+  real,         parameter :: save_rate2   = 5.0
+  real,         parameter :: save_rate3   = 5.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_average = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .true.
+  logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'

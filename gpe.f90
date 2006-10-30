@@ -19,7 +19,7 @@ program gpe
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
   call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
   ! Find out on which host each process is running
-  call system('hostname')
+  !call system('hostname')
 
   ! Setup the lookup table for neighbouring processes
   call setup_itable()

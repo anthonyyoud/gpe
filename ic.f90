@@ -65,9 +65,8 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      !out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      out_var = tmp_var !*vortex_line(vl1)*vortex_line(vl2)* &
-                        !vortex_line(vl3)*vortex_line(vl4)
+      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
       !out_var = cmplx(fermi(),0.0)
@@ -87,22 +86,22 @@ module ic
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = vortex_line(vl1) * &
       !          vortex_line(vl2) * &
-      !          vortex_line(vl3) * &
+      !          vortex_line(vl3) !* &
       !          vortex_line(vl4)
       !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      out_var = scal * vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
-                vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-                vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
+      call random_phase(tmp_var)
+      out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
+      !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+      !          vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
       !          vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
-      !          vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) !* &
+      !          vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
       !          vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
       !          vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
-      !out_var = vortex_line(vl1) * vortex_line(vl2)
+      !          vortex_line(vl1)
     end if
   
     return
@@ -135,7 +134,7 @@ module ic
     close (unit_no)
 
     if (real(dt_prev) == 0.0) then
-      dt_prev = cmplx(abs(aimag(dt_prev)), real(dt_prev))
+      dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
     end if
 
     select case (scheme)
@@ -166,7 +165,10 @@ module ic
     real :: phi, rand
     integer :: i, j, k, ii2, jj2, kk2, irand
     
-    print*, comp_amp, kc2
+    if (myrank == 0) then
+      write (97, *) 'Complex amplitude=', comp_amp
+      write (97, *) 'Cutoff wavenumber=', kc2
+    end if
     
     if (myrank == 0) then
       call random_seed()
@@ -219,10 +221,8 @@ module ic
     use parameters
     implicit none
     
-    real :: nv, enerv, ev
+    real :: ev
     
-    nv = 0.5
-    enerv = 0.8
     ev = ((0.5*nx/pi)**2)*enerv
     comp_amp = sqrt(((0.11095279993106999*nv**2.5)*(nx*ny*nz))/(ev**1.5))
     kc2 = (1.666666666666666*ev)/nv

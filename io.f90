@@ -45,6 +45,7 @@ module io
       open (13, file='linelength.dat', status='unknown')
       open (14, file='momentum.dat', status='unknown')
       open (15, file='mass.dat', status='unknown')
+      open (97, file='misc.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
     end if
@@ -65,6 +66,7 @@ module io
       close (13)
       close (14)
       close (15)
+      close (97)
     end if
 
     return
@@ -237,7 +239,6 @@ module io
 
     if (myrank == 0) then
       temp = (M-n0)/tot
-      print*, M, n0, tot
       E0 = real(1.0/(2*nx*ny*nz))*(M**2+(M-n0)**2)
       H = E0 + temp*real(nx1*ny1*nz1)
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/(nx*ny*nz)))/tot
@@ -454,7 +455,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, 'dens', minvar(1), maxvar(1)
+          !print*, 'dens', minvar(1), maxvar(1)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(1)
           write (16) maxvar(1)
@@ -472,7 +473,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, 'ave', minvar(2), maxvar(2)
+          !print*, 'ave', minvar(2), maxvar(2)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(2)
           write (16) maxvar(2)
@@ -490,7 +491,7 @@ module io
         
         ! Save current max/min to file
         if (myrank == 0) then
-          print*, 'filtered', minvar(3), maxvar(3)
+          !print*, 'filtered', minvar(3), maxvar(3)
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(3)
           write (16) maxvar(3)
@@ -1162,7 +1163,6 @@ module io
 
     call get_minmax(ave / real(snapshots), 'ave')
 
-    print*, snapshots
     snapshots = snapshots+1
 
     return
