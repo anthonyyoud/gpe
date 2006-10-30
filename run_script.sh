@@ -74,7 +74,7 @@ case $HOST in
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
     #mpdtrace
-    #time mpiexec -l -n $NPROCS $EXE
+    time mpiexec -l -n $NPROCS $EXE
     #mpdallexit
     rm $EXE $HOSTFILE
     
