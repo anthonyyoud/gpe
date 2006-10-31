@@ -63,6 +63,17 @@ program gpe
         STOP 'ERROR: Unrecognised time stepping scheme'
     end select
   end if
+
+  if (myrank == 0) then
+    select case (eqn_to_solve)
+      case (1)
+        print*, 'Solving CASE 1'
+      case (2)
+        print*, 'Solving CASE 2'
+      case (3)
+        print*, 'Solving CASE 3'
+    end select
+  end if
   
   ! Set the time step
   dt = time_step

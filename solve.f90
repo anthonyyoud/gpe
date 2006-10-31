@@ -374,19 +374,16 @@ module solve
     
     select case (eqn_to_solve)
       case (1) !-2i*dpsi/dt + 2iU*dpsi/dx = del^2(psi) + (1-|psi|^2)psi
-        if (myrank == 0) print*, 'Solving CASE 1'
         rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
                         (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                                 in_var(:,jsta:jend,ksta:kend) ) + &
                         Urhs*dpsidx
       case (2) !i*dpsi/dt = -del^2(psi) + |psi|^2*psi
-        if (myrank == 0) print*, 'Solving CASE 2'
         rhs = eye * ( laplacian(in_var) - &
                         (abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                              in_var(:,jsta:jend,ksta:kend) ) + &
                          Urhs*dpsidx
       case (3) !case(1)*sphere()
-        if (myrank == 0) print*, 'Solving CASE 3'
         rhs = (0.5*(eye+diss) * ( laplacian(in_var) + &
                         (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                                  in_var(:,jsta:jend,ksta:kend) ) + &
