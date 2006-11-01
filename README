@@ -11,15 +11,14 @@ including vortex lines, vortex rings, and rarefaction pulses.  Any combination
 of these is possible by simply multiplying the desired initial conditions
 together.
 
-The code uses MPI (Message Passing Interface) to enable parallelism in solving
-the GP equation.
+The code uses MPI (Message Passing Interface) as the method of parallelisation
+in solving the GP equation.
 
 IMPORTANT INFORMATION
 ---------------------
 Since the code uses MPI for the parallelism, an MPI parallel environment must
-be available.  The code has been tested with the MPICH flavour of MPI (since it
-supports Fortran 90 out of the box) but it should work with other MPI
-implementations such as LAM-MPI.
+be available.  The code has only been tested with the MPICH flavour of MPI but
+it should work with other MPI implementations such as LAM-MPI.
 
 The code has been tested and is known to work with the Intel Fortran Compiler
 version 9.0.
@@ -30,9 +29,11 @@ installed and linked to as described below under the makefile heading.
 
 FILES
 -----
-gpe.f90 			- Main program file.
+constants.f90                   - constants defined for fftw.
 
 derivs.f90			- Routines to calculate derivatives.
+
+gpe.f90 			- Main program file.
 
 ic.f90	        		- Routines to set up initial conditions.
 
@@ -54,7 +55,7 @@ setup				- Setup script to compile and set up
 solve.f90			- Routines to solve the equation.
 
 variables.f90			- Types for variables declared, and other
-                                  routines to do with variables in general.
+                                  general routines to do with variables.
 
 MAIN PARAMETERS
 ---------------
@@ -75,79 +76,102 @@ ny		- integer.  Number of grid points in the y-direction.
 nz		- integer.  Number of grid points in the z-direction.
 
 time_step	- complex.  The initial time step to try.  Setting the real
-                  part equal to zero (with real_time=.false.) will solve the
-                  equation initially in imaginary time until a steady state is
-                  reached.
+                            part equal to zero (with real_time=.false.) will
+                            solve the equation initially in imaginary time
+                            until a steady state is reached.
 
 end_time        - real.  The final (dimensionless) time.
 
-xr              - real.  The coordinate of the right-hand-side of the
-                  x-direction (the left-hand-side is set to -xr).
+xr              - real.  The x-coordinate of the right-hand-side of the
+                         computational box (the left-hand-side is set to -xr).
 
-yr              - real.  As above but for the y-direction.
+yr              - real.  As above but for the y-coordinate.
 
-zr              - real.  As above but for the z-direction.
+zr              - real.  As above but for the z-coordinate.
+
+Urhs            - real.  Set non-zero to solve the equation in a moving
+                         reference frame.
+
+diss_amp        - real.  Set non-zero to include dissipation at the boundaries.
+
+scal            - real.  Set non-zero to scale vortex rings/lines.
+
+nv              - real.  For random phase approximation, the total mass per
+                         unit volume.
+
+enerv           - real.  For random phase approximation, the total kinetic
+                         energy per unit volume.
+
+eqn_to_solve    - integer.  The form of the GPE to solve.  See subroutine
+                            get_rhs() in solve.f90 to see the options.
 
 bcs             - integer.  The boundary conditions to use.  Set to 1 for
-                  periodic BCs; set to 2 for reflective BCs.
+                            periodic BCs; set to 2 for reflective BCs.
 
 order           - integer.  The order of the derivatives to use.  Set to 2 for
-                  second-order; set to 4 for fourth-order.
+                            second-order; set to 4 for fourth-order.
 
 save_rate	- integer.  The rate at which time-series data should be saved
-                  (roughly corresponding to the number of time steps).
+                            (roughly corresponding to the number of time
+                            steps).
 
-save_rate_2	- integer.  The rate at which isosurface data should be saved
-                  (3D isosurfaces, 2D surfaces).
+save_rate2	- real.  How often (in terms of actual time units) isosurface
+                         data should be saved (3D isosurfaces, 2D surfaces).
+
+save_rate3      - real.  How often (in terms of actual time units) data to do
+                         with the number of condensed particles should be
+                         saved.
 
 save_contour    - logical.  Should 2D contour data be saved?
 
 save_3d         - logical.  Should 3D isosurface data be saved?
 
+save_filter     - logical.  Should 3D filtered isosurfaces of the density be
+                            saved?
+
+save_average    - logical.  Should 3D time-averaged isosurfaces of the density
+                            be saved?
+
+save_zeros      - logical.  Should the points of zero density be saved?
+
 restart         - logical.  Is this run going to be a restart of a previous
-                  run?  If so, then the file end_state.dat should be available
-                  in each of the process directories ready for reading.
+                            run?  If so, then the file end_state.dat should be
+                            available in each of the process directories ready
+                            for reading.
 
 real_time       - logical.  Should the run be started in real time or not?
 
+diagnostic      - logical.  Calculate diagnostics?
+
 scheme          - character.  The time stepping scheme to use.  This must be
-                  set to one of:
-                  euler       - for explicit second-order Euler time stepping
-                  rk4         - for explicit fourth-order Runge-Kutta time
-                                stepping
-                  rk_adaptive - for explicit adaptive fourth-order
-                                Runge-Kutta-Fehlberg time stepping.
+                              set to one of:
+                              euler       - for explicit second-order Euler
+                                            time stepping
+                              rk4         - for explicit fourth-order
+                                            Runge-Kutta time stepping
+                              rk_adaptive - for explicit adaptive fourth-order
+                                            Runge-Kutta-Fehlberg time stepping.
 
 eps             - real.  The factor by which the fourth-order RK scheme must be
-                  close to the fifth-order RKF scheme.  This determines whether
-                  a time step has been successful and hence whether to increase
-                  or decrease the time step for the next step.
+                         close to the fifth-order RKF scheme.  This determines
+                         whether a time step has been successful and hence
+                         whether to increase or decrease the time step for the
+                         next step.
+
+safety
+dt_decrease     - real.  See the Numerical Recipes algorithm.
+dt_increase
 
 Two types are also defined in the parameters file in order to set up a vortex
-line or vortex ring.  Comments for how to set these up are in the parameters
-file.
+line or vortex ring.  Comments for how to set these up are in parameters.f90.
 
 Other parameters not mentioned here, can be left as they are.
 
 RUN_SCRIPT.sh
 -------------
-This is a bash script that gives an example of how to distribute data across
-the nodes of a cluster.  This can be used when a queue system is not available.
-However, a queue system is the better option because of its superior load
-balancing abilities.
-
-NPROCS		- Total number of processes on which the job will be run.  This
-                  should be equal to 'nyprocs*nzprocs' in parameters.f90.
-
-EXE		- The executable that will be run.
-
-DATA		- Any files that will be copied from the submit directory to
-                  the work directory.
-
-RUN_DIR         - The directory in which the job will be run.
-
-PROC_DIR        - The prefix of the directories where each process will write
-                  its own data.  Should be equal to proc_dir in parameters.f90.
+This is a bash script that gives an example of how a job might be submitted to
+a batch queue system (such as Torque or SGE) or how data might be distributed
+across the nodes of a cluster.
 
 MAKEFILE
 --------
@@ -217,6 +241,11 @@ energy.dat      - Save the energy at each time.
 
 linelength.dat  - Saves the total line length of vortices in the condensate.
 
+minmax_*.dat    - Save the minimum and maximum of the density, filtered density
+                  and time-averaged density over the duration of the run.
+
+misc.dat        - Any miscellaneous data can be sent to this file.
+
 momentum.dat    - Saves the three components of the momentum.
 
 save.dat        - The parameters for the most recently saved state.
@@ -238,8 +267,14 @@ proc**          - Numbered directories corresponding to each process involved
                   re_zeros*******.dat   - The coordinates where the real part
                                           of the wavefunction goes to zero.
 
-                  u_idl*******.dat      - If 3D isosurfaces were requested,
+                  dens*******.dat       - If 3D isosurfaces were requested,
                                           they are saved in these files.
+
+                  filtered*******.dat   - As above but for filtered data.
+
+                  ave*******.dat        - As above but for time-averaged data.
+
+                  spectrum*******.dat   - The spectrum (n_k vs. k).
 
                   zeros*******.dat      - The coordinates where the real and
                                           imaginary parts of the wavefunction
@@ -250,4 +285,4 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-08/05/2006
+01/11/2006
