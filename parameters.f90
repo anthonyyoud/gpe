@@ -5,21 +5,21 @@ module parameters
 
   include 'mpif.h'
 
-  integer,      parameter :: nyprocs      = 8
-  integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nx           = 32
+  integer,      parameter :: ny           = 32
+  integer,      parameter :: nz           = 32
   complex                 :: time_step    = (0.0,-0.0001)
   real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 32.0
-  real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 32.0
+  real,         parameter :: xr           = 16.0
+  real,         parameter :: yr           = 16.0
+  real,         parameter :: zr           = 16.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
-  real,         parameter :: enerv        = 0.75
+  real,         parameter :: enerv        = 1.0
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
@@ -33,6 +33,7 @@ module parameters
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_average = .true.
+  logical,      parameter :: save_spectrum= .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical                 :: real_time    = .true.

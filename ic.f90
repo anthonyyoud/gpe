@@ -65,7 +65,7 @@ module ic
       end if
       ! Get saved data since this is a restart
       call state_restart(tmp_var, p)
-      out_var = tmp_var*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition

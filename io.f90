@@ -246,68 +246,14 @@ module io
                              temp, temp2, H/(nx*ny*nz)
     end if
 
-    ! Save the spectrum
-    do k=ksta,kend
-      do j=jsta,jend
-        if (j/=k) cycle
-        do i=0,nx1
-          if (i/=j) cycle
-          open (unit_no, position='append', &
-                         file=proc_dir//'spectrum'//itos(p)//'.dat')
-          write (unit_no, '(3i5,e17.9)') i, j, k, abs(a(i,j,k))**2
-          close (unit_no)
-        end do
-      end do
-    end do
+    if (save_spectrum) then
+      ! Save the spectrum
+      call spectrum(a)
+    end if
     
-    ! Save a filtered isosurface.  High-frequency harmonics are filtered
     if (save_filter) then
-      do k=ksta,kend
-        if (k <= nz1/2+1) then
-          kk2 = k**2
-        else
-          kk2 = (nz1-k)**2
-        end if
-        do j=jsta,jend
-          if (j <= ny1/2+1) then
-            jj2 = j**2
-          else
-            jj2 = (ny1-j)**2
-          end if
-          do i=0,nx1
-            if (i <= nx1/2+1) then
-              ii2 = i**2
-            else
-              ii2 = (nx1-i)**2
-            end if
-            k2 = ii2 + jj2 + kk2
-            !if (k2 < kc2) then
-              a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
-              !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/8.0),0.0)
-            !else
-            !  a(i,j,k) = cmplx(0.0,0.0)
-            !end if
-          end do
-        end do
-      end do
-      
-      call fft(a, filtered, 'forward', .true.)
-      
-      open (unit_no, status='unknown', &
-                     file=proc_dir//'filtered'//itos(p)//'.dat', &
-                     form='unformatted')
-      
-      write (unit_no) nx, ny, nz
-      write (unit_no) nyprocs, nzprocs
-      write (unit_no) jsta, jend, ksta, kend
-      write (unit_no) abs(filtered)**2
-      write (unit_no) x
-      write (unit_no) y
-      write (unit_no) z
-
-      close (unit_no)
-
-      call get_minmax(abs(filtered)**2, 'filtered')
+      ! Save a filtered isosurface
+      call filtered_surface(a)
     end if
     
     return
@@ -411,6 +357,106 @@ module io
     return
   end subroutine idl_surface
 
+! ***************************************************************************  
+  
+  subroutine filtered_surface(a)
+    ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
+    use parameters
+    use ic, only : fft, x, y, z
+    use variables, only : unit_no
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: a
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: filtered
+    integer :: i, j, k, ii2, jj2, kk2, k2
+
+    do k=ksta,kend
+      if (k <= nz1/2+1) then
+        kk2 = k**2
+      else
+        kk2 = (nz1-k)**2
+      end if
+      do j=jsta,jend
+        if (j <= ny1/2+1) then
+          jj2 = j**2
+        else
+          jj2 = (ny1-j)**2
+        end if
+        do i=0,nx1
+          if (i <= nx1/2+1) then
+            ii2 = i**2
+          else
+            ii2 = (nx1-i)**2
+          end if
+          k2 = ii2 + jj2 + kk2
+          a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+        end do
+      end do
+    end do
+      
+    call fft(a, filtered, 'forward', .true.)
+    
+    open (unit_no, status='unknown', &
+                   file=proc_dir//'filtered'//itos(p)//'.dat', &
+                   form='unformatted')
+    
+    write (unit_no) nx, ny, nz
+    write (unit_no) nyprocs, nzprocs
+    write (unit_no) jsta, jend, ksta, kend
+    write (unit_no) abs(filtered)**2
+    write (unit_no) x
+    write (unit_no) y
+    write (unit_no) z
+
+    close (unit_no)
+
+    call get_minmax(abs(filtered)**2, 'filtered')
+
+    return
+  end subroutine filtered_surface
+
+! ***************************************************************************  
+
+  subroutine spectrum(a)
+    ! Calculate and save the spectrum
+    use parameters
+    use ic, only : fft, x, y, z
+    use variables, only : unit_no
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: a
+    integer :: i, j, k, ii2, jj2, kk2, k2
+
+    do k=ksta,kend
+      if (k <= nz1/2+1) then
+        kk2 = k**2
+      else
+        kk2 = (nz1-k)**2
+      end if
+      do j=jsta,jend
+        if (j <= ny1/2+1) then
+          jj2 = j**2
+        else
+          jj2 = (ny1-j)**2
+        end if
+        do i=0,nx1
+          if (i <= nx1/2+1) then
+            ii2 = i**2
+          else
+            ii2 = (nx1-i)**2
+          end if
+          k2 = ii2 + jj2 + kk2
+          open (unit_no, position='append', &
+                         file=proc_dir//'spectrum'//itos(p)//'.dat')
+          write (unit_no, '(2e17.9)') sqrt(real(k2)), abs(a(i,j,k))**2
+          close (unit_no)
+        end do
+      end do
+    end do
+
+    return
+  end subroutine spectrum
+  
 ! ***************************************************************************  
 
   subroutine get_minmax(in_var, var)
