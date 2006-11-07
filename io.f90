@@ -173,9 +173,14 @@ module io
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
-    real :: M, n0, temp, temp2, tot, tmp, rho0, E0, H, k2, k4
-    integer :: i, j, k, ii2, jj2, kk2
+    real :: M, n0, temp, temp2, tot, tmp, &
+            rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
+    integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
 
+    kc = sqrt(kc2)
+    dk = 2.0*kc/real(nx1)
+    V = nx*ny*nz
+    
     call fft(in_var, a, 'backward', .true.)
     
     !call fft(a, in_var, 'forward', .true.)
@@ -212,38 +217,102 @@ module io
 
     tmp = 0.0
     ! Density of condensed particles
-    rho0 = n0/(nx*ny*nz)
+    rho0 = n0/V
     
     ! Total energy <H>, and temperature T (?)
     tmp = 0.0
     do k=ksta,kend
+      kz = -kc+real(k)*dk
       do j=jsta,jend
+        ky = -kc+real(j)*dk
         do i=0,nx1
-          if (i==0 .and. j==0 .and. k==0) cycle
-          k2 = (1.0/12.0) * &
-               ( ((-2.0*cos(2.0*real(i)*dx) + &
-                   32.0*cos(real(i)*dx) + 30.0) / dx2) + &
-                 ((-2.0*cos(2.0*real(j)*dy) + &
-                   32.0*cos(real(j)*dy) + 30.0) / dy2) + &
-                 ((-2.0*cos(2.0*real(k)*dz) + &
-                   32.0*cos(real(k)*dz) + 30.0) / dz2) )
-
+          kx = -kc+real(i)*dk
+          k2 = 0.66666666*(7.0-cos(kx))*sin(kx*0.5)**2 + &
+               0.66666666*(7.0-cos(ky))*sin(ky*0.5)**2 + &
+               0.66666666*(7.0-cos(kz))*sin(kz*0.5)**2
+          !k2 = (1.0/12.0) * &
+          !     ( ((-2.0*cos(2.0*real(i)*dx) + &
+          !         32.0*cos(real(i)*dx) + 30.0) / dx2) + &
+          !       ((-2.0*cos(2.0*real(j)*dy) + &
+          !         32.0*cos(real(j)*dy) + 30.0) / dy2) + &
+          !       ((-2.0*cos(2.0*real(k)*dz) + &
+          !         32.0*cos(real(k)*dz) + 30.0) / dz2) )
+          if (k2==0.0) cycle
           k4 = k2**2
           tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
         end do
       end do
     end do
     
+    !do k=ksta,kend
+    !  if (k <= nz1/2+1) then
+    !    kk2 = k**2
+    !  else
+    !    kk2 = (nz1-k)**2
+    !  end if
+    !  do j=jsta,jend
+    !    if (j <= ny1/2+1) then
+    !      jj2 = j**2
+    !    else
+    !      jj2 = (ny1-j)**2
+    !    end if
+    !    do i=0,nx1
+    !      if (i <= nx1/2+1) then
+    !        ii2 = i**2
+    !      else
+    !        ii2 = (nx1-i)**2
+    !      end if
+    !      !if (i==0 .and. j==0 .and. k==0) cycle
+    !      k2 = ii2 + jj2 + kk2
+    !      if (k2==0) cycle
+    !      k4 = k2**2
+    !      tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
+    !    end do
+    !  end do
+    !end do
+
+    !do k=ksta,kend
+    !  if (k <= nz1/2+1) then
+    !    kk = k
+    !  else
+    !    kk = (nz1-k)
+    !  end if
+    !  do j=jsta,jend
+    !    if (j <= ny1/2+1) then
+    !      jj = j
+    !    else
+    !      jj = (ny1-j)
+    !    end if
+    !    do i=0,nx1
+    !      if (i <= nx1/2+1) then
+    !        ii2 = i
+    !      else
+    !        ii2 = (nx1-i)
+    !      end if
+    !      if (ii==0 .and. jj==0 .and. kk==0) cycle
+    !      k2 = (1.0/12.0) * &
+    !           ( ((-2.0*cos(2.0*real(ii)*dx) + &
+    !               32.0*cos(real(ii)*dx) + 30.0) / dx2) + &
+    !             ((-2.0*cos(2.0*real(jj)*dy) + &
+    !               32.0*cos(real(jj)*dy) + 30.0) / dy2) + &
+    !             ((-2.0*cos(2.0*real(kk)*dz) + &
+    !               32.0*cos(real(kk)*dz) + 30.0) / dz2) )
+    !      k4 = k2**2
+    !      tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
+    !    end do
+    !  end do
+    !end do
+    
     call MPI_REDUCE(tmp, tot, 1, MPI_REAL, MPI_SUM, 0, &
                     MPI_COMM_WORLD, ierr)
 
     if (myrank == 0) then
       temp = (M-n0)/tot
-      E0 = real(1.0/(2*nx*ny*nz))*(M**2+(M-n0)**2)
-      H = E0 + temp*real(nx1*ny1*nz1)
-      temp2 = ((M/(8.0*xr*yr*zr))-(n0/(nx*ny*nz)))/tot
-      write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/(nx*ny*nz), M, n0, &
-                             temp, temp2, H/(nx*ny*nz)
+      E0 = (1.0/real(2*V))*(M**2+(M-n0)**2)
+      H = E0 + temp*real(V-1)
+      temp2 = ((M/(8.0*xr*yr*zr))-(n0/V))/tot
+      write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/V, M, n0, &
+                             temp, temp2, H/V
     end if
 
     if (save_spectrum) then
