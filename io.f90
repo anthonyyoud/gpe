@@ -178,11 +178,11 @@ module io
             rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
 
-    kc = pi !sqrt(kc2)
+    kc = sqrt(kc2)
     dk = 2.0*kc/real(nx1)
     V = nx*ny*nz
     
-    call fft(in_var, a, 'backward', .true.)
+    call fft(in_var, a, 'forward', .true.)
     
     !call fft(a, in_var, 'forward', .true.)
     !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
@@ -217,6 +217,7 @@ module io
     call MPI_BCAST(n0, 1, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
 
     tmp = 0.0
+
     ! Density of condensed particles
     rho0 = n0/V
     
@@ -399,7 +400,7 @@ module io
       end do
     end do
       
-    call fft(a, filtered, 'forward', .true.)
+    call fft(a, filtered, 'backward', .true.)
     
     open (unit_no, status='unknown', &
                    file=proc_dir//'filtered'//itos(p)//'.dat', &

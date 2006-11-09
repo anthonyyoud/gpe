@@ -209,7 +209,7 @@ module ic
       end do
     end do
 
-    call fft(a, out_var, 'forward', .false.)
+    call fft(a, out_var, 'backward', .false.)
   
     return
   end subroutine random_phase

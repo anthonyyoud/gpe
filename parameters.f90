@@ -19,7 +19,7 @@ module parameters
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
-  real,         parameter :: enerv        = 1.0
+  real,         parameter :: enerv        = 2.0
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
