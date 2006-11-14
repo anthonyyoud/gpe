@@ -185,19 +185,19 @@ module ic
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
-        kk2 = (nz1-k)**2
+        kk2 = (nz1-k+1)**2
       end if
       do j=jsta,jend
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
-          jj2 = (ny1-j)**2
+          jj2 = (ny1-j+1)**2
         end if
         do i=0,nx1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
-            ii2 = (nx1-i)**2
+            ii2 = (nx1-i+1)**2
           end if
           if ((ii2 + jj2 + kk2) <= kc2) then
             call random_number(phi)
@@ -209,7 +209,7 @@ module ic
       end do
     end do
 
-    call fft(a, out_var, 'backward', .false.)
+    call fft(a, out_var, 'forward', .false.)
   
     return
   end subroutine random_phase

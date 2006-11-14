@@ -419,35 +419,34 @@ module variables
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidy
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidz
     integer :: i, j, k
-    real, parameter :: c0 = 0.0833333**2
 
     call deriv_x(in_var, dpsidx)
     call deriv_x(in_var, dpsidy)
     call deriv_x(in_var, dpsidz)
     
-    int_var = abs(dpsidx)**2 + abs(dpsidy)**2 + abs(dpsidz)**2 + &
-              0.5*abs(in_var(:,jsta:jend,ksta:kend))**4
+    !int_var = abs(dpsidx)**2 + abs(dpsidy)**2 + abs(dpsidz)**2 + &
+    !          0.5*abs(in_var(:,jsta:jend,ksta:kend))**4
 
-    call integrate_x(int_var, int_x)
-    call integrate_y(int_x, int_y)
-    call integrate_z(int_y, int_z)
-    
-    E = int_z
+    !call integrate_x(int_var, int_x)
+    !call integrate_y(int_x, int_y)
+    !call integrate_z(int_y, int_z)
+    !
+    !E = int_z
 
-    !tmp = 0.0
-    !do k=ksta,kend
-    !  do j=jsta,jend
-    !    do i=0,nx1
-    !      tmp = tmp + 1.0*(abs(dpsidx(i,j,k))**2 + &
-    !                      abs(dpsidy(i,j,k))**2 + &
-    !                      abs(dpsidz(i,j,k))**2 + &
-    !                      0.5*abs(in_var(i,j,k))**4)
-    !    end do
-    !  end do
-    !end do
+    tmp = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          tmp = tmp + abs(dpsidx(i,j,k))**2 + &
+                      abs(dpsidy(i,j,k))**2 + &
+                      abs(dpsidz(i,j,k))**2 + &
+                      0.5*abs(in_var(i,j,k))**4
+        end do
+      end do
+    end do
 
-    !call MPI_ALLREDUCE(tmp, E, 1, MPI_REAL, MPI_SUM, &
-    !                MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, E, 1, MPI_REAL, MPI_SUM, &
+                    MPI_COMM_WORLD, ierr)
 
     return
   end subroutine energy
@@ -469,23 +468,23 @@ module variables
 
     int_var = abs(in_var)**2
 
-    call integrate_x(int_var, int_x)
-    call integrate_y(int_x, int_y)
-    call integrate_z(int_y, int_z)
-    
-    M = int_z
+    !call integrate_x(int_var, int_x)
+    !call integrate_y(int_x, int_y)
+    !call integrate_z(int_y, int_z)
+    !
+    !M = int_z
 
-    !tmp = 0.0
-    !do k=ksta,kend
-    !  do j=jsta,jend
-    !    do i=0,nx1
-    !      tmp = tmp + int_var(i,j,k)
-    !    end do
-    !  end do
-    !end do
-    !      
-    !call MPI_ALLREDUCE(tmp, M, 1, MPI_REAL, MPI_SUM, &
-    !                   MPI_COMM_WORLD, ierr)
+    tmp = 0.0
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          tmp = tmp + int_var(i,j,k)
+        end do
+      end do
+    end do
+          
+    call MPI_ALLREDUCE(tmp, M, 1, MPI_REAL, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
                        
     return
   end subroutine mass

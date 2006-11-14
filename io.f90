@@ -155,7 +155,7 @@ module io
     call energy(in_var, E)
     
     if (myrank == 0) then
-      write (12, '(2e17.9)') time, E
+      write (12, '(2e17.9)') time, E/real(nx*ny*nz)
     end if
 
     return
@@ -178,11 +178,11 @@ module io
             rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
 
-    kc = sqrt(kc2)
+    kc = pi !sqrt(kc2)
     dk = 2.0*kc/real(nx1)
     V = nx*ny*nz
     
-    call fft(in_var, a, 'forward', .true.)
+    call fft(in_var, a, 'backward', .true.)
     
     !call fft(a, in_var, 'forward', .true.)
     !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
@@ -380,19 +380,19 @@ module io
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
-        kk2 = (nz1-k)**2
+        kk2 = (nz1-k+1)**2
       end if
       do j=jsta,jend
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
-          jj2 = (ny1-j)**2
+          jj2 = (ny1-j+1)**2
         end if
         do i=0,nx1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
-            ii2 = (nx1-i)**2
+            ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
           a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
@@ -400,7 +400,7 @@ module io
       end do
     end do
       
-    call fft(a, filtered, 'backward', .true.)
+    call fft(a, filtered, 'forward', .true.)
     
     open (unit_no, status='unknown', &
                    file=proc_dir//'filtered'//itos(p)//'.dat', &
@@ -437,19 +437,19 @@ module io
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
-        kk2 = (nz1-k)**2
+        kk2 = (nz1-k+1)**2
       end if
       do j=jsta,jend
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
-          jj2 = (ny1-j)**2
+          jj2 = (ny1-j+1)**2
         end if
         do i=0,nx1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
-            ii2 = (nx1-i)**2
+            ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
           open (unit_no, position='append', &
