@@ -1,3 +1,6 @@
+ $Id: README,v 1.5 2006-11-21 15:57:49 n8049290 Exp $
+----------------------------------------------------------------------------
+
 DESCRIPTION
 -----------
 Modular Gross-Pitaevskii equation solver in 3D parallelised using MPI.  The

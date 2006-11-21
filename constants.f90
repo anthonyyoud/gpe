@@ -1,3 +1,6 @@
+! $Id: constants.f90,v 1.3 2006-11-21 15:57:49 n8049290 Exp $
+!----------------------------------------------------------------------------
+
 module constants
   ! Constants for use in FFTW routines.  Original comments below:
   ! This file contains PARAMETER statements for various constants

@@ -1,3 +1,6 @@
+! $Id: ic.f90,v 1.42 2006-11-21 15:57:50 n8049290 Exp $
+!----------------------------------------------------------------------------
+
 module ic
   ! Routines to do with setting up the initial condition
   use parameters
@@ -117,9 +120,12 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     integer,                                       intent(out) :: p
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: out_var1, out_var2
     complex :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev
 
+    out_var2 = 1.0
+    
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
 
     ! Read in the distributed data from the previous run
@@ -129,9 +135,27 @@ module ic
     read (unit_no) p
     read (unit_no) t
     read (unit_no) dt_prev
-    read (unit_no) out_var
+    read (unit_no) out_var1
 
     close (unit_no)
+    
+    if (saved_restart) then
+      open (unit_no, file=proc_dir//'end_state_filtered.dat', &
+                     form='unformatted')
+
+      ! Read in the filtered distributed data from the previous run
+      read (unit_no) nx_prev
+      read (unit_no) ny_prev
+      read (unit_no) nz_prev
+      read (unit_no) p
+      read (unit_no) t
+      read (unit_no) dt_prev
+      read (unit_no) out_var2
+
+      close (unit_no)
+    end if
+
+    out_var = out_var1*out_var2
 
     if (real(dt_prev) == 0.0) then
       dt_prev = cmplx(aimag(dt_prev), real(dt_prev))

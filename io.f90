@@ -1,3 +1,6 @@
+! $Id: io.f90,v 1.35 2006-11-21 15:57:50 n8049290 Exp $
+!----------------------------------------------------------------------------
+
 module io
   ! Routines for input/output
   use parameters
@@ -45,6 +48,7 @@ module io
       open (13, file='linelength.dat', status='unknown')
       open (14, file='momentum.dat', status='unknown')
       open (15, file='mass.dat', status='unknown')
+      open (17, file='eta_time.dat', status='unknown')
       open (97, file='misc.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
@@ -66,6 +70,7 @@ module io
       close (13)
       close (14)
       close (15)
+      close (17)
       close (97)
     end if
 
@@ -259,7 +264,7 @@ module io
     
     if (save_filter) then
       ! Save a filtered isosurface
-      call filtered_surface(a)
+      call filtered_surface(a, 0)
     end if
     
     return
@@ -365,13 +370,14 @@ module io
 
 ! ***************************************************************************  
   
-  subroutine filtered_surface(a)
+  subroutine filtered_surface(a, flag)
     ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
     use parameters
     use ic, only : fft, x, y, z
     use variables, only : unit_no
     implicit none
 
+    integer, intent(in) :: flag
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: a
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: filtered
     integer :: i, j, k, ii2, jj2, kk2, k2
@@ -402,18 +408,33 @@ module io
       
     call fft(a, filtered, 'forward', .true.)
     
-    open (unit_no, status='unknown', &
-                   file=proc_dir//'filtered'//itos(p)//'.dat', &
-                   form='unformatted')
+    select case (flag)
+      case (0)
+        open (unit_no, status='unknown', &
+                      file=proc_dir//'filtered'//itos(p)//'.dat', &
+                      form='unformatted')
+        write (unit_no) nx, ny, nz
+        write (unit_no) nyprocs, nzprocs
+        write (unit_no) jsta, jend, ksta, kend
+        write (unit_no) abs(filtered)**2
+        write (unit_no) x
+        write (unit_no) y
+        write (unit_no) z
+      case (1)
+        open (unit_no, status='unknown', &
+        file=proc_dir//'end_state_filtered.dat', &
+                      form='unformatted')
+        write (unit_no) nx
+        write (unit_no) ny
+        write (unit_no) nz
+        write (unit_no) p
+        write (unit_no) t
+        write (unit_no) dt
+        write (unit_no) filtered
+      case default
+        STOP 'ERROR:  Invalid flag (filtered_surface)'
+    end select
     
-    write (unit_no) nx, ny, nz
-    write (unit_no) nyprocs, nzprocs
-    write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) abs(filtered)**2
-    write (unit_no) x
-    write (unit_no) y
-    write (unit_no) z
-
     close (unit_no)
 
     call get_minmax(abs(filtered)**2, 'filtered')
@@ -431,8 +452,15 @@ module io
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: a
-    integer :: i, j, k, ii2, jj2, kk2, k2
+    real :: log2k
+    integer :: i, j, k, m, ii2, jj2, kk2, k2
+    integer, parameter :: nshells = 7
+    real, dimension(nshells) :: eta, tot_eta
+    integer, dimension(nshells) :: nharm, tot_nharm
 
+    eta = 0.0
+    nharm = 0
+    
     do k=ksta,kend
       if (k <= nz1/2+1) then
         kk2 = k**2
@@ -452,13 +480,53 @@ module io
             ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
-          open (unit_no, position='append', &
-                         file=proc_dir//'spectrum'//itos(p)//'.dat')
-          write (unit_no, '(2e17.9)') sqrt(real(k2)), abs(a(i,j,k))**2
-          close (unit_no)
+          if (sqrt(real(k2)) == 0.0) cycle
+          log2k = log( 0.5*sqrt(real(k2))/pi ) / log(2.0)
+          !log2k = log( sqrt(real(k2)) ) / log(2.0)
+          !print*, i, j, k, sqrt(real(k2)), log2k
+          do m=1,nshells
+            if ((abs(log2k) < real(m)) .and. (abs(log2k) >= real(m-1))) then
+              eta(m) = eta(m) + abs(a(i,j,k))**2
+              nharm(m) = nharm(m) + 1
+              exit
+            end if
+          end do
+          !open (unit_no, position='append', &
+          !               file=proc_dir//'spectrum'//itos(p)//'.dat')
+          !write (unit_no, '(2e17.9)') sqrt(real(k2)), abs(a(i,j,k))**2
+          !close (unit_no)
         end do
       end do
     end do
+
+    call MPI_REDUCE(eta, tot_eta, nshells, MPI_REAL, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(nharm, tot_nharm, nshells, MPI_INTEGER, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+
+    if (myrank == 0) then
+      do m=1,nshells
+        if (tot_eta(m) == 0.0) cycle
+        tot_eta(m) = tot_eta(m)/real(tot_nharm(m))
+      end do
+    
+      !open (49, file='comb_spect.dat')
+      open (unit_no, file=proc_dir//'spectrum'//itos(p)//'.dat')
+      do m=1,nshells
+        write (unit_no, '(2i9,e17.9)') m, tot_nharm(m), tot_eta(m)
+      end do
+      close (unit_no)
+
+      write (17, '(4e17.9)') t, tot_eta(1), tot_eta(2), tot_eta(3)
+    end if
+
+    !open (unit_no, file=proc_dir//'spectrum'//itos(p)//'.dat')
+    !
+    !do m=1,nshells
+    !  write (unit_no, '(2i9,e17.9)') m, nharm(m), eta(m)
+    !end do
+    !
+    !close (unit_no)
 
     return
   end subroutine spectrum
@@ -562,11 +630,13 @@ module io
     ! Save variables for use in a restarted run.  Each process saves its own
     ! bit
     use parameters
+    use ic, only : fft
     use variables, only : unit_no
     implicit none
 
     integer, intent(in) :: p, flag
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     integer :: j, k
 
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
@@ -594,14 +664,26 @@ module io
       close (98)
     end if
     
-    if (myrank == 0) then
-      ! flag = 1 if the run has been ended
-      if (flag == 1) then
+    ! flag = 1 if the run has been ended
+    if (flag == 1) then
+      ! Save a final filtered isosurface
+      call fft(in_var, a, 'backward', .true.)
+      call filtered_surface(a, flag)
+      if (myrank == 0) then
         ! Delete RUNNING file to cleanly terminate the run
         open (99, file = 'RUNNING')
         close (99, status = 'delete')
       end if
     end if
+    
+    !if (myrank == 0) then
+    !  ! flag = 1 if the run has been ended
+    !  if (flag == 1) then
+    !    ! Delete RUNNING file to cleanly terminate the run
+    !    open (99, file = 'RUNNING')
+    !    close (99, status = 'delete')
+    !  end if
+    !end if
 
     return
   end subroutine end_state

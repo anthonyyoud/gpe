@@ -1,3 +1,6 @@
+! $Id: solve.f90,v 1.27 2006-11-21 15:57:51 n8049290 Exp $
+!----------------------------------------------------------------------------
+
 module solve
   ! Routines to actually solve the equation
   use parameters

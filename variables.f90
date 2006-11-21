@@ -1,3 +1,6 @@
+! $Id: variables.f90,v 1.20 2006-11-21 15:57:52 n8049290 Exp $
+!----------------------------------------------------------------------------
+
 module variables
   ! Routines to do with setting up variables and operations on them
   use parameters
