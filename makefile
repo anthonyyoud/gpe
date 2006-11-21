@@ -1,3 +1,6 @@
+# $Id: makefile,v 1.6 2006-11-21 15:58:48 n8049290 Exp $
+#----------------------------------------------------------------------------
+
 OUTDIR		= ./
 OBJECTS		= parameters.o constants.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
