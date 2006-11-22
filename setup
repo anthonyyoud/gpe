@@ -1,6 +1,3 @@
-# $Id: setup,v 1.6 2006-11-21 15:57:51 n8049290 Exp $
-#----------------------------------------------------------------------------
-
 #!/bin/sh
 # Compile and setup ready to run in a separate directory
 # usage:  source setup <directory name> [compile params]
