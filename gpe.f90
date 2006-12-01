@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.35 2006-11-21 15:57:49 n8049290 Exp $
+! $Id: gpe.f90,v 1.36 2006-12-01 12:52:13 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -172,7 +172,7 @@ program gpe
       !call save_mass(t, psi%new)
       call save_momentum(t, psi%old)
       call save_time(t, psi%new)
-      call save_linelength(t, psi%old)
+      call save_linelength(t, psi%old, 0)
       !call condensed_particles(t, psi%new)
     end if
     

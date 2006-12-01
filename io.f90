@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.35 2006-11-21 15:57:50 n8049290 Exp $
+! $Id: io.f90,v 1.36 2006-12-01 12:52:14 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -49,6 +49,7 @@ module io
       open (14, file='momentum.dat', status='unknown')
       open (15, file='mass.dat', status='unknown')
       open (17, file='eta_time.dat', status='unknown')
+      open (18, file='filtered_ll.dat', status='unknown')
       open (97, file='misc.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
@@ -71,6 +72,7 @@ module io
       close (14)
       close (15)
       close (17)
+      close (18)
       close (97)
     end if
 
@@ -173,12 +175,14 @@ module io
     ! spectra and save filtered isosurface
     use parameters
     use ic, only : fft, x, y, z
-    use variables, only : mass, unit_no
+    use variables, only : mass, unit_no, send_recv_z, send_recv_y, &
+                          pack_y, unpack_y
     implicit none
 
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: a_tmp
     real :: M, n0, temp, temp2, tot, tmp, &
             rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
@@ -188,6 +192,13 @@ module io
     V = nx*ny*nz
     
     call fft(in_var, a, 'backward', .true.)
+
+    a_tmp = 0.0
+    a_tmp(:,jsta:jend,ksta:kend) = a
+    call send_recv_z(a_tmp)
+    call pack_y(a_tmp)
+    call send_recv_y()
+    call unpack_y(a_tmp)
     
     !call fft(a, in_var, 'forward', .true.)
     !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
@@ -266,6 +277,9 @@ module io
       ! Save a filtered isosurface
       call filtered_surface(a, 0)
     end if
+
+    ! Save the linelength of a filtered isosurface
+    call save_linelength(t, a_tmp, 1)
     
     return
   end subroutine condensed_particles
@@ -1204,7 +1218,7 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine save_linelength(t, in_var)
+  subroutine save_linelength(t, in_var, flag)
     ! Save the total vortex line length
     use parameters
     use variables, only : linelength
@@ -1212,6 +1226,7 @@ module io
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, intent(in) :: t
+    integer :: flag
     real :: tmp, length
 
     ! Get the line length on each individual process
@@ -1222,7 +1237,13 @@ module io
                     MPI_COMM_WORLD, ierr) 
 
     if (myrank == 0) then
-      write (13, '(2e17.9)') t, length
+      if (flag == 0) then
+        ! Write the unfiltered line length
+        write (13, '(2e17.9)') t, length
+      else if (flag == 1) then
+        ! Write the filtered line length
+        write (18, '(2e17.9)') t, length
+      end if
     end if
 
     return

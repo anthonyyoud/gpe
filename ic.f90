@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.42 2006-11-21 15:57:50 n8049290 Exp $
+! $Id: ic.f90,v 1.43 2006-12-01 12:52:14 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -122,7 +122,8 @@ module ic
     integer,                                       intent(out) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: out_var1, out_var2
     complex :: dt_prev
-    integer :: nx_prev, ny_prev, nz_prev
+    integer :: nx_prev, ny_prev, nz_prev, undef_int
+    real :: undef_real
 
     out_var2 = 1.0
     
@@ -144,12 +145,12 @@ module ic
                      form='unformatted')
 
       ! Read in the filtered distributed data from the previous run
-      read (unit_no) nx_prev
-      read (unit_no) ny_prev
-      read (unit_no) nz_prev
-      read (unit_no) p
-      read (unit_no) t
-      read (unit_no) dt_prev
+      read (unit_no) undef_int
+      read (unit_no) undef_int
+      read (unit_no) undef_int
+      read (unit_no) undef_int
+      read (unit_no) undef_real
+      read (unit_no) undef_real
       read (unit_no) out_var2
 
       close (unit_no)
