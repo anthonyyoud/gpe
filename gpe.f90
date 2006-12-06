@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.36 2006-12-01 12:52:13 n8049290 Exp $
+! $Id: gpe.f90,v 1.37 2006-12-06 15:49:49 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -53,29 +53,31 @@ program gpe
   allocate(ave(0:nx1,jsta:jend,ksta:kend))
 
   ! Check which time stepping scheme we're using
-  if (myrank == 0) then
-    select case (scheme)
-      case ('euler')
-        print*, 'Explicit Euler time stepping'
-      case ('rk4')
-        print*, 'Explicit fourth order Runge-Kutta time stepping'
-      case ('rk_adaptive')
-        print*, 'Explicit fifth order &
-                &Runge-Kutta-Fehlberg adaptive time stepping'
-      case default
-        STOP 'ERROR: Unrecognised time stepping scheme'
-    end select
-  end if
+  if (.not. pp_filtered_surface) then
+    if (myrank == 0) then
+      select case (scheme)
+        case ('euler')
+          print*, 'Explicit Euler time stepping'
+        case ('rk4')
+          print*, 'Explicit fourth order Runge-Kutta time stepping'
+        case ('rk_adaptive')
+          print*, 'Explicit fifth order &
+                  &Runge-Kutta-Fehlberg adaptive time stepping'
+        case default
+          STOP 'ERROR: Unrecognised time stepping scheme'
+      end select
+    end if
 
-  if (myrank == 0) then
-    select case (eqn_to_solve)
-      case (1)
-        print*, 'Solving CASE 1'
-      case (2)
-        print*, 'Solving CASE 2'
-      case (3)
-        print*, 'Solving CASE 3'
-    end select
+    if (myrank == 0) then
+      select case (eqn_to_solve)
+        case (1)
+          print*, 'Solving CASE 1'
+        case (2)
+          print*, 'Solving CASE 2'
+        case (3)
+          print*, 'Solving CASE 3'
+      end select
+    end if
   end if
   
   ! Set the time step
@@ -93,6 +95,19 @@ program gpe
   ! Get the cutoff wavenumber and amplitude
   call get_kc_amp()
 
+  ! Post-process filtered isosurfaces
+  if (pp_filtered_surface) then
+    if (myrank == 0) then
+      print*, 'Saving filtered isosurfaces'
+    end if
+    call pp_save_filter()
+    if (myrank == 0) then
+      open (99, file = 'RUNNING')  !delete 'RUNNING' to finish run
+      close (99, status = 'delete')
+    end if
+  end if
+
+  if (.not. pp_filtered_surface) then
   ! Get the initial conditions
   call ics(psi%new, p_start)
   call idl_surface(p, psi%new)
@@ -262,6 +277,7 @@ program gpe
   call end_state(psi%new, p, 1)
   call idl_surface(p, psi%new)
   call save_surface(p, psi%new)
+  end if
 
   ! Close runtime files
   call close_files()

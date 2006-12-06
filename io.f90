@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.36 2006-12-01 12:52:14 n8049290 Exp $
+! $Id: io.f90,v 1.37 2006-12-06 15:49:49 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -10,7 +10,7 @@ module io
   public :: open_files, close_files, save_time, save_energy, &
             save_surface, idl_surface, end_state, get_zeros, get_re_im_zeros, &
             get_extra_zeros, save_linelength, save_momentum, &
-            get_dirs, diag, condensed_particles, average
+            get_dirs, diag, condensed_particles, average, pp_save_filter
   
   contains
 
@@ -50,6 +50,7 @@ module io
       open (15, file='mass.dat', status='unknown')
       open (17, file='eta_time.dat', status='unknown')
       open (18, file='filtered_ll.dat', status='unknown')
+      open (19, file='p_saved.dat', status='unknown')
       open (97, file='misc.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
@@ -73,6 +74,7 @@ module io
       close (15)
       close (17)
       close (18)
+      close (19)
       close (97)
     end if
 
@@ -175,14 +177,12 @@ module io
     ! spectra and save filtered isosurface
     use parameters
     use ic, only : fft, x, y, z
-    use variables, only : mass, unit_no, send_recv_z, send_recv_y, &
-                          pack_y, unpack_y
+    use variables, only : mass, unit_no
     implicit none
 
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: a_tmp
     real :: M, n0, temp, temp2, tot, tmp, &
             rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
@@ -193,17 +193,11 @@ module io
     
     call fft(in_var, a, 'backward', .true.)
 
-    a_tmp = 0.0
-    a_tmp(:,jsta:jend,ksta:kend) = a
-    call send_recv_z(a_tmp)
-    call pack_y(a_tmp)
-    call send_recv_y()
-    call unpack_y(a_tmp)
-    
     !call fft(a, in_var, 'forward', .true.)
     !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
     !      form='unformatted')
     !
+    !write (unit_no) t
     !write (unit_no) nx, ny, nz
     !write (unit_no) nyprocs, nzprocs
     !write (unit_no) jsta, jend, ksta, kend
@@ -277,9 +271,6 @@ module io
       ! Save a filtered isosurface
       call filtered_surface(a, 0)
     end if
-
-    ! Save the linelength of a filtered isosurface
-    call save_linelength(t, a_tmp, 1)
     
     return
   end subroutine condensed_particles
@@ -369,15 +360,20 @@ module io
     open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
           form='unformatted')
     
+    write (unit_no) t
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) density
+    write (unit_no) in_var
     write (unit_no) x
     write (unit_no) y
     write (unit_no) z
 
     close (unit_no)
+
+    if (myrank == 0) then
+      write (19, '(i10)') p
+    end if
 
     return
   end subroutine idl_surface
@@ -388,12 +384,14 @@ module io
     ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
     use parameters
     use ic, only : fft, x, y, z
-    use variables, only : unit_no
+    use variables, only : unit_no, send_recv_z, send_recv_y, &
+                          pack_y, unpack_y
     implicit none
 
     integer, intent(in) :: flag
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: a
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: filtered
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: filtered_tmp
     integer :: i, j, k, ii2, jj2, kk2, k2
 
     do k=ksta,kend
@@ -415,22 +413,34 @@ module io
             ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
-          a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+          !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
+          a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/(9.0-1e-3*t)**2),0.0)
         end do
       end do
     end do
-      
+    
     call fft(a, filtered, 'forward', .true.)
+    
+    filtered_tmp = 0.0
+    filtered_tmp(:,jsta:jend,ksta:kend) = filtered
+    call send_recv_z(filtered_tmp)
+    call pack_y(filtered_tmp)
+    call send_recv_y()
+    call unpack_y(filtered_tmp)
+
+    ! Save the linelength of a filtered isosurface
+    call save_linelength(t, filtered_tmp, 1)
     
     select case (flag)
       case (0)
         open (unit_no, status='unknown', &
                       file=proc_dir//'filtered'//itos(p)//'.dat', &
                       form='unformatted')
+        write (unit_no) t
         write (unit_no) nx, ny, nz
         write (unit_no) nyprocs, nzprocs
         write (unit_no) jsta, jend, ksta, kend
-        write (unit_no) abs(filtered)**2
+        write (unit_no) filtered
         write (unit_no) x
         write (unit_no) y
         write (unit_no) z
@@ -1306,6 +1316,7 @@ module io
     open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
           form='unformatted')
 
+    write (unit_no) t
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
@@ -1322,5 +1333,50 @@ module io
 
     return
   end subroutine average
+
+  subroutine pp_save_filter()
+    ! Save a series of filtered isosurfaces after a run has been completed
+    use parameters
+    use ic, only : x, y, z, fft
+    use variables, only : unit_no
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: in_var, a
+    integer :: i, dummy_int
+
+    if (myrank == 0) then
+      open (50, file='p_saved.dat')
+    end if
+    
+    do i=1,nlines
+      if (myrank == 0) then
+        read (50, *) p
+      end if
+      
+      call MPI_BCAST(p, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+
+      open (unit_no, file=proc_dir//'dens'//itos(p)//'.dat', &
+                     form='unformatted')
+
+      read (unit_no) t
+      read (unit_no) dummy_int, dummy_int, dummy_int
+      read (unit_no) dummy_int, dummy_int
+      read (unit_no) dummy_int, dummy_int, dummy_int, dummy_int
+      read (unit_no) in_var
+      read (unit_no) x
+      read (unit_no) y
+      read (unit_no) z
+      
+      call fft(in_var, a, 'backward', .true.)
+      
+      call filtered_surface(a, 0)
+    end do
+
+    if (myrank == 0) then
+      close (50)
+    end if
+
+    return
+  end subroutine pp_save_filter
   
 end module io
