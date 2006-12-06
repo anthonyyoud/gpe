@@ -2,6 +2,7 @@
 #PBS -S /bin/sh
 #PBS -j oe -o run.log
 
+FILTER=0
 TALISMAN=master
 NODED=noded
 GIGA=giga
@@ -17,7 +18,11 @@ fi
 #****************************************************************************
 NPROCS=32
 EXE=ulimit_hack.sh #gpe
-DATA='parameters.f90 gpe'
+if [ $FILTER -eq 1 ]; then
+  DATA='parameters.f90 gpe p_saved.dat'
+else
+  DATA='parameters.f90 gpe'
+fi
 DATA_DIR=`pwd`
 PROC_DIR=proc
 case $HOST in
@@ -56,20 +61,36 @@ case $HOST in
         mkdir $RUN_DIR/$PROC_DIR$i
       fi
     done
+    TARFILE=data.tar
     cp $EXE $RUN_DIR
     cp $DATA $RUN_DIR
-    cp -r $PROC_DIR* $RUN_DIR 2> /dev/null
+    if [ -e proc00 ]; then
+      tar hcf $TARFILE $PROC_DIR*
+      cp $TARFILE $RUN_DIR
+      rm $TARFILE
+    fi
     rm -rf $PROC_DIR*
     cd $RUN_DIR
+    if [ -e $TARFILE ]; then
+      tar xf $TARFILE
+    fi
     
     echo No. processors = $NPROCS
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
         $SSH $NODE "mkdir $RUN_DIR"
-        $SCP -r $PROC_DIR* $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
+        if [ $FILTER -eq 1 ]; then
+          $SCP $TARFILE $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
+        else
+          $SCP -r $PROC_DIR* $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
+        fi
+        if [ -e $TARFILE ]; then
+          $SSH $NODE "cd $RUN_DIR && tar xf $TARFILE && rm $TARFILE"
+        fi
       fi
     done
+    rm -f $TARFILE
     uniq $PBS_NODEFILE > $HOSTFILE
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
@@ -78,10 +99,12 @@ case $HOST in
     #mpdallexit
     rm $EXE $HOSTFILE
     
-    TARFILE=data.tar
     cd $RUN_DIR
     for dir in $PROC_DIR*
     do
+      if [ $FILTER -eq 1 ]; then
+        rm $dir/dens*
+      fi
       num_files=$(ls -1 $dir | wc -l)
       if [ $num_files -eq 1 ]; then
         rm -r $dir
@@ -96,6 +119,10 @@ case $HOST in
         $SSH $NODE "cd $RUN_DIR && \
                     for dir in $PROC_DIR*
                     do
+                      echo $FILTER
+                      if [ $FILTER -eq 1 ]; then
+                        rm \$dir/dens*
+                      fi
                       num_files=\$(ls \$dir | wc -l)
                       if [ \$num_files -eq 1 ]; then
                         rm -r \$dir
