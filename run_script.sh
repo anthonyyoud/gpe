@@ -2,7 +2,7 @@
 #PBS -S /bin/sh
 #PBS -j oe -o run.log
 
-FILTER=0
+FILTER=1
 TALISMAN=master
 NODED=noded
 GIGA=giga
@@ -90,7 +90,7 @@ case $HOST in
         fi
       fi
     done
-    rm -f $TARFILE
+    rm -f $TARFILE 2> /dev/null
     uniq $PBS_NODEFILE > $HOSTFILE
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
@@ -119,7 +119,6 @@ case $HOST in
         $SSH $NODE "cd $RUN_DIR && \
                     for dir in $PROC_DIR*
                     do
-                      echo $FILTER
                       if [ $FILTER -eq 1 ]; then
                         rm \$dir/dens*
                       fi
