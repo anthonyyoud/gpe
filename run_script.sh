@@ -53,44 +53,38 @@ esac
 case $HOST in
   $GIGA)
     mkdir $RUN_DIR
-    for i in `seq 0 $(( $NPROCS-1 ))`
-    do
-      if [ $i -lt 10 ]; then
-        mkdir $RUN_DIR/${PROC_DIR}0$i
-      else
-        mkdir $RUN_DIR/$PROC_DIR$i
-      fi
-    done
+    if [ ! -e ${PROC_DIR}00 ]; then
+      for i in `seq 0 $(( $NPROCS-1 ))`
+      do
+        if [ $i -lt 10 ]; then
+          mkdir ${PROC_DIR}0$i
+        else
+          mkdir $PROC_DIR$i
+        fi
+      done
+    fi
     TARFILE=data.tar
     cp $EXE $RUN_DIR
     cp $DATA $RUN_DIR
-    if [ -e proc00 ]; then
-      tar hcf $TARFILE $PROC_DIR*
-      cp $TARFILE $RUN_DIR
-      rm $TARFILE
-    fi
+    tar hcf $TARFILE $PROC_DIR* 2> /dev/null
+    cp $TARFILE $RUN_DIR
     rm -rf $PROC_DIR*
     cd $RUN_DIR
-    if [ -e $TARFILE ]; then
-      tar xf $TARFILE
-    fi
+    tar xf $TARFILE
+    rm $TARFILE
+    cd $DATA_DIR
     
     echo No. processors = $NPROCS
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
         $SSH $NODE "mkdir $RUN_DIR"
-        if [ $FILTER -eq 1 ]; then
-          $SCP $TARFILE $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
-        else
-          $SCP -r $PROC_DIR* $EXE $DATA $NODE:$RUN_DIR 2> /dev/null
-        fi
-        if [ -e $TARFILE ]; then
-          $SSH $NODE "cd $RUN_DIR && tar xf $TARFILE && rm $TARFILE"
-        fi
+        $SSH $NODE "cd $DATA_DIR && cp $TARFILE $EXE $DATA $RUN_DIR"
+        $SSH $NODE "cd $RUN_DIR && tar xf $TARFILE && rm $TARFILE"
       fi
     done
-    rm -f $TARFILE 2> /dev/null
+    rm $TARFILE
+    cd $RUN_DIR
     uniq $PBS_NODEFILE > $HOSTFILE
     NUMHOSTS=`cat $HOSTFILE | wc -l`
     #mpdboot -n $NUMHOSTS --ncpus=2 --rsh=$SSH
@@ -99,7 +93,6 @@ case $HOST in
     #mpdallexit
     rm $EXE $HOSTFILE
     
-    cd $RUN_DIR
     for dir in $PROC_DIR*
     do
       if [ $FILTER -eq 1 ]; then
@@ -112,7 +105,7 @@ case $HOST in
     done
     tar cf $TARFILE * &> /dev/null
     cp $TARFILE $DATA_DIR
-    $SSH giga01 "cd $DATA_DIR && tar xf $TARFILE &> /dev/null && rm $TARFILE"
+    cd $DATA_DIR && tar xf $TARFILE &> /dev/null && rm $TARFILE
     for NODE in $HOSTS
     do
       if [ `hostname` != $NODE ]; then
@@ -129,9 +122,9 @@ case $HOST in
                     done && \
                     tar cf $TARFILE * &> /dev/null && \
                     cp $TARFILE $DATA_DIR && \
-                    $SSH giga01 \"cd $DATA_DIR && \
-                                 tar xf $TARFILE &> /dev/null && \
-                                 rm $TARFILE\""
+                    cd $DATA_DIR && \
+                    tar xf $TARFILE &> /dev/null && \
+                    rm $TARFILE"
         $SSH $NODE "rm -rf $RUN_DIR"
       fi
     done
