@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.37 2006-12-06 15:49:49 n8049290 Exp $
+! $Id: io.f90,v 1.38 2006-12-14 11:09:10 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -380,7 +380,7 @@ module io
 
 ! ***************************************************************************  
   
-  subroutine filtered_surface(a, flag)
+  subroutine filtered_surface(a, flag, ind)
     ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
     use parameters
     use ic, only : fft, x, y, z
@@ -389,11 +389,19 @@ module io
     implicit none
 
     integer, intent(in) :: flag
+    integer, optional, intent(in) :: ind
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: a
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: filtered
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: filtered_tmp
     integer :: i, j, k, ii2, jj2, kk2, k2
+    real :: m
 
+    if (present(ind)) then
+      m = 0.1*real(ind)
+    else
+      m = 1.0
+    end if
+    
     do k=ksta,kend
       if (k <= nz1/2+1) then
         kk2 = k**2
@@ -414,7 +422,7 @@ module io
           end if
           k2 = ii2 + jj2 + kk2
           !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
-          a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/(9.0-1e-3*t)**2),0.0)
+          a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(9.0-1e-3*t)**2),0.0)
         end do
       end do
     end do
@@ -431,37 +439,39 @@ module io
     ! Save the linelength of a filtered isosurface
     call save_linelength(t, filtered_tmp, 1)
     
-    select case (flag)
-      case (0)
-        open (unit_no, status='unknown', &
-                      file=proc_dir//'filtered'//itos(p)//'.dat', &
-                      form='unformatted')
-        write (unit_no) t
-        write (unit_no) nx, ny, nz
-        write (unit_no) nyprocs, nzprocs
-        write (unit_no) jsta, jend, ksta, kend
-        write (unit_no) filtered
-        write (unit_no) x
-        write (unit_no) y
-        write (unit_no) z
-      case (1)
-        open (unit_no, status='unknown', &
-        file=proc_dir//'end_state_filtered.dat', &
-                      form='unformatted')
-        write (unit_no) nx
-        write (unit_no) ny
-        write (unit_no) nz
-        write (unit_no) p
-        write (unit_no) t
-        write (unit_no) dt
-        write (unit_no) filtered
-      case default
-        STOP 'ERROR:  Invalid flag (filtered_surface)'
-    end select
+    if (save_filter) then
+      select case (flag)
+        case (0)
+          open (unit_no, status='unknown', &
+                        file=proc_dir//'filtered'//itos(p)//'.dat', &
+                        form='unformatted')
+          write (unit_no) t
+          write (unit_no) nx, ny, nz
+          write (unit_no) nyprocs, nzprocs
+          write (unit_no) jsta, jend, ksta, kend
+          write (unit_no) filtered
+          write (unit_no) x
+          write (unit_no) y
+          write (unit_no) z
+        case (1)
+          open (unit_no, status='unknown', &
+          file=proc_dir//'end_state_filtered.dat', &
+                        form='unformatted')
+          write (unit_no) nx
+          write (unit_no) ny
+          write (unit_no) nz
+          write (unit_no) p
+          write (unit_no) t
+          write (unit_no) dt
+          write (unit_no) filtered
+        case default
+          STOP 'ERROR:  Invalid flag (filtered_surface)'
+      end select
     
-    close (unit_no)
+      close (unit_no)
 
-    call get_minmax(abs(filtered)**2, 'filtered')
+      call get_minmax(abs(filtered)**2, 'filtered')
+    end if
 
     return
   end subroutine filtered_surface
@@ -471,7 +481,7 @@ module io
   subroutine spectrum(a)
     ! Calculate and save the spectrum
     use parameters
-    use ic, only : fft, x, y, z
+    use ic, only : x, y, z
     use variables, only : unit_no
     implicit none
 
@@ -1342,39 +1352,42 @@ module io
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: in_var, a
-    integer :: i, dummy_int
+    integer :: i, j, dummy_int
 
-    if (myrank == 0) then
-      open (50, file='p_saved.dat')
-    end if
-    
-    do i=1,nlines
+    do j=1,20,2
       if (myrank == 0) then
-        read (50, *) p
+        open (50, file='p_saved.dat')
+        write (18, *) '# ', j
       end if
-      
-      call MPI_BCAST(p, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+      do i=1,nlines
+        if (myrank == 0) then
+          read (50, *) p
+        end if
+        
+        call MPI_BCAST(p, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
-      open (unit_no, file=proc_dir//'dens'//itos(p)//'.dat', &
-                     form='unformatted')
+        open (unit_no, file=proc_dir//'dens'//itos(p)//'.dat', &
+                       form='unformatted')
 
-      read (unit_no) t
-      read (unit_no) dummy_int, dummy_int, dummy_int
-      read (unit_no) dummy_int, dummy_int
-      read (unit_no) dummy_int, dummy_int, dummy_int, dummy_int
-      read (unit_no) in_var
-      read (unit_no) x
-      read (unit_no) y
-      read (unit_no) z
-      
-      call fft(in_var, a, 'backward', .true.)
-      
-      call filtered_surface(a, 0)
+        read (unit_no) t
+        read (unit_no) dummy_int, dummy_int, dummy_int
+        read (unit_no) dummy_int, dummy_int
+        read (unit_no) dummy_int, dummy_int, dummy_int, dummy_int
+        read (unit_no) in_var
+        read (unit_no) x
+        read (unit_no) y
+        read (unit_no) z
+        
+        call fft(in_var, a, 'backward', .true.)
+        
+        call filtered_surface(a, 0, j)
+      end do
+      if (myrank == 0) then
+        write (18, *)
+        write (18, *)
+        close (50)
+      end if
     end do
-
-    if (myrank == 0) then
-      close (50)
-    end if
 
     return
   end subroutine pp_save_filter

@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.48 2006-12-13 12:13:07 n8049290 Exp $
+! $Id: parameters.f90,v 1.49 2006-12-14 11:09:10 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -9,7 +9,7 @@ module parameters
   include 'mpif.h'
 
   logical, parameter :: pp_filtered_surface = .true.
-  integer, parameter :: nlines = 63
+  integer, parameter :: nlines = 62
 
   integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 8
