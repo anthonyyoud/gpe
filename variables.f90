@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.20 2006-11-21 15:57:52 n8049290 Exp $
+! $Id: variables.f90,v 1.21 2006-12-14 11:54:37 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -413,7 +413,7 @@ module variables
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, intent(out) :: E
+    real, intent(inout) :: E
     real :: int_z, tmp
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
     real, dimension(jsta:jend,ksta:kend) :: int_x
@@ -451,6 +451,8 @@ module variables
     call MPI_ALLREDUCE(tmp, E, 1, MPI_REAL, MPI_SUM, &
                     MPI_COMM_WORLD, ierr)
 
+    E = E*dx*dy*dz
+    
     return
   end subroutine energy
   
@@ -462,7 +464,7 @@ module variables
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, intent(out) :: M
+    real, intent(inout) :: M
     real :: int_z, tmp
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
     real, dimension(jsta:jend,ksta:kend) :: int_x
@@ -488,6 +490,8 @@ module variables
           
     call MPI_ALLREDUCE(tmp, M, 1, MPI_REAL, MPI_SUM, &
                        MPI_COMM_WORLD, ierr)
+
+    M = M*dx*dy*dz
                        
     return
   end subroutine mass
