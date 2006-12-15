@@ -2,7 +2,7 @@
 #PBS -S /bin/sh
 #PBS -j oe -o run.log
 
-FILTER=1
+FILTER=0
 TALISMAN=master
 NODED=noded
 GIGA=giga
@@ -16,7 +16,7 @@ fi
 #****************************************************************************
 #PARAMETERS
 #****************************************************************************
-NPROCS=32
+NPROCS=16
 EXE=ulimit_hack.sh #gpe
 if [ $FILTER -eq 1 ]; then
   DATA='parameters.f90 gpe p_saved.dat'

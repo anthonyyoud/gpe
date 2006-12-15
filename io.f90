@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.38 2006-12-14 11:09:10 n8049290 Exp $
+! $Id: io.f90,v 1.39 2006-12-15 11:19:32 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -397,7 +397,7 @@ module io
     real :: m
 
     if (present(ind)) then
-      m = 0.1*real(ind)
+      m = fscale*real(ind)
     else
       m = 1.0
     end if
@@ -1354,7 +1354,7 @@ module io
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: in_var, a
     integer :: i, j, dummy_int
 
-    do j=1,20,2
+    do j=1,nfilter
       if (myrank == 0) then
         open (50, file='p_saved.dat')
         write (18, *) '# ', j

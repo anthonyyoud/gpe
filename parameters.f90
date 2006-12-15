@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.49 2006-12-14 11:09:10 n8049290 Exp $
+! $Id: parameters.f90,v 1.50 2006-12-15 11:19:32 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -9,10 +9,12 @@ module parameters
   include 'mpif.h'
 
   logical, parameter :: pp_filtered_surface = .true.
-  integer, parameter :: nlines = 62
+  integer, parameter :: nlines              = 46
+  integer, parameter :: nfilter             = 1
+  real,    parameter :: fscale              = 1.0
 
   integer,      parameter :: nyprocs      = 4
-  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nzprocs      = 4
   integer,      parameter :: nx           = 128
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
@@ -25,7 +27,7 @@ module parameters
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
-  real,         parameter :: enerv        = 0.5
+  real,         parameter :: enerv        = 0.1
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
@@ -37,7 +39,7 @@ module parameters
   real,         parameter :: save_rate3   = 25.0
   logical,      parameter :: save_contour = .false.
   logical,      parameter :: save_3d      = .true.
-  logical,      parameter :: save_filter  = .false.
+  logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .true.
   logical,      parameter :: save_zeros   = .false.
