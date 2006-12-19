@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.21 2006-12-14 11:54:37 n8049290 Exp $
+! $Id: variables.f90,v 1.22 2006-12-19 14:44:51 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -437,6 +437,7 @@ module variables
     !E = int_z
 
     tmp = 0.0
+
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
@@ -452,7 +453,7 @@ module variables
                     MPI_COMM_WORLD, ierr)
 
     E = E*dx*dy*dz
-    
+
     return
   end subroutine energy
   

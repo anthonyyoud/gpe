@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.37 2006-12-06 15:49:49 n8049290 Exp $
+! $Id: gpe.f90,v 1.38 2006-12-19 14:44:50 n8049290 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -12,7 +12,7 @@ program gpe
   use variables
   implicit none
 
-  integer    :: p_start=0, n=0, m=0
+  integer    :: p_start=0, n=0, m=0, ps=0
   real       :: norm=0.0, prev_norm=0.0
   type (var) :: psi, test
   logical    :: run_exist, state_exist
@@ -132,6 +132,7 @@ program gpe
   ! Calculate the norm of the initial condition
   call get_norm(psi%new, prev_norm)
 
+  ps = int(t/p_save)
   n = int(t/save_rate2)
   m = int(t/save_rate3)
   ave = 0.0
@@ -223,9 +224,10 @@ program gpe
 
     ! Periodically save the state
     !if (mod(p, save_rate2) == 0) then
-    if (t+im_t >= 1.0*n) then
+    if (t+im_t >= p_save*ps) then
       ! 0 is a flag which means the run has not yet ended
       call end_state(psi%new, p, 0)
+      ps = ps+1
     end if
 
     ! Call the solver subroutine to solve the equation
