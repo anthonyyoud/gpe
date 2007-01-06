@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.39 2006-12-15 11:19:32 n8049290 Exp $
+! $Id: io.f90,v 1.40 2007-01-06 15:34:38 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -479,7 +479,8 @@ module io
 ! ***************************************************************************  
 
   subroutine spectrum(a)
-    ! Calculate and save the spectrum
+    ! Calculate and save the spectra measurements - mean occupation number,
+    ! eta, and integral distribution function, F
     use parameters
     use ic, only : x, y, z
     use variables, only : unit_no
@@ -487,13 +488,15 @@ module io
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: a
     real :: log2k
-    integer :: i, j, k, m, ii2, jj2, kk2, k2
+    integer :: i, j, k, m, ii2, jj2, kk2, k2, kk
     integer, parameter :: nshells = 7
     real, dimension(nshells) :: eta, tot_eta
+    real, dimension(nx/2) :: F, tot_F
     integer, dimension(nshells) :: nharm, tot_nharm
 
     eta = 0.0
     nharm = 0
+    F = 0.0
     
     do k=ksta,kend
       if (k <= nz1/2+1) then
@@ -515,9 +518,14 @@ module io
           end if
           k2 = ii2 + jj2 + kk2
           if (sqrt(real(k2)) == 0.0) cycle
+          ! Calculate integral distribution function
+          do kk=1,nx/2
+            if (sqrt(real(k2)) <= real(kk)) then
+              F(kk) = F(kk) + abs(a(i,j,k))**2
+            end if
+          end do
+          ! Calculate mean occupation number
           log2k = log( 0.5*sqrt(real(k2))/pi ) / log(2.0)
-          !log2k = log( sqrt(real(k2)) ) / log(2.0)
-          !print*, i, j, k, sqrt(real(k2)), log2k
           do m=1,nshells
             if ((abs(log2k) < real(m)) .and. (abs(log2k) >= real(m-1))) then
               eta(m) = eta(m) + abs(a(i,j,k))**2
@@ -525,17 +533,16 @@ module io
               exit
             end if
           end do
-          !open (unit_no, position='append', &
-          !               file=proc_dir//'spectrum'//itos(p)//'.dat')
-          !write (unit_no, '(2e17.9)') sqrt(real(k2)), abs(a(i,j,k))**2
-          !close (unit_no)
         end do
       end do
     end do
 
+    ! Sum measurements onto master process
     call MPI_REDUCE(eta, tot_eta, nshells, MPI_REAL, MPI_SUM, 0, &
                     MPI_COMM_WORLD, ierr)
     call MPI_REDUCE(nharm, tot_nharm, nshells, MPI_INTEGER, MPI_SUM, 0, &
+                    MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(F, tot_F, nx/2, MPI_REAL, MPI_SUM, 0, &
                     MPI_COMM_WORLD, ierr)
 
     if (myrank == 0) then
@@ -544,23 +551,22 @@ module io
         tot_eta(m) = tot_eta(m)/real(tot_nharm(m))
       end do
     
-      !open (49, file='comb_spect.dat')
+      ! Write mean occupation number to file
       open (unit_no, file=proc_dir//'spectrum'//itos(p)//'.dat')
       do m=1,nshells
         write (unit_no, '(2i9,e17.9)') m, tot_nharm(m), tot_eta(m)
       end do
       close (unit_no)
 
+      ! Write integral distribution function to file
+      open (unit_no, file=proc_dir//'idf'//itos(p)//'.dat')
+      do kk=1,nx/2
+        write (unit_no, '(i9,e17.9)') kk, tot_F(kk)
+      end do
+      close (unit_no)
+
       write (17, '(4e17.9)') t, tot_eta(1), tot_eta(2), tot_eta(3)
     end if
-
-    !open (unit_no, file=proc_dir//'spectrum'//itos(p)//'.dat')
-    !
-    !do m=1,nshells
-    !  write (unit_no, '(2i9,e17.9)') m, nharm(m), eta(m)
-    !end do
-    !
-    !close (unit_no)
 
     return
   end subroutine spectrum

@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.38 2006-12-19 14:44:50 n8049290 Exp $
+! $Id: gpe.f90,v 1.39 2007-01-06 15:34:38 najy2 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -136,6 +136,8 @@ program gpe
   n = int(t/save_rate2)
   m = int(t/save_rate3)
   ave = 0.0
+  
+  psi%old = 0.0
  
   ! Begin real time loop
   do while (t+im_t <= end_time)
@@ -180,6 +182,10 @@ program gpe
     call pack_y(psi%old)
     call send_recv_y()
     call unpack_y(psi%old)
+
+    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+    !print*, t, real(dt)
+    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
