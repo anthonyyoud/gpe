@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.23 2007-01-06 15:34:39 najy2 Exp $
+! $Id: variables.f90,v 1.24 2007-01-21 14:17:30 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -414,33 +414,16 @@ module variables
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, intent(inout) :: E
-    real :: int_z, tmp
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
-    real, dimension(jsta:jend,ksta:kend) :: int_x
-    real, dimension(ksta:kend) :: int_y
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidxx
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidyy
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: dpsidzz
-    integer :: i, j, k
+    real :: tmp
 
-    !call deriv_xx(in_var, dpsidxx)
-    !call deriv_yy(in_var, dpsidyy)
-    !call deriv_zz(in_var, dpsidzz)
-    
-    !int_var = abs(dpsidx)**2 + abs(dpsidy)**2 + abs(dpsidz)**2 + &
-    !          0.5*abs(in_var(:,jsta:jend,ksta:kend))**4
-
-    !call integrate_x(int_var, int_x)
-    !call integrate_y(int_x, int_y)
-    !call integrate_z(int_y, int_z)
-    !
-    !E = int_z
+    int_var = real( -laplacian(in_var) * &
+                   conjg(in_var(:,jsta:jend,ksta:kend)) + &
+                 0.5*abs(in_var(:,jsta:jend,ksta:kend))**4 )
 
     tmp = 0.0
 
-    tmp = real(sum( -laplacian(in_var) * &
-                         conjg(in_var(0:nx1,jsta:jend,ksta:kend)) + &
-                       0.5*abs(in_var(0:nx1,jsta:jend,ksta:kend))**4 ))
+    tmp = sum(int_var)
 
     call MPI_ALLREDUCE(tmp, E, 1, MPI_REAL, MPI_SUM, &
                     MPI_COMM_WORLD, ierr)
@@ -459,28 +442,13 @@ module variables
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, intent(inout) :: M
-    real :: int_z, tmp
+    real :: tmp
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
-    real, dimension(jsta:jend,ksta:kend) :: int_x
-    real, dimension(ksta:kend) :: int_y
-    integer :: i, j, k
 
     int_var = abs(in_var)**2
 
-    !call integrate_x(int_var, int_x)
-    !call integrate_y(int_x, int_y)
-    !call integrate_z(int_y, int_z)
-    !
-    !M = int_z
-
     tmp = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
-        do i=0,nx1
-          tmp = tmp + int_var(i,j,k)
-        end do
-      end do
-    end do
+    tmp = sum(int_var)
           
     call MPI_ALLREDUCE(tmp, M, 1, MPI_REAL, MPI_SUM, &
                        MPI_COMM_WORLD, ierr)
