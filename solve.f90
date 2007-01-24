@@ -1,4 +1,4 @@
-! $Id: solve.f90,v 1.27 2006-11-21 15:57:51 n8049290 Exp $
+! $Id: solve.f90,v 1.28 2007-01-24 21:02:29 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module solve
@@ -68,56 +68,41 @@ module solve
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: new
-    complex, dimension(4,0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk1
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk2
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk3
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk4
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: tmp
     integer :: j, k
 
-    call get_rhs(old,kk(1,:,jsta:jend,ksta:kend))
-    do k=ksta,kend
-      do j=jsta,jend
-        kk(1,:,j,k) = dt*kk(1,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+0.5*kk(1,:,j,k)
-      end do
-    end do
+    call get_rhs(old,kk1(:,jsta:jend,ksta:kend))
+    tmp(:,jsta:jend,ksta:kend) = old(:,jsta:jend,ksta:kend)+&
+                          0.5*dt*kk1(:,jsta:jend,ksta:kend)
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(2,:,jsta:jend,ksta:kend))
-    do k=ksta,kend
-      do j=jsta,jend
-        kk(2,:,j,k) = dt*kk(2,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+0.5*kk(2,:,j,k)
-      end do
-    end do
+    call get_rhs(tmp, kk2(:,jsta:jend,ksta:kend))
+    tmp(:,jsta:jend,ksta:kend) = old(:,jsta:jend,ksta:kend)+&
+                          0.5*dt*kk2(:,jsta:jend,ksta:kend)
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(3,:,jsta:jend,ksta:kend))
-    do k=ksta,kend
-      do j=jsta,jend
-        kk(3,:,j,k) = dt*kk(3,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+kk(3,:,j,k)
-      end do
-    end do
+    call get_rhs(tmp, kk3(:,jsta:jend,ksta:kend))
+    tmp(:,jsta:jend,ksta:kend) = old(:,jsta:jend,ksta:kend)+&
+                              dt*kk3(:,jsta:jend,ksta:kend)
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(4,:,jsta:jend,ksta:kend))
-    do k=ksta,kend
-      do j=jsta,jend
-        kk(4,:,j,k) = dt*kk(4,:,j,k)
-      end do
-    end do
+    call get_rhs(tmp, kk4(:,jsta:jend,ksta:kend))
 
-    do k=ksta,kend
-      do j=jsta,jend
-        new(:,j,k) = old(:,j,k) + kk(1,:,j,k)/6.0 + kk(2,:,j,k)/3.0 + &
-                                  kk(3,:,j,k)/3.0 + kk(4,:,j,k)/6.0
-      end do
-    end do
+    new(:,jsta:jend,ksta:kend) = old(:,jsta:jend,ksta:kend) + &
+                             dt*(kk1(:,jsta:jend,ksta:kend)/6.0 + &
+                                 kk2(:,jsta:jend,ksta:kend)/3.0 + &
+                                 kk3(:,jsta:jend,ksta:kend)/3.0 + &
+                                 kk4(:,jsta:jend,ksta:kend)/6.0)
 
     t = t+real(dt)
     im_t = im_t+abs(aimag(dt))
@@ -204,7 +189,8 @@ module solve
     out_var = tmp_var
 
     if (myrank == 0) then
-      if (abs(dt) <= 1e-2) then
+      !if (abs(dt) <= 1e-2) then
+      if (mod(p, save_rate) == 0) then
         write (11, '(3e17.9,i10)') t, im_t, abs(dt), p
       end if
     end if
@@ -250,91 +236,96 @@ module solve
     real, parameter :: dc6      = c6 - 0.25
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: new, err
-    complex, dimension(6,0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk1
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk2
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk3
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk4
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk5
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: kk6
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: tmp
     integer :: j, k
 
-    call get_rhs(old,kk(1,:,jsta:jend,ksta:kend))
+    call get_rhs(old,kk1(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(1,:,j,k) = dt*kk(1,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+b21*kk(1,:,j,k)
+        kk1(:,j,k) = dt*kk1(:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b21*kk1(:,j,k)
       end do
     end do
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(2,:,jsta:jend,ksta:kend))
+    call get_rhs(tmp, kk2(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(2,:,j,k) = dt*kk(2,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+b31*kk(1,:,j,k)+&
-                                b32*kk(2,:,j,k)
+        kk2(:,j,k) = dt*kk2(:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b31*kk1(:,j,k)+&
+                                b32*kk2(:,j,k)
       end do
     end do
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(3,:,jsta:jend,ksta:kend))
+    call get_rhs(tmp, kk3(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(3,:,j,k) = dt*kk(3,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+b41*kk(1,:,j,k)+&
-                                b42*kk(2,:,j,k)+&
-                                b43*kk(3,:,j,k)
+        kk3(:,j,k) = dt*kk3(:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b41*kk1(:,j,k)+&
+                                b42*kk2(:,j,k)+&
+                                b43*kk3(:,j,k)
       end do
     end do
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(4,:,jsta:jend,ksta:kend))
+    call get_rhs(tmp, kk4(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(4,:,j,k) = dt*kk(4,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+b51*kk(1,:,j,k)+&
-                                b52*kk(2,:,j,k)+&
-                                b53*kk(3,:,j,k)+&
-                                b54*kk(4,:,j,k)
+        kk4(:,j,k) = dt*kk4(:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b51*kk1(:,j,k)+&
+                                b52*kk2(:,j,k)+&
+                                b53*kk3(:,j,k)+&
+                                b54*kk4(:,j,k)
       end do
     end do
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(5,:,jsta:jend,ksta:kend))
+    call get_rhs(tmp, kk5(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(5,:,j,k) = dt*kk(5,:,j,k)
-        tmp(:,j,k) = old(:,j,k)+b61*kk(1,:,j,k)+&
-                                b62*kk(2,:,j,k)+&
-                                b63*kk(3,:,j,k)+&
-                                b64*kk(4,:,j,k)+&
-                                b65*kk(5,:,j,k)
+        kk5(:,j,k) = dt*kk5(:,j,k)
+        tmp(:,j,k) = old(:,j,k)+b61*kk1(:,j,k)+&
+                                b62*kk2(:,j,k)+&
+                                b63*kk3(:,j,k)+&
+                                b64*kk4(:,j,k)+&
+                                b65*kk5(:,j,k)
       end do
     end do
     call send_recv_z(tmp)
     call pack_y(tmp)
     call send_recv_y()
     call unpack_y(tmp)
-    call get_rhs(tmp, kk(6,:,jsta:jend,ksta:kend))
+    call get_rhs(tmp, kk6(:,jsta:jend,ksta:kend))
     do k=ksta,kend
       do j=jsta,jend
-        kk(6,:,j,k) = dt*kk(6,:,j,k)
+        kk6(:,j,k) = dt*kk6(:,j,k)
       end do
     end do
 
     do k=ksta,kend
       do j=jsta,jend
-        new(:,j,k) = old(:,j,k) + c1*kk(1,:,j,k) + c2*kk(2,:,j,k) + &
-                                  c3*kk(3,:,j,k) + c4*kk(4,:,j,k) + &
-                                  c5*kk(5,:,j,k) + c6*kk(6,:,j,k)
+        new(:,j,k) = old(:,j,k) + c1*kk1(:,j,k) + c2*kk2(:,j,k) + &
+                                  c3*kk3(:,j,k) + c4*kk4(:,j,k) + &
+                                  c5*kk5(:,j,k) + c6*kk6(:,j,k)
 
-        err(:,j,k) = dc1*kk(1,:,j,k) + dc2*kk(2,:,j,k) + &
-                     dc3*kk(3,:,j,k) + dc4*kk(4,:,j,k) + &
-                     dc5*kk(5,:,j,k) + dc6*kk(6,:,j,k)
+        err(:,j,k) = dc1*kk1(:,j,k) + dc2*kk2(:,j,k) + &
+                     dc3*kk3(:,j,k) + dc4*kk4(:,j,k) + &
+                     dc5*kk5(:,j,k) + dc6*kk6(:,j,k)
       end do
     end do
 

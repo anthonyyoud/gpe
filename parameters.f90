@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.53 2007-01-21 14:17:25 najy2 Exp $
+! $Id: parameters.f90,v 1.54 2007-01-24 21:02:29 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -8,18 +8,18 @@ module parameters
 
   include 'mpif.h'
 
-  logical, parameter :: pp_filtered_surface = .true.
+  logical, parameter :: pp_filtered_surface = .false.
   integer, parameter :: nlines              = 21
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 4
-  integer,      parameter :: nzprocs      = 8
+  integer,      parameter :: nyprocs      = 1
+  integer,      parameter :: nzprocs      = 1
   integer,      parameter :: nx           = 128
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
-  complex                 :: time_step    = (0.0,-0.0001)
-  real,         parameter :: end_time     = 4000.0
+  complex                 :: time_step    = (0.0,-0.01)
+  real,         parameter :: end_time     = 1.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
@@ -27,31 +27,31 @@ module parameters
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
-  real,         parameter :: enerv        = 2.5
+  real,         parameter :: enerv        = 1.5
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
-  integer,      parameter :: save_rate    = 100
+  integer,      parameter :: save_rate    = 10
   real,         parameter :: save_rate2   = 25.0
   real,         parameter :: save_rate3   = 25.0
   real,         parameter :: p_save       = 5.0
   logical,      parameter :: save_contour = .false.
   logical,      parameter :: save_3d      = .true.
-  logical,      parameter :: save_filter  = .true.
+  logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .true.
+  logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-7
+  real, parameter :: eps              = 1e-5
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20

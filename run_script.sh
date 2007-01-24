@@ -2,7 +2,7 @@
 #PBS -S /bin/sh
 #PBS -j oe -o run.log
 
-FILTER=1
+FILTER=0
 TALISMAN=master
 NODED=noded
 GIGA=giga

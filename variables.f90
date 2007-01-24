@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.24 2007-01-21 14:17:30 najy2 Exp $
+! $Id: variables.f90,v 1.25 2007-01-24 21:02:30 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -49,23 +49,14 @@ module variables
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: laplacian
-    type (deriv) :: d
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: laplacian, dxx, dyy, dzz
 
-    allocate(d%xx(0:nx1,jsta:jend,ksta:kend))
-    allocate(d%yy(0:nx1,jsta:jend,ksta:kend))
-    allocate(d%zz(0:nx1,jsta:jend,ksta:kend))
-
-    call deriv_xx(in_var,d%xx)
-    call deriv_yy(in_var,d%yy)
-    call deriv_zz(in_var,d%zz)
+    call deriv_xx(in_var,dxx)
+    call deriv_yy(in_var,dyy)
+    call deriv_zz(in_var,dzz)
     
-    laplacian = d%xx + d%yy + d%zz
+    laplacian = dxx + dyy + dzz
 
-    deallocate(d%xx)
-    deallocate(d%yy)
-    deallocate(d%zz)
-    
     return
   end function laplacian
 

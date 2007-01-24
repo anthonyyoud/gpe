@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.39 2007-01-06 15:34:38 najy2 Exp $
+! $Id: gpe.f90,v 1.40 2007-01-24 21:02:28 najy2 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -130,7 +130,7 @@ program gpe
   p = p_start
   
   ! Calculate the norm of the initial condition
-  call get_norm(psi%new, prev_norm)
+  !call get_norm(psi%new, prev_norm)
 
   ps = int(t/p_save)
   n = int(t/save_rate2)
@@ -141,6 +141,7 @@ program gpe
  
   ! Begin real time loop
   do while (t+im_t <= end_time)
+    print*, p, t, dt
 
     ! Check to see whether the RUNNING file exists
     if (myrank == 0) then
@@ -246,7 +247,7 @@ program gpe
     end if
     
     ! Calculate the norm
-    call get_norm(psi%new, norm)
+    !call get_norm(psi%new, norm)
 
     ! Make sure all process know what the norm is
     call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -274,7 +275,7 @@ program gpe
     end if
     
     ! Update the norm
-    prev_norm = norm
+    !prev_norm = norm
 
     ! Update the time index
     p = p+1
