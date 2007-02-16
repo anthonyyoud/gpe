@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.40 2007-01-24 21:02:28 najy2 Exp $
+! $Id: gpe.f90,v 1.41 2007-02-16 21:33:58 najy2 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -141,7 +141,7 @@ program gpe
  
   ! Begin real time loop
   do while (t+im_t <= end_time)
-    print*, p, t, dt
+    !print*, p, t, dt
 
     ! Check to see whether the RUNNING file exists
     if (myrank == 0) then
@@ -193,7 +193,7 @@ program gpe
     !if (mod(p, save_rate) == 0) then
       call save_energy(t, psi%old)
       !call save_mass(t, psi%new)
-      call save_momentum(t, psi%old)
+      !call save_momentum(t, psi%old)
       call save_time(t, psi%new)
       call save_linelength(t, psi%old, 0)
       !call condensed_particles(t, psi%new)
