@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2006-11-21 15:58:48 n8049290 Exp $
+# $Id: makefile,v 1.7 2007-02-18 18:30:30 najy2 Exp $
 #----------------------------------------------------------------------------
 
 OUTDIR		= ./
@@ -9,7 +9,7 @@ FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
 #FFLAGS	        = -g -O0 -check
-LINKFLAGS	= 
+LINKFLAGS	=
 #LINKFLAGS	= -i_dynamic
 COMPILER	= mpif90
 #COMPILER	= gfortran
@@ -20,9 +20,8 @@ LIBS            = -L$(FFTWHOME)/lib -lsrfftw_mpi -lsfftw_mpi \
 
 #-----------------------------------------------------------------------
 all:	$(OBJECTS)
-	$(COMPILER) $(COMPFLAGS) $(LINKFLAGS) -o \
-        $(OUTDIR)gpe \
-        $(OBJECTS) $(LIBS)
+	$(COMPILER) $(COMPFLAGS) $(LINKFLAGS)-o \
+        $(OUTDIR)gpe $(OBJECTS) $(LIBS)
 
 #-----------------------------------------------------------------------
 parameters.o : parameters.f90

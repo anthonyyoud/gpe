@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.41 2007-02-16 21:33:58 najy2 Exp $
+! $Id: gpe.f90,v 1.42 2007-02-18 18:30:29 najy2 Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -12,7 +12,7 @@ program gpe
   use variables
   implicit none
 
-  integer    :: p_start=0, n=0, m=0, ps=0
+  integer    :: n=0, m=0, ps=0
   real       :: norm=0.0, prev_norm=0.0
   type (var) :: psi, test
   logical    :: run_exist, state_exist
@@ -30,7 +30,7 @@ program gpe
   call para_range(0, nz1, nzprocs, myrankz, ksta, kend)
   call para_range(0, ny1, nyprocs, myranky, jsta, jend)
   ! Calculate the array dimensions on each process
-  call array_len(jlen, klen)
+  call array_len()
   ! Get the neighbouring process rank
   call neighbours()
   ! Get unit numbers so that files can be opened on each process
@@ -109,8 +109,8 @@ program gpe
 
   if (.not. pp_filtered_surface) then
   ! Get the initial conditions
-  call ics(psi%new, p_start)
-  call idl_surface(p, psi%new)
+  call ics(psi%new)
+  call idl_surface(psi%new)
   !call fft(psi%new, test%new, 'forward', .false.)
   !call fft(test%new, psi%new, 'backward', .false.)
   call condensed_particles(t, psi%new)
@@ -126,8 +126,6 @@ program gpe
     ! Exit if not doing restart but end_state.dat exists
     if (state_exist) stop 'ERROR: restart=.false. but end_state.dat exists.'
   end if
-  
-  p = p_start
   
   ! Calculate the norm of the initial condition
   !call get_norm(psi%new, prev_norm)
@@ -160,7 +158,7 @@ program gpe
     
     ! If the end_proc flag has been set, then end the run
     if (end_proc == 1) then
-      call end_state(psi%new, p, 1)
+      call end_state(psi%new, 1)
       if (myrank == 0) then
         open (99, file = 'RUNNING')  !delete 'RUNNING' to finish run
         close (99, status = 'delete')
@@ -195,7 +193,7 @@ program gpe
       !call save_mass(t, psi%new)
       !call save_momentum(t, psi%old)
       call save_time(t, psi%new)
-      call save_linelength(t, psi%old, 0)
+      call save_linelength(psi%old, 0)
       !call condensed_particles(t, psi%new)
     end if
     
@@ -210,17 +208,17 @@ program gpe
       !call condensed_particles(t, psi%new)
       if (save_zeros) then
         ! Find the zeros of the wave function
-        call get_zeros(psi%old, p)
-        call get_extra_zeros(psi%old, p)
-        call get_re_im_zeros(psi%old, p)
+        call get_zeros(psi%old)
+        call get_extra_zeros(psi%old)
+        call get_re_im_zeros(psi%old)
       end if
       if (save_contour) then
         ! Save 2D contour data
-        call save_surface(p, psi%new)
+        call save_surface(psi%new)
       end if
       if (save_3d) then
         ! Save 3D isosurface data for use in IDL
-        call idl_surface(p, psi%new)
+        call idl_surface(psi%new)
       end if
       if (save_average) then
         ! Save time-averaged data
@@ -233,7 +231,7 @@ program gpe
     !if (mod(p, save_rate2) == 0) then
     if (t+im_t >= p_save*ps) then
       ! 0 is a flag which means the run has not yet ended
-      call end_state(psi%new, p, 0)
+      call end_state(psi%new, 0)
       ps = ps+1
     end if
 
@@ -242,7 +240,7 @@ program gpe
     
     if (t+im_t >= save_rate2*n) then
       if (diagnostic) then
-        call diag(psi%old2, psi%old, psi%new, p)
+        call diag(psi%old2, psi%old, psi%new)
       end if
     end if
     
@@ -283,9 +281,9 @@ program gpe
   end do
   
   ! Time loop finished so cleanly end the run
-  call end_state(psi%new, p, 1)
-  call idl_surface(p, psi%new)
-  call save_surface(p, psi%new)
+  call end_state(psi%new, 1)
+  call idl_surface(psi%new)
+  call save_surface(psi%new)
   end if
 
   ! Close runtime files

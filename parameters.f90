@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.55 2007-02-16 21:33:58 najy2 Exp $
+! $Id: parameters.f90,v 1.56 2007-02-18 18:30:30 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -8,8 +8,8 @@ module parameters
 
   include 'mpif.h'
 
-  logical, parameter :: pp_filtered_surface = .false.
-  integer, parameter :: nlines              = 81
+  logical, parameter :: pp_filtered_surface = .true.
+  integer, parameter :: nlines              = 41
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
@@ -40,7 +40,7 @@ module parameters
   real,         parameter :: p_save       = 5.0
   logical,      parameter :: save_contour = .false.
   logical,      parameter :: save_3d      = .true.
-  logical,      parameter :: save_filter  = .false.
+  logical,      parameter :: save_filter  = .true.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .true.
   logical,      parameter :: save_zeros   = .false.

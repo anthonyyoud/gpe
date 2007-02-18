@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.43 2006-12-01 12:52:14 n8049290 Exp $
+! $Id: ic.f90,v 1.44 2007-02-18 18:30:29 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -46,13 +46,12 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine ics(out_var, p)
+  subroutine ics(out_var)
     ! Set up the initial conditions
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    integer,                                       intent(out) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend)              :: tmp_var
     logical :: state_exist
 
@@ -67,7 +66,7 @@ module ic
         print*, 'Getting restart conditions'
       end if
       ! Get saved data since this is a restart
-      call state_restart(tmp_var, p)
+      call state_restart(tmp_var)
       out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = tmp_var*vortex_line(vl1)
     else
@@ -112,14 +111,13 @@ module ic
   
 ! ***************************************************************************  
 
-  subroutine state_restart(out_var, p)
+  subroutine state_restart(out_var)
     ! Get restart data
     use parameters
     use variables
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    integer,                                       intent(out) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: out_var1, out_var2
     complex :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev, undef_int
@@ -560,16 +558,16 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere
     real, parameter :: rad = 10.0
-    real, parameter :: eps = 2.0
+    real, parameter :: eps1 = 2.0
     integer :: i, j, k
 
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad-eps))
+          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad-eps1))
           !sphere(i,j,k) = max(0.5*(1.0+&
           !                         tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad)-&
-          !                         eps),0.0)
+          !                         eps1),0.0)
         end do
       end do
     end do

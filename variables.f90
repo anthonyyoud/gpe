@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.25 2007-01-24 21:02:30 najy2 Exp $
+! $Id: variables.f90,v 1.26 2007-02-18 18:30:30 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -129,14 +129,12 @@ module variables
 
 ! ***************************************************************************  
 
-  subroutine array_len(jlen, klen)
+  subroutine array_len()
     ! Determine the length of each array dimension on each process.  This 
     ! allows for the possibility that there are references to (for example) 
     ! j+1, k+1 simultaneously
     use parameters
     implicit none
-
-    integer, intent(out) :: jlen, klen
 
     jlen = jend-jsta+1
     kksta = max(0, ksta-1)
@@ -451,14 +449,14 @@ module variables
   
 ! ***************************************************************************  
 
-  subroutine momentum(in_var, P)
+  subroutine momentum(in_var, mom)
     ! Calculate the momentum
     use parameters
     use derivs
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(3), intent(out) :: P
+    real, dimension(3), intent(out) :: mom
     real :: int_z
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
     real, dimension(jsta:jend,ksta:kend) :: int_x
@@ -491,7 +489,7 @@ module variables
     call integrate_y(int_x, int_y)
     call integrate_z(int_y, int_z)
     
-    P(1) = int_z
+    mom(1) = int_z
     
     do k=ksta,kend
       do j=jsta,jend
@@ -504,7 +502,7 @@ module variables
     call integrate_y(int_x, int_y)
     call integrate_z(int_y, int_z)
     
-    P(2) = int_z
+    mom(2) = int_z
     
     do k=ksta,kend
       do j=jsta,jend
@@ -517,7 +515,7 @@ module variables
     call integrate_y(int_x, int_y)
     call integrate_z(int_y, int_z)
     
-    P(3) = int_z
+    mom(3) = int_z
 
     deallocate(dpsi%x)
     deallocate(dpsi%y)
@@ -656,7 +654,7 @@ module variables
     complex, intent(in) :: psi(0:nx1,jsta-2:jend+2,ksta-2:kend+2)
     real, intent(in) :: time
     real :: xx, yy, h, a, den
-    integer :: i, j, k, n, m, p, lv, lu
+    integer :: i, j, k, n, m, q, lv, lu
     real :: x(6), y(6), z(6), u(5), v(5), xu(6), xv(6), yu(6), yv(6)
   
   ! MUST have dx=dy=dz
@@ -746,9 +744,9 @@ module variables
               !goto 200
             end if
   ! deal with edge
-            do p=1,4
-              if(u(p)==0.0 .and. u(p+1)==0.0 .and. &
-                 v(p)==0.0 .and. v(p+1)==0.0) then
+            do q=1,4
+              if(u(q)==0.0 .and. u(q+1)==0.0 .and. &
+                 v(q)==0.0 .and. v(q+1)==0.0) then
                 linelength = linelength+0.25
                 !print*, 'cycle iloop'
                 a = 1.0
@@ -758,15 +756,15 @@ module variables
             end do
   
             lu=1
-            do p=1,4
-              if(u(p)==0.0 .and. u(p+1)==0.0 .and. &
-                 v(p)==0.0 .and. v(p+1)==0.0) then
+            do q=1,4
+              if(u(q)==0.0 .and. u(q+1)==0.0 .and. &
+                 v(q)==0.0 .and. v(q+1)==0.0) then
                 m=m+1
                 print*, 'exit nloop'
                 exit nloop
                 !goto 100
-              else if (u(p)==0.0) then
-                select case (p)
+              else if (u(q)==0.0) then
+                select case (q)
                   case (1)
                     xu(lu)=0.0
                     yu(lu)=0.0
@@ -780,20 +778,20 @@ module variables
                     xu(lu)=0.0
                     yu(lu)=1.0
                 end select
-              else if (u(p)*u(p+1)<0.0) then
-                select case (p)
+              else if (u(q)*u(q+1)<0.0) then
+                select case (q)
                   case (1)
-                    xu(lu) = abs(u(p)/(u(p)-u(p+1)))
+                    xu(lu) = abs(u(q)/(u(q)-u(q+1)))
                     yu(lu) = 0.0
                   case (2)
                     xu(lu) = 1.0
-                    yu(lu) = abs(u(p)/(u(p)-u(p+1)))
+                    yu(lu) = abs(u(q)/(u(q)-u(q+1)))
                   case (3)
-                    xu(lu) = abs(u(p+1)/(u(p)-u(p+1)))
+                    xu(lu) = abs(u(q+1)/(u(q)-u(q+1)))
                     yu(lu) = 1.0
                   case (4)
                     xu(lu) = 0.0
-                    yu(lu) = abs(u(p+1)/(u(p)-u(p+1)))
+                    yu(lu) = abs(u(q+1)/(u(q)-u(q+1)))
                 end select
   
                 if (lu==1 .or. xu(lu)/=xu(lu-1) .or. yu(lu)/=yu(lu-1)) then
@@ -802,9 +800,9 @@ module variables
               end if
             end do
             lv = 1
-            do p=1,4
-              if (v(p)==0.0) then
-                select case (p)
+            do q=1,4
+              if (v(q)==0.0) then
+                select case (q)
                   case (1)
                     xv(lv) = 0.0
                     yv(lv) = 0.0
@@ -818,27 +816,27 @@ module variables
                     xv(lv) = 0.0
                     yv(lv) = 1.0
                 end select
-              else if (v(p)*v(p+1)<0.0) then
-                select case (p)
+              else if (v(q)*v(q+1)<0.0) then
+                select case (q)
                   case (1)
-                    xv(lv) = abs(v(p)/(v(p)-v(p+1)))
+                    xv(lv) = abs(v(q)/(v(q)-v(q+1)))
                     yv(lv) = 0.0
                   case (2)
                     xv(lv) = 1.0
-                    yv(lv) = abs(v(p)/(v(p)-v(p+1)))
+                    yv(lv) = abs(v(q)/(v(q)-v(q+1)))
                   case (3)
-                    xv(lv) = abs(v(p+1)/(v(p)-v(p+1)))
+                    xv(lv) = abs(v(q+1)/(v(q)-v(q+1)))
                     yv(lv) = 1.0
                   case (4)
                     xv(lv) = 0.0
-                    yv(lv) = abs(v(p+1)/(v(p)-v(p+1)))
+                    yv(lv) = abs(v(q+1)/(v(q)-v(q+1)))
                 end select
   
                 if (lv==1 .or. xv(lv)/=xv(lv-1) .or. yv(lv)/=yv(lv-1)) then
                   lv = lv+1
                 end if
               end if
-            end do ! in p
+            end do ! in q
             if (lu>2 .and. lv>2) then
               den = xv(2)*(yu(1)-yu(2))+xv(1)*(yu(2)-yu(1))+ &
                    (xu(1)-xu(2))*(yv(1)-yv(2))

@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.40 2007-01-06 15:34:38 najy2 Exp $
+! $Id: io.f90,v 1.41 2007-02-18 18:30:29 najy2 Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -111,7 +111,7 @@ module io
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
     complex, dimension(3) :: tmp, var
-    real :: xpos, ypos, zpos
+    integer :: xpos, ypos, zpos
     integer :: i, j, k
 
     call get_phase(in_var, phase)
@@ -285,12 +285,12 @@ module io
 
     real, intent(in) :: time
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(3) :: P
+    real, dimension(3) :: mom
 
-    call momentum(in_var, P)
+    call momentum(in_var, mom)
     
     if (myrank == 0) then
-      write (14, '(4e17.9)') time, P(1), P(2), P(3)
+      write (14, '(4e17.9)') time, mom(1), mom(2), mom(3)
     end if
 
     return
@@ -298,7 +298,7 @@ module io
 
 ! ***************************************************************************  
 
-  subroutine save_surface(p, in_var)
+  subroutine save_surface(in_var)
     ! Save 2D surface data for use in gnuplot.  The data is saved separately on
     ! each process so a shell script must be used to plot it
     use parameters
@@ -306,10 +306,9 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    integer, intent(in) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
-    real :: zpos
+    integer :: zpos
     integer :: i, j, k
 
     ! Get the phase and the density
@@ -339,7 +338,7 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine idl_surface(p, in_var)
+  subroutine idl_surface(in_var)
     ! Save 3D isosurface data for use in IDL.  As for the gnuplot plots, this
     ! data is saved separately for each process.  It must be read in through
     ! IDL
@@ -348,7 +347,6 @@ module io
     use ic, only : x, y, z
     implicit none
 
-    integer, intent(in) :: p
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: density
     integer :: i, j, k
@@ -437,7 +435,7 @@ module io
     call unpack_y(filtered_tmp)
 
     ! Save the linelength of a filtered isosurface
-    call save_linelength(t, filtered_tmp, 1)
+    call save_linelength(filtered_tmp, 1)
     
     if (save_filter) then
       select case (flag)
@@ -666,7 +664,7 @@ module io
     
 ! ***************************************************************************  
 
-  subroutine end_state(in_var, p, flag)
+  subroutine end_state(in_var, flag)
     ! Save variables for use in a restarted run.  Each process saves its own
     ! bit
     use parameters
@@ -674,7 +672,7 @@ module io
     use variables, only : unit_no
     implicit none
 
-    integer, intent(in) :: p, flag
+    integer, intent(in) :: flag
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
     integer :: j, k
@@ -730,7 +728,7 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine get_zeros(in_var, p)
+  subroutine get_zeros(in_var)
     ! Find all the zeros of the wavefunction by determining where the real and
     ! imaginary parts simultaneously go to zero.  This routine doesn't find
     ! them all though - get_extra_zeros below finds the rest
@@ -743,7 +741,6 @@ module io
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
@@ -852,7 +849,7 @@ module io
 
 ! ***************************************************************************  
 
-  subroutine get_extra_zeros(in_var, p)
+  subroutine get_extra_zeros(in_var)
     ! Find the zeros that the get_zeros routine did not pick up
     use parameters
     use variables, only : re_im, unit_no
@@ -860,7 +857,6 @@ module io
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    integer, intent(in) :: p
     type (re_im) :: var
     real, dimension(4) :: zero
     real, dimension(2) :: m
@@ -1082,7 +1078,7 @@ module io
 
 ! ***************************************************************************  
 
-  subroutine get_re_im_zeros(in_var, p)
+  subroutine get_re_im_zeros(in_var)
     ! Find where the real and imaginary parts separately go to zero
     use parameters
     use variables, only : re_im, unit_no
@@ -1090,7 +1086,6 @@ module io
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    integer, intent(in) :: p
     type (re_im) :: var
     real :: zero
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
@@ -1244,14 +1239,13 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine save_linelength(t, in_var, flag)
+  subroutine save_linelength(in_var, flag)
     ! Save the total vortex line length
     use parameters
     use variables, only : linelength
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, intent(in) :: t
     integer :: flag
     real :: tmp, length
 
@@ -1277,18 +1271,17 @@ module io
 
 ! ***************************************************************************  
 
-  subroutine diag(old2, old, new, p)
+  subroutine diag(old2, old, new)
     use parameters
     use variables
     use ic, only : x, y, z
     implicit none
     
-    integer, intent(in) :: p
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old, &
                                                                          old2
     complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(in) :: new
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: lhs, rhs
-    real :: zpos
+    integer :: zpos
     integer :: i, j, k
     
     lhs = 0.5*(new-old2(:,jsta:jend,ksta:kend))/dt
