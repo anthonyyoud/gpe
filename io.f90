@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.41 2007-02-18 18:30:29 najy2 Exp $
+! $Id: io.f90,v 1.42 2008-06-04 18:59:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -190,7 +190,7 @@ module io
     kc = pi !sqrt(kc2)
     dk = 2.0*kc/real(nx1)
     V = nx*ny*nz
-    
+
     call fft(in_var, a, 'backward', .true.)
 
     !call fft(a, in_var, 'forward', .true.)

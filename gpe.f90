@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.42 2007-02-18 18:30:29 najy2 Exp $
+! $Id: gpe.f90,v 1.43 2008-06-04 18:59:19 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -110,7 +110,9 @@ program gpe
   if (.not. pp_filtered_surface) then
   ! Get the initial conditions
   call ics(psi%new)
-  call idl_surface(psi%new)
+  if (save_3d) then
+    call idl_surface(psi%new)
+  end if
   !call fft(psi%new, test%new, 'forward', .false.)
   !call fft(test%new, psi%new, 'backward', .false.)
   call condensed_particles(t, psi%new)
@@ -282,8 +284,12 @@ program gpe
   
   ! Time loop finished so cleanly end the run
   call end_state(psi%new, 1)
-  call idl_surface(psi%new)
-  call save_surface(psi%new)
+  if (save_3d) then
+    call idl_surface(psi%new)
+  end if
+  if (save_contour) then
+    call save_surface(psi%new)
+  end if
   end if
 
   ! Close runtime files

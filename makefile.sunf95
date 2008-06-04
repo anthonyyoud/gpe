@@ -1,19 +1,19 @@
-# $Id: makefile,v 1.8 2008-06-04 18:59:19 youd Exp $
+# $Id: makefile.sunf95,v 1.1 2008-06-04 18:59:19 youd Exp $
 #----------------------------------------------------------------------------
 
 OUTDIR		= ./
 OBJECTS		= parameters.o constants.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
 #FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
-FFLAGS	        = -O2
+#FFLAGS	        = -fast
+FFLAGS		= -O2
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
 #FFLAGS	        = -g -O0 -check
-LINKFLAGS	=
-#LINKFLAGS	= -i_dynamic
-COMPILER	= mpif90
+LINKFLAGS	= -lmpi_f90 -lmpi_f77 -lmpi -lopen-rte -lopen-pal -ldl -lnsl -lutil -lm 
+COMPILER	= sunf95
 #COMPILER	= gfortran
-INCLUDE		=
+INCLUDE		= -I/usr/lib/openmpi/include
 LIBS            =
 #FFTWHOME	= /space/najy2/fftw2
 COMPFLAGS       = $(FFLAGS) $(INCLUDE)

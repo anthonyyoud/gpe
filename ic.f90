@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.44 2007-02-18 18:30:29 najy2 Exp $
+! $Id: ic.f90,v 1.45 2008-06-04 18:59:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -96,7 +96,7 @@ module ic
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       call random_phase(tmp_var)
       out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
       !          vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
       !          vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
@@ -744,7 +744,7 @@ module ic
         end do
       end do
     end do
-
+    
     ! Call the parallel FFT routine to do the transform
     call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
     
