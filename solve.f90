@@ -1,4 +1,4 @@
-! $Id: solve.f90,v 1.28 2007-01-24 21:02:29 najy2 Exp $
+! $Id: solve.f90,v 1.29 2008-06-07 10:56:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module solve
@@ -191,7 +191,9 @@ module solve
     if (myrank == 0) then
       !if (abs(dt) <= 1e-2) then
       if (mod(p, save_rate) == 0) then
+        open (11, status='unknown', position='append', file='timestep.dat')
         write (11, '(3e17.9,i10)') t, im_t, abs(dt), p
+        close (11)
       end if
     end if
 

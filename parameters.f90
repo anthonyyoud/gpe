@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.57 2008-06-04 18:59:19 youd Exp $
+! $Id: parameters.f90,v 1.58 2008-06-07 10:56:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -13,13 +13,13 @@ module parameters
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 4
+  integer,      parameter :: nyprocs      = 2
   integer,      parameter :: nzprocs      = 4
   integer,      parameter :: nx           = 128
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
-  complex                 :: time_step    = (0.0,-0.01)
-  real,         parameter :: end_time     = 20.0
+  complex                 :: time_step    = (0.0,-0.001)
+  real,         parameter :: end_time     = 500.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
@@ -29,20 +29,21 @@ module parameters
   real,         parameter :: nv           = 0.5
   real,         parameter :: enerv        = 0.75
   ! see bottom of solve.f90 for possible values
-  integer,      parameter :: eqn_to_solve = 2
+  integer,      parameter :: eqn_to_solve = 1
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
-  integer,      parameter :: save_rate    = 10
-  real,         parameter :: save_rate2   = 1.0
-  real,         parameter :: save_rate3   = 1.0
-  real,         parameter :: p_save       = 1.0
-  logical,      parameter :: save_contour = .false.
+  integer,      parameter :: save_rate    = 50
+  real,         parameter :: save_rate2   = 3.0
+  real,         parameter :: save_rate3   = 3.0
+  real,         parameter :: p_save       = 3.0
+  logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .true.
+  logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
@@ -51,7 +52,7 @@ module parameters
   character(*), parameter :: scheme       = 'rk_adaptive'
 
   ! Parameters for adaptive time stepping
-  real, parameter :: eps              = 1e-5
+  real, parameter :: eps              = 1e-6
   real, parameter :: safety           = 0.9
   real, parameter :: dt_decrease      = -0.25
   real, parameter :: dt_increase      = -0.20
@@ -60,20 +61,23 @@ module parameters
   ! Vortex line parameters **************************************************
   !
   type :: line_param
-    real :: x0          ! x position
-    real :: y0          ! y position
-    real :: amp         ! amplitude of a disturbance of the vortex line
-    real :: ll          ! wavelength of the above disturbance
-    real :: sgn         ! sign of the argument of the line
+    real         :: x0  ! x position
+    real         :: y0  ! y position
+    real         :: z0  ! z position
+    real         :: amp ! amplitude of a disturbance of the vortex line
+    real         :: ll  ! wavelength of the above disturbance
+    real         :: sgn ! sign of the argument of the line
+    character(1) :: dir ! direction in which the line should extend
   end type line_param
 
-  type (line_param), parameter :: vl1 = line_param( 0.0, 3.0, 0.1,33.0, 1.0)
-  !type (line_param), parameter :: vl1 = line_param(-20.0, 0.0, 0.0,33.0, 1.0)
-  !type (line_param), parameter :: vl1 = line_param( 0.0, 1.1, 0.1,14.6, 1.0)
-  type (line_param), parameter :: vl2 = line_param(-5.0, 5.0,-0.1,33.0,-1.0)
-  type (line_param), parameter :: vl3 = line_param( 0.0,-3.0,-0.1,33.0,-1.0)
-  !type (line_param), parameter :: vl3 = line_param( 0.0,-1.1,-0.1,14.6,-1.0)
-  type (line_param), parameter :: vl4 = line_param(-5.0,-5.0, 0.1,33.0, 1.0)
+  type (line_param), parameter :: &
+    vl1 = line_param(-4.0, 0.0, 4.0, 0.1, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl2 = line_param(-4.0, 0.0,-4.0, 0.1, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl3 = line_param( 4.0, 4.0, 0.0, 0.1, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
   !  
   ! *************************************************************************
 

@@ -1,12 +1,12 @@
-# $Id: makefile.sunf95,v 1.1 2008-06-04 18:59:19 youd Exp $
+# $Id: makefile.sunf95,v 1.2 2008-06-07 10:56:16 youd Exp $
 #----------------------------------------------------------------------------
 
 OUTDIR		= ./
 OBJECTS		= parameters.o constants.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
 #FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
-#FFLAGS	        = -fast
-FFLAGS		= -O2
+FFLAGS	        = -fast
+#FFLAGS		= -O2
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV
 #FFLAGS	        = -g -O0 -check

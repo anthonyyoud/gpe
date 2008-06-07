@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.45 2008-06-04 18:59:19 youd Exp $
+! $Id: ic.f90,v 1.46 2008-06-07 10:56:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -86,16 +86,26 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_line(vl2) * &
-      !          vortex_line(vl3) !* &
-      !          vortex_line(vl4)
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl2) * &
+                vortex_line(vl3) * &
+                vortex_line(vl4) !* &
+      !          vortex_line(vl5) * &
+      !          vortex_line(vl6) * &
+      !          vortex_line(vl7) * &
+      !          vortex_line(vl8) * &
+      !          vortex_line(vl9) * &
+      !          vortex_line(vl10) * &
+      !          vortex_line(vl11) * &
+      !          vortex_line(vl12) * &
+      !          vortex_line(vl13) * &
+      !          vortex_line(vl14)
       !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      call random_phase(tmp_var)
-      out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      !call random_phase(tmp_var)
+      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
       !          vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
@@ -189,8 +199,10 @@ module ic
     integer :: i, j, k, ii2, jj2, kk2, irand
     
     if (myrank == 0) then
+      open (97, status='unknown', position='append', file='misc.dat')
       write (97, *) 'Complex amplitude=', comp_amp
       write (97, *) 'Cutoff wavenumber=', kc2
+      close (97)
     end if
     
     if (myrank == 0) then
@@ -329,8 +341,8 @@ module ic
     real,              dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
     integer                                                 :: j, k
 
-    call get_r(vl%x0, vl%y0, vl%amp, vl%ll, r)
-    call get_theta(vl%x0, vl%y0, vl%amp, vl%ll, vl%sgn, theta)
+    call get_r(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%dir, r)
+    call get_theta(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%sgn, vl%dir, theta)
 
     vortex_line = amp(r)*ei(theta)
     
@@ -602,23 +614,45 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine get_r(x0, y0, a, ll, r)
-    ! Get the cylindrical-polar radius r**2=x**2+y**2
+  subroutine get_r(x0, y0, z0, a, ll, dir, r)
+    ! Get the cylindrical-polar radius r**2=x**2+y**2, y**2+z**2, or z**2+x**2
     use parameters
     implicit none
 
-    real,                                       intent(in)  :: x0, y0, a, ll
+    real, intent(in)  :: x0, y0, z0, a, ll
+    character, intent(in)  :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
-    integer                                                 :: i, j, k
+    integer :: i, j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
-        do i=0,nx1
-          r(i,j,k) = sqrt(scal*(x(i)-x0)**2 + &
-                         (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2))
+    select case (dir)
+      case ('x')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              r(i,j,k) = sqrt(scal*(y(j)-y0)**2 + &
+                             (scal*(z(k)-z0-a*cos(2.0*pi*x(i)/ll))**2))
+            end do
+          end do
         end do
-      end do
-    end do
+      case ('y')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              r(i,j,k) = sqrt(scal*(z(k)-z0)**2 + &
+                             (scal*(x(i)-x0-a*cos(2.0*pi*y(j)/ll))**2))
+            end do
+          end do
+        end do
+      case ('z')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              r(i,j,k) = sqrt(scal*(x(i)-x0)**2 + &
+                             (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2))
+            end do
+          end do
+        end do
+    end select
 
     return
   end subroutine get_r
@@ -645,23 +679,48 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine get_theta(x0, y0, a, ll, sgn, theta)
-    ! Get the argument theta=arctan(y/x)
+  subroutine get_theta(x0, y0, z0, a, ll, sgn, dir, theta)
+    ! Get the argument theta=arctan(y/x), arctan(z/y), or arctan(x/z)
     use parameters
     implicit none
 
-    real, intent(in) :: x0, y0, a, ll, sgn
+    real, intent(in) :: x0, y0, z0, a, ll, sgn
+    character, intent(in) :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
     integer                                                 :: i, j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
-        do i=0,nx1
-          theta(i,j,k) = sgn * atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll)), &
-                                     scal*(x(i)-x0))
+    select case (dir)
+      case ('x')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              theta(i,j,k) = sgn * &
+                             atan2(scal*(z(k)-z0-a*cos(2.0*pi*x(i)/ll)), &
+                                   scal*(y(j)-y0))
+            end do
+          end do
         end do
-      end do
-    end do
+      case ('y')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              theta(i,j,k) = sgn * &
+                             atan2(scal*(x(i)-x0-a*cos(2.0*pi*y(j)/ll)), &
+                                   scal*(z(k)-z0))
+            end do
+          end do
+        end do
+      case ('z')
+        do k=ksta,kend
+          do j=jsta,jend
+            do i=0,nx1
+              theta(i,j,k) = sgn * &
+                             atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll)), &
+                                   scal*(x(i)-x0))
+            end do
+          end do
+        end do
+    end select
 
     return
   end subroutine get_theta

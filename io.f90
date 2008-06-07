@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.42 2008-06-04 18:59:19 youd Exp $
+! $Id: io.f90,v 1.43 2008-06-07 10:56:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -42,16 +42,6 @@ module io
     implicit none
 
     if (myrank == 0) then
-      open (10, file='u_time.dat', status='unknown')
-      open (11, file='timestep.dat', status='unknown')
-      open (12, file='energy.dat', status='unknown')
-      open (13, file='linelength.dat', status='unknown')
-      open (14, file='momentum.dat', status='unknown')
-      open (15, file='mass.dat', status='unknown')
-      open (17, file='eta_time.dat', status='unknown')
-      open (18, file='filtered_ll.dat', status='unknown')
-      open (19, file='p_saved.dat', status='unknown')
-      open (97, file='misc.dat', status='unknown')
       open (99, file='RUNNING')
       close (99)
     end if
@@ -66,15 +56,6 @@ module io
     implicit none
 
     if (myrank == 0) then
-      close (10)
-      close (11)
-      close (12)
-      close (13)
-      close (14)
-      close (15)
-      close (17)
-      close (18)
-      close (19)
       close (97)
     end if
 
@@ -142,8 +123,10 @@ module io
 
     ! Write the data to file
     if (myrank == 0) then
+      open (10, status='unknown', position='append', file='u_time.dat')
       write (10, '(6e17.9)') time, im_t, real(var(1)), &
                              aimag(var(1)), real(var(2)), real(var(3))
+      close (10)
     end if
 
     return
@@ -164,7 +147,9 @@ module io
     call energy(in_var, E)
     
     if (myrank == 0) then
+      open (12, status='unknown', position='append', file='energy.dat')
       write (12, '(2e17.9)') time, E/real(nx*ny*nz)
+      close (12)
     end if
 
     return
@@ -258,8 +243,10 @@ module io
       E0 = (1.0/real(2*V))*(M**2+(M-n0)**2)
       H = E0 + temp*real(V-1)
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/V))/tot
+      open (15, status='unknown', position='append', file='mass.dat')
       write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/V, M, n0, &
                              temp, temp2, H/V
+      close (15)
     end if
 
     if (save_spectrum) then
@@ -290,7 +277,9 @@ module io
     call momentum(in_var, mom)
     
     if (myrank == 0) then
+      open (14, status='unknown', position='append', file='momentum.dat')
       write (14, '(4e17.9)') time, mom(1), mom(2), mom(3)
+      close (14)
     end if
 
     return
@@ -370,7 +359,9 @@ module io
     close (unit_no)
 
     if (myrank == 0) then
+      open (19, status='unknown', position='append', file='p_saved.dat')
       write (19, '(i10)') p
+      close (19)
     end if
 
     return
@@ -435,7 +426,9 @@ module io
     call unpack_y(filtered_tmp)
 
     ! Save the linelength of a filtered isosurface
-    call save_linelength(filtered_tmp, 1)
+    if (save_ll) then
+      call save_linelength(filtered_tmp, 1)
+    end if
     
     if (save_filter) then
       select case (flag)
@@ -563,7 +556,9 @@ module io
       end do
       close (unit_no)
 
+      open (17, status='unknown', position='append', file='eta_time.dat')
       write (17, '(4e17.9)') t, tot_eta(1), tot_eta(2), tot_eta(3)
+      close (17)
     end if
 
     return
@@ -1259,10 +1254,14 @@ module io
     if (myrank == 0) then
       if (flag == 0) then
         ! Write the unfiltered line length
+        open (13, status='unknown', position='append', file='linelength.dat')
         write (13, '(2e17.9)') t, length
+        close (13)
       else if (flag == 1) then
         ! Write the filtered line length
+        open (18, status='unknown', position='append', file='filtered_ll.dat')
         write (18, '(2e17.9)') t, length
+        close (18)
       end if
     end if
 
@@ -1356,6 +1355,7 @@ module io
     do j=1,nfilter
       if (myrank == 0) then
         open (50, file='p_saved.dat')
+        open (18, status='unknown', position='append', file='filtered_ll.dat')
         write (18, *) '# ', j
       end if
       do i=1,nlines
@@ -1384,6 +1384,7 @@ module io
       if (myrank == 0) then
         write (18, *)
         write (18, *)
+        close (18)
         close (50)
       end if
     end do

@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.43 2008-06-04 18:59:19 youd Exp $
+! $Id: gpe.f90,v 1.44 2008-06-07 10:56:16 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -195,7 +195,9 @@ program gpe
       !call save_mass(t, psi%new)
       !call save_momentum(t, psi%old)
       call save_time(t, psi%new)
-      call save_linelength(psi%old, 0)
+      if (save_ll) then
+        call save_linelength(psi%old, 0)
+      end if
       !call condensed_particles(t, psi%new)
     end if
     
@@ -239,7 +241,7 @@ program gpe
 
     ! Call the solver subroutine to solve the equation
     call solver(psi%old, psi%new)
-    
+
     if (t+im_t >= save_rate2*n) then
       if (diagnostic) then
         call diag(psi%old2, psi%old, psi%new)
