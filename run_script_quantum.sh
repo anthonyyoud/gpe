@@ -2,7 +2,7 @@
 
 FILTER=0
 TARFILE=data_`hostname`.tar
-PROC_DIRS_TARFILE=dir_proc.tar
+END_STATE=end_state.tar
 
 #****************************************************************************
 #PARAMETERS
@@ -17,19 +17,19 @@ PROC_DIR=proc
 #****************************************************************************
 #NO CHANGES NECESSARY BELOW HERE
 #****************************************************************************
-if [ -e $PROC_DIRS_TARFILE ]; then
-  tar xf $PROC_DIRS_TARFILE
-  rm $PROC_DIRS_TARFILE
-else
-  for i in `seq 0 $(( $NPROCS-1 ))`
-  do
-    if [ $i -lt 10 ]; then
-      mkdir ${PROC_DIR}0$i
-    else
-      mkdir $PROC_DIR$i
-    fi
-  done
+if [ -e $END_STATE ]; then
+  tar xf $END_STATE
+  rm $END_STATE
 fi
+
+for i in `seq 0 $(( $NPROCS-1 ))`
+do
+  if [ $i -lt 10 ]; then
+    mkdir ${PROC_DIR}0$i
+  else
+    mkdir $PROC_DIR$i
+  fi
+done
 
 touch modified
 start_time=`ls -cl --time-style=+%s -d modified | cut -d" " -f6`
@@ -39,6 +39,7 @@ echo No. processors = $NPROCS
 time $EXE
 
 rm $EXE
+rm -f end_state??.dat
 
 for dir in ${PROC_DIR}*
 do

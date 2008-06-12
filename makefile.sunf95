@@ -1,11 +1,16 @@
-# $Id: makefile.sunf95,v 1.2 2008-06-07 10:56:16 youd Exp $
+# $Id: makefile.sunf95,v 1.3 2008-06-12 10:30:46 youd Exp $
 #----------------------------------------------------------------------------
 
 OUTDIR		= ./
 OBJECTS		= parameters.o constants.o derivs.o variables.o ic.o io.o \
                   solve.o gpe.o
 #FFLAGS	        = -O2 -w95 -tpp7 -xW -unroll -vec_report0
-FFLAGS	        = -fast
+#FFLAGS	        = -fast -xtarget=pentium4 -fsimple=0
+FFLAGS	        = -fast -fsimple=0 -xarch=generic
+#FFLAGS		= -xO5 -xarch=generic -xcache=8/64/4:512/64/8 -xchip=pentium4 -xdepend=yes -dalign -fns=yes -ftrap=common -xlibmil -nofstore -xregs=frameptr -fsimple=0
+#FFLAGS	        = -xO5 -xarch=ssse3 -xcache=32/64/8:2048/64/8 -xchip=core2 -xdepend=yes -dalign -fsimple=2 -fns=yes -ftrap=common -xlibmil -nofstore -xregs=frameptr
+#FFLAGS	        = -xO5 -xcache=32/64/8:2048/64/8 -xchip=core2 -xdepend=yes -dalign -fsimple=1 -fns=yes -ftrap=common -xlibmil -nofstore -xregs=frameptr
+#FFLAGS	        = -xO5 -xcache=32/64/8:2048/64/8 -xchip=core2
 #FFLAGS		= -O2
 #FFLAGS	        = -O0 -w95
 #FFLAGS	        = -g -O0 -d0 -CA -CB -CS -CU -CV

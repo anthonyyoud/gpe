@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.46 2008-06-07 10:56:16 youd Exp $
+! $Id: ic.f90,v 1.47 2008-06-12 10:30:46 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -58,10 +58,10 @@ module ic
     ! If this is a restarted run...
     if (restart) then
       real_time = .true.
-      inquire(file=proc_dir//'end_state.dat', exist=state_exist)
+      inquire(file=end_state_file, exist=state_exist)
       ! Exit if doing restart but end_state.dat does not exist
       if (.not. state_exist) stop 'ERROR: restart=.true.&
-                                   &but end_state.dat does not exist.'
+                                   &but '//end_state_file//' does not exist.'
       if (myrank == 0) then
         print*, 'Getting restart conditions'
       end if
@@ -86,10 +86,10 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl2) * &
-                vortex_line(vl3) * &
-                vortex_line(vl4) !* &
+      out_var = vortex_line(vl1) !* &
+      !          vortex_line(vl2) * &
+      !          vortex_line(vl3) * &
+      !          vortex_line(vl4) * &
       !          vortex_line(vl5) * &
       !          vortex_line(vl6) * &
       !          vortex_line(vl7) * &
@@ -135,7 +135,7 @@ module ic
 
     out_var2 = 1.0
     
-    open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
+    open (unit_no, file=end_state_file, form='unformatted')
 
     ! Read in the distributed data from the previous run
     read (unit_no) nx_prev

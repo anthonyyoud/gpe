@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.58 2008-06-07 10:56:16 youd Exp $
+! $Id: parameters.f90,v 1.59 2008-06-12 10:30:46 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -18,8 +18,8 @@ module parameters
   integer,      parameter :: nx           = 128
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
-  complex                 :: time_step    = (0.0,-0.001)
-  real,         parameter :: end_time     = 500.0
+  complex                 :: time_step    = (0.001,0.0)
+  real,         parameter :: end_time     = 100.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
@@ -47,7 +47,7 @@ module parameters
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
-  logical                 :: real_time    = .true.
+  logical                 :: real_time    = .false.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
@@ -71,13 +71,45 @@ module parameters
   end type line_param
 
   type (line_param), parameter :: &
-    vl1 = line_param(-4.0, 0.0, 4.0, 0.1, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl2 = line_param(-4.0, 0.0,-4.0, 0.1, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl3 = line_param( 4.0, 4.0, 0.0, 0.1, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
+    vl1 = line_param(0.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+
+  !type (line_param), parameter :: &
+  !  vl1 = line_param(-4.0, 0.0, 4.0, 0.1, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-4.0, 0.0,-4.0, 0.1, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param( 4.0, 4.0, 0.0, 0.1, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
+
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl10= line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl11= line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl12= line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl13= line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl14= line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
   !  
   ! *************************************************************************
 
@@ -121,6 +153,8 @@ module parameters
                                                       workr1, workr2
   real,    allocatable, dimension(:,:,:)           :: ave
   character(7)       :: proc_dir = 'proc**/'
+  character(15)      :: end_state_file = 'end_state**.dat'
+  character(24)      :: filt_end_state_file = 'end_state_filtered**.dat'
   logical            :: first_write = .true.
   complex            :: dt
   real               :: t           = 0.0

@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.43 2008-06-07 10:56:16 youd Exp $
+! $Id: io.f90,v 1.44 2008-06-12 10:30:46 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -75,6 +75,17 @@ module io
       write (proc_dir(5:5), '(1i1)') 0
     else
       write (proc_dir(5:6), '(1i2)') myrank
+    end if
+
+    ! Name of the end_state.dat file used to do a restart
+    if (myrank < 10) then
+      write (end_state_file(11:11), '(1i1)') myrank
+      write (end_state_file(10:10), '(1i1)') 0
+      write (filt_end_state_file(20:20), '(1i1)') myrank
+      write (filt_end_state_file(19:19), '(1i1)') 0
+    else
+      write (end_state_file(10:11), '(1i2)') myrank
+      write (filt_end_state_file(19:20), '(1i2)') myrank
     end if
 
     return
