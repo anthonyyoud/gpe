@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.59 2008-06-12 10:30:46 youd Exp $
+! $Id: parameters.f90,v 1.60 2008-06-15 11:36:25 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -13,16 +13,16 @@ module parameters
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 2
+  integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
-  complex                 :: time_step    = (0.001,0.0)
-  real,         parameter :: end_time     = 100.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
+  integer,      parameter :: nx           = 256
+  integer,      parameter :: ny           = 256
+  integer,      parameter :: nz           = 256
+  complex                 :: time_step    = (0.0,-0.001)
+  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: xr           = 128.0
+  real,         parameter :: yr           = 128.0
+  real,         parameter :: zr           = 128.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
@@ -35,9 +35,9 @@ module parameters
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 50
-  real,         parameter :: save_rate2   = 3.0
-  real,         parameter :: save_rate3   = 3.0
-  real,         parameter :: p_save       = 3.0
+  real,         parameter :: save_rate2   = 10.0
+  real,         parameter :: save_rate3   = 10.0
+  real,         parameter :: p_save       = 10.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
@@ -45,9 +45,9 @@ module parameters
   logical,      parameter :: save_spectrum= .true.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .false.
+  logical,      parameter :: restart      = .true.
   logical,      parameter :: saved_restart= .false.
-  logical                 :: real_time    = .false.
+  logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
@@ -70,8 +70,24 @@ module parameters
     character(1) :: dir ! direction in which the line should extend
   end type line_param
 
-  type (line_param), parameter :: &
-    vl1 = line_param(0.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl1 = line_param(   0.0,   0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(   0.0,-128.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(   0.0, 128.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param(-128.0,   0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-128.0,-128.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param(-128.0, 128.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param( 128.0,   0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param( 128.0,-128.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 128.0, 128.0, 0.0, 0.0, 33.0, 1.0, 'z')
 
   !type (line_param), parameter :: &
   !  vl1 = line_param(-4.0, 0.0, 4.0, 0.1, 33.0, 1.0, 'y')
@@ -82,34 +98,34 @@ module parameters
   !type (line_param), parameter :: &
   !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
 
-  !type (line_param), parameter :: &
-  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl4 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl5 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl10= line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl11= line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl12= line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl13= line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl14= line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl4 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl5 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl10= line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl11= line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl12= line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl13= line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl14= line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
   !  
   ! *************************************************************************
 

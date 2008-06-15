@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.44 2008-06-07 10:56:16 youd Exp $
+! $Id: gpe.f90,v 1.45 2008-06-15 11:36:25 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -124,13 +124,14 @@ program gpe
 
   ! If this is not a restart...
   if (.not. restart) then
-    inquire(file=proc_dir//'end_state.dat', exist=state_exist)
+    inquire(file=end_state_file, exist=state_exist)
     ! Exit if not doing restart but end_state.dat exists
-    if (state_exist) stop 'ERROR: restart=.false. but end_state.dat exists.'
+    if (state_exist) stop 'ERROR: restart=.false. but '&
+                          //end_state_file//' exists.'
   end if
   
   ! Calculate the norm of the initial condition
-  !call get_norm(psi%new, prev_norm)
+  call get_norm(psi%new, prev_norm)
 
   ps = int(t/p_save)
   n = int(t/save_rate2)
@@ -249,25 +250,28 @@ program gpe
     end if
     
     ! Calculate the norm
-    !call get_norm(psi%new, norm)
+    call get_norm(psi%new, norm)
 
     ! Make sure all process know what the norm is
     call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
     ! Calculate the relative difference of successive norms.  If the difference
     ! is small enough switch to real time
-    !if (.not. real_time) then
-    !  if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
-    !    real_time = .true.
-    !    switched = .true.
-    !    im_t = 0.0
+    if (.not. real_time) then
+      if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
+        real_time = .true.
+        switched = .true.
+        im_t = 0.0
+        ps = int(t/p_save)
+        n = int(t/save_rate2)
+        m = int(t/save_rate3)
     !    call idl_surface(p, psi%new)
     !    call save_surface(p, psi%new)
-    !    if (myrank == 0) then
-    !      print*, 'Switching to real time'
-    !    end if
-    !  end if
-    !end if
+        if (myrank == 0) then
+          print*, 'Switching to real time'
+        end if
+      end if
+    end if
     
     ! Flag to denote whether this is the first time step after switching to
     ! real time
@@ -277,7 +281,7 @@ program gpe
     end if
     
     ! Update the norm
-    !prev_norm = norm
+    prev_norm = norm
 
     ! Update the time index
     p = p+1

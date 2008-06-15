@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.26 2007-02-18 18:30:30 najy2 Exp $
+! $Id: variables.f90,v 1.27 2008-06-15 11:36:25 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -840,11 +840,12 @@ module variables
             if (lu>2 .and. lv>2) then
               den = xv(2)*(yu(1)-yu(2))+xv(1)*(yu(2)-yu(1))+ &
                    (xu(1)-xu(2))*(yv(1)-yv(2))
-              !if (den==0.0)  then
-              !  write (*,*) i, j, k, xu(1), yu(1), xu(2), yu(2), &
-              !              xv(1), yv(1), xv(2), yv(2)
-              !  print*, 'ZERO DENOM IN linelength'
-              !end if
+              if (den==0.0)  then
+                write (*,*) i, j, k, xu(1), yu(1), xu(2), yu(2), &
+                            xv(1), yv(1), xv(2), yv(2)
+                print*, 'ZERO DENOM IN linelength'
+                den = den + 0.0000001
+              end if
               xx = (xu(1)*(xv(2)*(yv(1)-yu(2))+xv(1)*(yu(2)-yv(2)))+ &
                     xu(2)*(xv(2)*(yu(1)-yv(1))+xv(1)*(yv(2)-yu(1))))/den
               yy = (xv(2)*(yu(1)-yu(2))*yv(1)+xu(1)*yu(2)*yv(1)- &

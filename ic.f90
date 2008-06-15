@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.47 2008-06-12 10:30:46 youd Exp $
+! $Id: ic.f90,v 1.48 2008-06-15 11:36:25 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -86,20 +86,20 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      out_var = vortex_line(vl1) !* &
-      !          vortex_line(vl2) * &
-      !          vortex_line(vl3) * &
-      !          vortex_line(vl4) * &
-      !          vortex_line(vl5) * &
-      !          vortex_line(vl6) * &
-      !          vortex_line(vl7) * &
-      !          vortex_line(vl8) * &
-      !          vortex_line(vl9) * &
-      !          vortex_line(vl10) * &
-      !          vortex_line(vl11) * &
-      !          vortex_line(vl12) * &
-      !          vortex_line(vl13) * &
-      !          vortex_line(vl14)
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl2) * &
+                vortex_line(vl3) * &
+                vortex_line(vl4) * &
+                vortex_line(vl5) * &
+                vortex_line(vl6) * &
+                vortex_line(vl7) * &
+                vortex_line(vl8) * &
+                vortex_line(vl9) * &
+                vortex_line(vl10) * &
+                vortex_line(vl11) * &
+                vortex_line(vl12) * &
+                vortex_line(vl13) * &
+                vortex_line(vl14)
       !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &
