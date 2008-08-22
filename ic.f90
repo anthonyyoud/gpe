@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.48 2008-06-15 11:36:25 youd Exp $
+! $Id: ic.f90,v 1.49 2008-08-22 12:18:23 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -95,11 +95,35 @@ module ic
                 vortex_line(vl7) * &
                 vortex_line(vl8) * &
                 vortex_line(vl9) * &
-                vortex_line(vl10) * &
-                vortex_line(vl11) * &
-                vortex_line(vl12) * &
-                vortex_line(vl13) * &
-                vortex_line(vl14)
+                vortex_line(vl10) !* &
+      !          vortex_line(vl11) * &
+      !          vortex_line(vl12) * &
+      !          vortex_line(vl13) * &
+      !          vortex_line(vl14) * &
+      !          vortex_line(vl15) * &
+      !          vortex_line(vl16) * &
+      !          vortex_line(vl17) * &
+      !          vortex_line(vl18) !* &
+      !          vortex_line(vl19) * &
+      !          vortex_line(vl20) * &
+      !          vortex_line(vl21) * &
+      !          vortex_line(vl22) * &
+      !          vortex_line(vl23) * &
+      !          vortex_line(vl24) * &
+      !          vortex_line(vl25) * &
+      !          vortex_line(vl26) * &
+      !          vortex_line(vl27) * &
+      !          vortex_line(vl28) * &
+      !          vortex_line(vl29) * &
+      !          vortex_line(vl30) * &
+      !          vortex_line(vl31) * &
+      !          vortex_line(vl32) * &
+      !          vortex_line(vl33) * &
+      !          vortex_line(vl34) * &
+      !          vortex_line(vl35) * &
+      !          vortex_line(vl36) * &
+      !          vortex_line(vl37) * &
+      !          vortex_line(vl38)
       !out_var = sphere() !* &
                 !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !out_var = wall() !* &

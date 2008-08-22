@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.60 2008-06-15 11:36:25 youd Exp $
+! $Id: parameters.f90,v 1.61 2008-08-22 12:18:23 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -19,7 +19,7 @@ module parameters
   integer,      parameter :: ny           = 256
   integer,      parameter :: nz           = 256
   complex                 :: time_step    = (0.0,-0.001)
-  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: end_time     = 1500.0
   real,         parameter :: xr           = 128.0
   real,         parameter :: yr           = 128.0
   real,         parameter :: zr           = 128.0
@@ -98,6 +98,7 @@ module parameters
   !type (line_param), parameter :: &
   !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
 
+  ! 2 bundles of 5 vortex lines
   type (line_param), parameter :: &
     vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
   type (line_param), parameter :: &
@@ -105,27 +106,165 @@ module parameters
   type (line_param), parameter :: &
     vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
   type (line_param), parameter :: &
-    vl4 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+    vl4 = line_param(-12.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
   type (line_param), parameter :: &
-    vl5 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+    vl5 = line_param(-12.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
   type (line_param), parameter :: &
-    vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+    vl6 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
   type (line_param), parameter :: &
-    vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+    vl7 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
   type (line_param), parameter :: &
-    vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+    vl8 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
   type (line_param), parameter :: &
-    vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+    vl9 = line_param( 12.0, 8.0, 0.0, 0.0, 33.0, 1.0, 'z')
   type (line_param), parameter :: &
-    vl10= line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl11= line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl12= line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl13= line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl14= line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+    vl10 = line_param( 12.0,-8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+
+  ! 2 bundles of 7 vortex lines
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl10 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl11 = line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl12 = line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl13 = line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl14 = line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+
+  ! 2 bundles of 9 vortex lines
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param( -4.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-12.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param(-20.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param( -4.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(-12.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param(-20.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl10 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl11 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl12 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl13 = line_param(  4.0, 8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl14 = line_param( 12.0, 8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl15 = line_param( 20.0, 8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl16 = line_param(  4.0,-8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl17 = line_param( 12.0,-8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl18 = line_param( 20.0,-8.0, 0.0, 0.0, 33.0, 1.0, 'z')
+
+  ! 2 bundles of 19 vortex lines
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param(-28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-36.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param( -8.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param(-16.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(-24.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param(-32.0, 0.0, 6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl10 = line_param( -8.0, 0.0, -6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl11 = line_param(-16.0, 0.0, -6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl12 = line_param(-24.0, 0.0, -6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl13 = line_param(-32.0, 0.0, -6.92820323, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl14 = line_param(-12.0, 0.0, 13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl15 = line_param(-20.0, 0.0, 13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl16 = line_param(-28.0, 0.0, 13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl17 = line_param(-12.0, 0.0, -13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl18 = line_param(-20.0, 0.0, -13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl19 = line_param(-28.0, 0.0, -13.85640646, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl20 = line_param( 4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl21 = line_param(12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl22 = line_param(20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl23 = line_param(28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl24 = line_param(36.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl25 = line_param( 8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl26 = line_param(16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl27 = line_param(24.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl28 = line_param(32.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl29 = line_param( 8.0, -6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl30 = line_param(16.0, -6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl31 = line_param(24.0, -6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl32 = line_param(32.0, -6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl33 = line_param(12.0, 13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl34 = line_param(20.0, 13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl35 = line_param(28.0, 13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl36 = line_param(12.0, -13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl37 = line_param(20.0, -13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl38 = line_param(28.0, -13.85640646, 0.0, 0.0, 33.0, 1.0, 'z')
   !  
   ! *************************************************************************
 
