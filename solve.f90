@@ -1,4 +1,4 @@
-! $Id: solve.f90,v 1.29 2008-06-07 10:56:16 youd Exp $
+! $Id: solve.f90,v 1.30 2009-01-10 11:18:04 youd Exp $
 !----------------------------------------------------------------------------
 
 module solve
@@ -341,7 +341,7 @@ module solve
     use parameters
     use variables
     use derivs
-    use ic, only : x, y, z, wall, sphere
+    use ic, only : x, y, z, wall, sphere, sphere2
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
@@ -384,6 +384,13 @@ module solve
                         (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
                                  in_var(:,jsta:jend,ksta:kend) ) + &
                          Urhs*dpsidx) * sphere()
+      case (4)
+        !-2i*dpsi/dt + 2iU*dpsi/dx = del^2(psi) + (1-|psi|^2)psi + Vtrap*psi
+        rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
+                        (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
+                                in_var(:,jsta:jend,ksta:kend) + &
+                         sphere2() * in_var(:,jsta:jend,ksta:kend) ) + &
+                        Urhs*dpsidx
     end select
 
     return

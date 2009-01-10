@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.49 2008-08-22 12:18:23 youd Exp $
+! $Id: ic.f90,v 1.50 2009-01-10 11:18:04 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -7,7 +7,7 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics, fft, get_kc_amp, wall, sphere
+  public :: get_grid, ics, fft, get_kc_amp, wall, sphere, sphere2
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
@@ -71,6 +71,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
+      !out_var = 1.0 !sphere2()
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
       !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
@@ -86,20 +87,20 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl2) * &
-                vortex_line(vl3) * &
-                vortex_line(vl4) * &
-                vortex_line(vl5) * &
-                vortex_line(vl6) * &
-                vortex_line(vl7) * &
-                vortex_line(vl8) * &
-                vortex_line(vl9) * &
-                vortex_line(vl10) !* &
+      !out_var = vortex_line(vl1) * &
+      !          vortex_line(vl2) * &
+      !          vortex_line(vl3) * &
+      !          vortex_line(vl4) * &
+      !          vortex_line(vl5) * &
+      !!          vortex_line(vl6) * &
+      !!          vortex_line(vl7) * &
+      !          vortex_line(vl8) * &
+      !          vortex_line(vl9) * &
+      !          vortex_line(vl10) * &
       !          vortex_line(vl11) * &
       !          vortex_line(vl12) * &
       !          vortex_line(vl13) * &
-      !          vortex_line(vl14) * &
+      !          vortex_line(vl14) !* &
       !          vortex_line(vl15) * &
       !          vortex_line(vl16) * &
       !          vortex_line(vl17) * &
@@ -130,13 +131,13 @@ module ic
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
       !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
-      !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-      !          vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) !* &
-      !          vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
-      !          vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
-      !          vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
-      !          vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
+                vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+                vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
+                vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
+                vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
+                vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
+                vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
       !          vortex_line(vl1)
     end if
   
@@ -610,6 +611,28 @@ module ic
 
     return
   end function sphere
+  
+! ***************************************************************************  
+
+  function sphere2()
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere2
+    real, parameter :: width = 10.0
+    real, parameter :: amp = 100.0
+    integer :: i, j, k
+
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          sphere2(i,j,k) = amp * exp(-(x(i)**2 + y(j)**2 + z(k)**2) / width)
+        end do
+      end do
+    end do
+
+    return
+  end function sphere2
   
 ! ***************************************************************************  
 
