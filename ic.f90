@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.50 2009-01-10 11:18:04 youd Exp $
+! $Id: ic.f90,v 1.51 2009-01-30 16:50:55 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -57,7 +57,7 @@ module ic
 
     ! If this is a restarted run...
     if (restart) then
-      real_time = .true.
+      !real_time = .true.
       inquire(file=end_state_file, exist=state_exist)
       ! Exit if doing restart but end_state.dat does not exist
       if (.not. state_exist) stop 'ERROR: restart=.true.&
@@ -131,13 +131,13 @@ module ic
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
       !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) * &
-                vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-                vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
-                vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
-                vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
-                vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
-                vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
+                !vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
+                !vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
+                !vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
+                !vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
+                !vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
+                !vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
       !          vortex_line(vl1)
     end if
   
@@ -191,8 +191,18 @@ module ic
 
     out_var = out_var1*out_var2
 
-    if (real(dt_prev) == 0.0) then
-      dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+    !if (real(dt_prev) == 0.0) then
+    !  dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+    !end if
+
+    if (real_time) then
+      if (real(dt_prev) == 0.0) then
+        dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+      end if
+    else
+      if (aimag(dt_prev) == 0.0) then
+        dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+      end if
     end if
 
     select case (scheme)

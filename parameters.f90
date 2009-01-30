@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.62 2009-01-10 11:18:04 youd Exp $
+! $Id: parameters.f90,v 1.63 2009-01-30 16:50:55 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -18,12 +18,12 @@ module parameters
   integer,      parameter :: nx           = 128
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
-  complex                 :: time_step    = (0.0,-0.001)
+  real,         parameter :: tau          = 0.001
   real,         parameter :: end_time     = 100.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
-  real,         parameter :: Urhs         = 0.0 !0.35
+  real,         parameter :: Urhs         = 0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
@@ -47,7 +47,7 @@ module parameters
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
-  logical                 :: real_time    = .true.
+  logical                 :: real_time    = .false.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
@@ -279,12 +279,12 @@ module parameters
   end type ring_param
 
   type (ring_param), parameter :: vr1 = ring_param(0.0, 0.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr2 = ring_param(-128.0, 0.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr3 = ring_param(128.0, 0.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr4 = ring_param(0.0, -128.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr5 = ring_param(0.0, 128.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr6 = ring_param(0.0, 0.0, -128.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr7 = ring_param(0.0, 0.0, 128.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr2 = ring_param(-60.0, 0.0, 0.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr3 = ring_param(60.0, 0.0, 0.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr4 = ring_param(0.0, -60.0, 0.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr5 = ring_param(0.0, 60.0, 0.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr6 = ring_param(0.0, 0.0, -60.0, 16.0, -1.0)
+  type (ring_param), parameter :: vr7 = ring_param(0.0, 0.0, 60.0, 16.0, -1.0)
   !
   ! *************************************************************************
 

@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.44 2008-06-12 10:30:46 youd Exp $
+! $Id: io.f90,v 1.45 2009-01-30 16:50:55 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -9,7 +9,7 @@ module io
   private
   public :: open_files, close_files, save_time, save_energy, &
             save_surface, idl_surface, end_state, get_zeros, get_re_im_zeros, &
-            get_extra_zeros, save_linelength, save_momentum, &
+            get_extra_zeros, save_linelength, save_momentum, save_norm, &
             get_dirs, diag, condensed_particles, average, pp_save_filter
   
   contains
@@ -273,6 +273,22 @@ module io
     return
   end subroutine condensed_particles
   
+! ***************************************************************************  
+
+  subroutine save_norm(time, prev_norm, norm)
+    ! Save the norm
+    use parameters
+    implicit none
+
+    real, intent(in) :: time, prev_norm, norm
+
+    open (20, status='unknown', position='append', file='norm.dat')
+    write (20, '(3e17.9)') time, prev_norm, norm
+    close (20)
+
+    return
+  end subroutine save_norm
+
 ! ***************************************************************************  
 
   subroutine save_momentum(time, in_var)
@@ -699,12 +715,12 @@ module io
     if (myrank == 0) then
       open (98, file = 'save.dat')
       write (98, *) 'Periodically saved state'
-      write (98, *) 't=', t
-      write (98, *) 'dt=', dt
-      write (98, *) 'nx=', nx
-      write (98, *) 'ny=', ny
-      write (98, *) 'nz=', nz
-      write (98, *) 'p=', p
+      write (98, *) 't =', t
+      write (98, *) 'dt =', dt
+      write (98, *) 'nx =', nx
+      write (98, *) 'ny =', ny
+      write (98, *) 'nz =', nz
+      write (98, *) 'p =', p
       close (98)
     end if
     

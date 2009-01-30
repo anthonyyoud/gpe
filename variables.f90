@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.27 2008-06-15 11:36:25 youd Exp $
+! $Id: variables.f90,v 1.28 2009-01-30 16:50:55 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -10,7 +10,7 @@ module variables
   public :: laplacian, get_density, get_phase, get_norm, &
             energy, mass, momentum, linelength, setup_itable, para_range, &
             array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-            unpack_y, get_unit_no
+            unpack_y, get_unit_no, renormalise
 
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
@@ -529,6 +529,24 @@ module variables
 
 ! ***************************************************************************  
 
+  subroutine renormalise(var, prev_norm, norm)
+    ! Renormalise when running in imaginary time
+    use parameters
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: var
+    real, intent(in) :: prev_norm, norm
+
+    !call mass(var, M)
+
+    !var = sqrt(8.0*xr*yr*zr) * var / sqrt(M)
+    var = var * sqrt(prev_norm / norm)
+
+    return
+  end subroutine renormalise
+
+! ***************************************************************************  
+
   subroutine integrate_x(in_var, x_int)
     ! Integrate a (3D) variable in x.  The x-direction is not parallelised so
     ! this integration is straight forward
@@ -914,6 +932,6 @@ module variables
     return
   end function linelength
 
-! ***************************************************************************  
+! ***************************************************************************
 
 end module variables

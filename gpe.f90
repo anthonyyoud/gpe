@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.46 2008-08-22 12:18:23 youd Exp $
+! $Id: gpe.f90,v 1.47 2009-01-30 16:50:55 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -81,9 +81,10 @@ program gpe
   end if
   
   ! Set the time step
-  dt = time_step
   if (real_time) then
-    dt = cmplx(abs(aimag(time_step)), 0.0)
+    dt = cmplx(tau, 0.0)
+  else
+    dt = cmplx(0.0, -tau)
   end if
   
   ! Open runtime files
@@ -189,6 +190,10 @@ program gpe
     !print*, t, real(dt)
     !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
+    !if (.not. real_time) then
+    !  call renormalise(psi%old)
+    !end if
+
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
     !if (mod(p, save_rate) == 0) then
@@ -250,7 +255,11 @@ program gpe
     end if
     
     ! Calculate the norm
-    call get_norm(psi%new, norm)
+    if (.not. real_time) then
+      call get_norm(psi%new, norm)
+      call save_norm(t, prev_norm, norm)
+      call renormalise(psi%new, prev_norm, norm)
+    end if
 
     ! Make sure all process know what the norm is
     call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
