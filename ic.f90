@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.51 2009-01-30 16:50:55 youd Exp $
+! $Id: ic.f90,v 1.52 2009-02-21 14:10:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -7,11 +7,14 @@ module ic
   implicit none
 
   private
-  public :: get_grid, ics, fft, get_kc_amp, wall, sphere, sphere2
+  public :: get_grid, get_unit_no, ics, fft, get_kc_amp, wall, &
+            sphere, sphere2, vortex_ring
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
   real, dimension(0:nz1), public :: z
+
+  integer, public :: unit_no
 
   contains
 
@@ -43,6 +46,17 @@ module ic
 
     return
   end subroutine get_grid
+
+! ***************************************************************************  
+
+  subroutine get_unit_no()
+    ! Get the unit number which each process can write to
+    implicit none
+
+    unit_no = myrank+20
+
+    return
+  end subroutine get_unit_no
 
 ! ***************************************************************************  
 
@@ -87,8 +101,8 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_line(vl2) * &
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl2) !* &
       !          vortex_line(vl3) * &
       !          vortex_line(vl4) * &
       !          vortex_line(vl5) * &
@@ -131,7 +145,7 @@ module ic
       !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
       !call random_phase(tmp_var)
       !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
+      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
                 !vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
                 !vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
                 !vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
@@ -149,7 +163,6 @@ module ic
   subroutine state_restart(out_var)
     ! Get restart data
     use parameters
-    use variables
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
@@ -411,10 +424,10 @@ module ic
     call get_rr(d1,rr1)
     call get_rr(d2,rr2)
     
-    rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
-                        (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
-    rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
-                        (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
+    !rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
+    !                    (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
+    !rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
+    !                    (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
 
     do k=ksta,kend
       do j=jsta,jend
@@ -805,7 +818,6 @@ module ic
     ! Calculate the FFT (or inverse) of a variable
     use parameters
     use constants
-    use variables, only : unit_no
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var

@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.28 2009-01-30 16:50:55 youd Exp $
+! $Id: variables.f90,v 1.29 2009-02-21 14:10:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -10,7 +10,7 @@ module variables
   public :: laplacian, get_density, get_phase, get_norm, &
             energy, mass, momentum, linelength, setup_itable, para_range, &
             array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-            unpack_y, get_unit_no, renormalise
+            unpack_y, renormalise
 
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
@@ -33,7 +33,6 @@ module variables
   end type re_im
 
   integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
-  integer, public :: unit_no
   
   ! Constants for numerical integration
   real, parameter, private :: c1 = 3.0/8.0, &
@@ -59,17 +58,6 @@ module variables
 
     return
   end function laplacian
-
-! ***************************************************************************  
-
-  subroutine get_unit_no()
-    ! Get the unit number which each process can write to
-    implicit none
-
-    unit_no = myrank+20
-
-    return
-  end subroutine get_unit_no
 
 ! ***************************************************************************  
 
@@ -532,6 +520,7 @@ module variables
   subroutine renormalise(var, prev_norm, norm)
     ! Renormalise when running in imaginary time
     use parameters
+    use ic, only : vortex_ring
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: var
@@ -540,7 +529,8 @@ module variables
     !call mass(var, M)
 
     !var = sqrt(8.0*xr*yr*zr) * var / sqrt(M)
-    var = var * sqrt(prev_norm / norm)
+    var = var * sqrt(prev_norm / norm) * &
+                vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
 
     return
   end subroutine renormalise

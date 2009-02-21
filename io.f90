@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.45 2009-01-30 16:50:55 youd Exp $
+! $Id: io.f90,v 1.46 2009-02-21 14:10:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -172,8 +172,8 @@ module io
     ! Calculate the mass, calculate the total energy and temperature, save
     ! spectra and save filtered isosurface
     use parameters
-    use ic, only : fft, x, y, z
-    use variables, only : mass, unit_no
+    use ic, only : fft, x, y, z, unit_no
+    use variables, only : mass
     implicit none
 
     real, intent(in) :: time
@@ -319,7 +319,7 @@ module io
     ! each process so a shell script must be used to plot it
     use parameters
     use variables
-    use ic, only : x, y, z
+    use ic, only : x, y, z, unit_no
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
@@ -359,8 +359,7 @@ module io
     ! data is saved separately for each process.  It must be read in through
     ! IDL
     use parameters
-    use variables, only : unit_no
-    use ic, only : x, y, z
+    use ic, only : unit_no, x, y, z
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
@@ -399,8 +398,8 @@ module io
   subroutine filtered_surface(a, flag, ind)
     ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
     use parameters
-    use ic, only : fft, x, y, z
-    use variables, only : unit_no, send_recv_z, send_recv_y, &
+    use ic, only : fft, x, y, z, unit_no
+    use variables, only : send_recv_z, send_recv_y, &
                           pack_y, unpack_y
     implicit none
 
@@ -500,8 +499,7 @@ module io
     ! Calculate and save the spectra measurements - mean occupation number,
     ! eta, and integral distribution function, F
     use parameters
-    use ic, only : x, y, z
-    use variables, only : unit_no
+    use ic, only : x, y, z, unit_no
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: a
@@ -690,8 +688,7 @@ module io
     ! Save variables for use in a restarted run.  Each process saves its own
     ! bit
     use parameters
-    use ic, only : fft
-    use variables, only : unit_no
+    use ic, only : fft, unit_no
     implicit none
 
     integer, intent(in) :: flag
@@ -758,8 +755,8 @@ module io
     ! All the zeros routines are horrible - I'm sure there is a more efficient
     ! way of calculating them
     use parameters
-    use variables, only : re_im, unit_no
-    use ic, only : x, y, z
+    use ic, only : x, y, z, unit_no
+    use variables, only : re_im
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
@@ -874,8 +871,8 @@ module io
   subroutine get_extra_zeros(in_var)
     ! Find the zeros that the get_zeros routine did not pick up
     use parameters
-    use variables, only : re_im, unit_no
-    use ic, only : x, y, z
+    use ic, only : x, y, z, unit_no
+    use variables, only : re_im
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
@@ -1103,8 +1100,8 @@ module io
   subroutine get_re_im_zeros(in_var)
     ! Find where the real and imaginary parts separately go to zero
     use parameters
-    use variables, only : re_im, unit_no
-    use ic, only : x, y, z
+    use ic, only : x, y, z, unit_no
+    use variables, only : re_im
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
@@ -1300,7 +1297,7 @@ module io
   subroutine diag(old2, old, new)
     use parameters
     use variables
-    use ic, only : x, y, z
+    use ic, only : x, y, z, unit_no
     implicit none
     
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old, &
@@ -1339,8 +1336,7 @@ module io
   subroutine average(in_var)
     ! Save time-averaged data
     use parameters
-    use ic, only : x, y, z
-    use variables, only : unit_no
+    use ic, only : x, y, z, unit_no
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
@@ -1372,8 +1368,7 @@ module io
   subroutine pp_save_filter()
     ! Save a series of filtered isosurfaces after a run has been completed
     use parameters
-    use ic, only : x, y, z, fft
-    use variables, only : unit_no
+    use ic, only : x, y, z, fft, unit_no
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: in_var, a

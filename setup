@@ -18,8 +18,7 @@ else
 fi
 
 #Compile
-make -f makefile.sunf95 clean
-make -f makefile.sunf95
+make
 
 #Setup dir
 if [ $? == 0 ]; then

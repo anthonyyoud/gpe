@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.63 2009-01-30 16:50:55 youd Exp $
+! $Id: parameters.f90,v 1.64 2009-02-21 14:10:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -15,15 +15,15 @@ module parameters
 
   integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nx           = 256
+  integer,      parameter :: ny           = 256
+  integer,      parameter :: nz           = 256
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 100.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
-  real,         parameter :: Urhs         = 0.35
+  real,         parameter :: end_time     = 500.0
+  real,         parameter :: xr           = 128.0
+  real,         parameter :: yr           = 128.0
+  real,         parameter :: zr           = 128.0
+  real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.5
@@ -35,9 +35,9 @@ module parameters
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: save_rate    = 50
-  real,         parameter :: save_rate2   = 1.0
-  real,         parameter :: save_rate3   = 1.0
-  real,         parameter :: p_save       = 1.0
+  real,         parameter :: save_rate2   = 10.0
+  real,         parameter :: save_rate3   = 10.0
+  real,         parameter :: p_save       = 10.0
   logical,      parameter :: save_contour = .true.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
@@ -47,7 +47,7 @@ module parameters
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
-  logical                 :: real_time    = .false.
+  logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
@@ -89,26 +89,26 @@ module parameters
   !type (line_param), parameter :: &
   !  vl9 = line_param( 128.0, 128.0, 0.0, 0.0, 33.0, 1.0, 'z')
 
-  !type (line_param), parameter :: &
-  !  vl1 = line_param(-4.0, 0.0, 4.0, 0.1, 33.0, 1.0, 'y')
-  !type (line_param), parameter :: &
-  !  vl2 = line_param(-4.0, 0.0,-4.0, 0.1, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl1 = line_param(-4.0, 0.0, 0.0, 0.1, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl2 = line_param( 4.0, 0.0, 0.0, 0.1, 33.0, 1.0, 'z')
   !type (line_param), parameter :: &
   !  vl3 = line_param( 4.0, 4.0, 0.0, 0.1, 33.0, 1.0, 'z')
   !type (line_param), parameter :: &
   !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
 
   ! 2 bundles of 5 vortex lines
-  type (line_param), parameter :: &
-    vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl4 = line_param(-12.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl5 = line_param(-12.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param(-12.0, 0.0, 8.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-12.0, 0.0,-8.0, 0.0, 33.0, 1.0, 'y')
   !type (line_param), parameter :: &
   !  vl6 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
   !type (line_param), parameter :: &
@@ -135,20 +135,20 @@ module parameters
   !  vl6 = line_param( -8.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
   !type (line_param), parameter :: &
   !  vl7 = line_param(-16.0, 0.0,-6.92820323, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl10 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl11 = line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl12 = line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl13 = line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl14 = line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(  4.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl10 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl11 = line_param(  8.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl12 = line_param( 16.0, 6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl13 = line_param(  8.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl14 = line_param( 16.0,-6.92820323, 0.0, 0.0, 33.0, 1.0, 'z')
 
   ! 2 bundles of 9 vortex lines
   !type (line_param), parameter :: &

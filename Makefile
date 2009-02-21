@@ -20,7 +20,7 @@ $(OBJECT): $(OBJS)
 
 derivs.o: parameters.o
 gpe.o: derivs.o ic.o io.o parameters.o solve.o variables.o
-ic.o: constants.o parameters.o variables.o
+ic.o: constants.o parameters.o
 io.o: ic.o parameters.o variables.o
 solve.o: derivs.o ic.o parameters.o variables.o
-variables.o: derivs.o parameters.o
+variables.o: derivs.o ic.o parameters.o
