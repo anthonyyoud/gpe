@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.64 2009-02-21 14:10:19 youd Exp $
+! $Id: parameters.f90,v 1.65 2009-02-28 14:36:11 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -19,7 +19,7 @@ module parameters
   integer,      parameter :: ny           = 256
   integer,      parameter :: nz           = 256
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 500.0
+  real,         parameter :: end_time     = 1000.0
   real,         parameter :: xr           = 128.0
   real,         parameter :: yr           = 128.0
   real,         parameter :: zr           = 128.0
@@ -45,7 +45,7 @@ module parameters
   logical,      parameter :: save_spectrum= .false.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .false.
+  logical,      parameter :: restart      = .true.
   logical,      parameter :: saved_restart= .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
