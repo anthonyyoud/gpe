@@ -2,8 +2,8 @@ OBJECT	= gpe
 OBJS	= constants.o derivs.o gpe.o ic.o io.o parameters.o \
 	  solve.o variables.o
 FC	= sunf95
-FFLAGS	= -fast -xtarget=pentium4 -fsimple=0 -xarch=generic
-#FFLAGS	= -fast -fsimple=0
+#FFLAGS	= -fast -xtarget=pentium4 -fsimple=0 -xarch=generic
+FFLAGS	= -fast -fsimple=0
 LDFLAGS	= -lmpi_f90 -lmpi_f77 -lmpi -lopen-rte -lopen-pal \
 	  -ldl -lnsl -lutil -lm -lsrfftw_mpi -lsfftw_mpi -lsrfftw -lsfftw
 INCLUDE	= -I/usr/lib/openmpi/include

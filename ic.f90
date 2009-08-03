@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.53 2009-07-06 07:51:00 youd Exp $
+! $Id: ic.f90,v 1.54 2009-08-03 13:57:01 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -826,7 +826,8 @@ module ic
     logical, intent(in) :: particles
     complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
     complex, allocatable, dimension(:)    :: local_data, work
-    integer :: i, j, k, plan, iplan
+    integer :: i, j, k
+    integer*8 :: plan, iplan
     integer :: loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
 
     ! Set up a temporary array so that the data can be eventually redistributed
