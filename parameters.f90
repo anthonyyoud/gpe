@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.66 2009-07-06 07:51:00 youd Exp $
+! $Id: parameters.f90,v 1.67 2009-09-28 19:47:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -19,7 +19,7 @@ module parameters
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 0.0
+  real,         parameter :: end_time     = 1000.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
@@ -34,6 +34,7 @@ module parameters
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
+  integer,      parameter :: nbins        = 128
   integer,      parameter :: save_rate    = 50
   real,         parameter :: save_rate2   = 10.0
   real,         parameter :: save_rate3   = 10.0
@@ -98,27 +99,47 @@ module parameters
   !type (line_param), parameter :: &
   !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
 
+  ! Non-intersecting grid
+  type (line_param), parameter :: &
+    vl1 = line_param(  0.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
+  type (line_param), parameter :: &
+    vl3 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
+  type (line_param), parameter :: &
+    vl4 = line_param(-24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl5 = line_param( 24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  type (line_param), parameter :: &
+    vl6 = line_param( -6.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl7 = line_param(  6.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  type (line_param), parameter :: &
+    vl8 = line_param(-18.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  type (line_param), parameter :: &
+    vl9 = line_param( 18.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+
   ! 2 bundles of 5 vortex lines
-  type (line_param), parameter :: &
-    vl1 = line_param( -8.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl2 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl3 = line_param(-28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl4 = line_param(-20.0, 0.0, 16.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl5 = line_param(-20.0, 0.0,-16.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl6 = line_param(  8.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl7 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl8 = line_param( 28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl9 = line_param( 20.0, 16.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl10 = line_param(20.0,-16.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl1 = line_param( -8.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param(-28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param(-20.0, 0.0, 16.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param(-20.0, 0.0,-16.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param(  8.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param( 20.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param( 28.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 20.0, 16.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl10 = line_param(20.0,-16.0, 0.0, 0.0, 33.0, 1.0, 'z')
 
   ! 2 bundles of 7 vortex lines
   !type (line_param), parameter :: &

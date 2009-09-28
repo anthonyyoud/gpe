@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.54 2009-08-03 13:57:01 youd Exp $
+! $Id: ic.f90,v 1.55 2009-09-28 19:47:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -109,8 +109,8 @@ module ic
                 vortex_line(vl6) * &
                 vortex_line(vl7) * &
                 vortex_line(vl8) * &
-                vortex_line(vl9) * &
-                vortex_line(vl10) !* &
+                vortex_line(vl9) !* &
+      !          vortex_line(vl10) !* &
       !          vortex_line(vl11) * &
       !          vortex_line(vl12) * &
       !          vortex_line(vl13) * &

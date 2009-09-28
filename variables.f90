@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.29 2009-02-21 14:10:19 youd Exp $
+! $Id: variables.f90,v 1.30 2009-09-28 19:47:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -7,10 +7,10 @@ module variables
   implicit none
 
   private
-  public :: laplacian, get_density, get_phase, get_norm, &
-            energy, mass, momentum, linelength, setup_itable, para_range, &
-            array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-            unpack_y, renormalise
+  public :: laplacian, get_density, get_phase, get_velocity, get_norm, &
+            get_pdf, energy, mass, momentum, linelength, setup_itable, &
+            para_range, array_len, neighbours, send_recv_y, send_recv_z, &
+            pack_y, unpack_y, renormalise
 
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
@@ -31,6 +31,12 @@ module variables
     real, allocatable, dimension(:,:,:) :: re
     real, allocatable, dimension(:,:,:) :: im
   end type re_im
+
+  !type, private :: vel
+  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: x
+  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: y
+  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: z
+  !end type vel
 
   integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
   
@@ -338,6 +344,108 @@ module variables
 
     return
   end subroutine get_phase
+
+! ***************************************************************************  
+
+  subroutine get_velocity(in_var, vx, vy, vz)
+    ! Calculate the velocity
+    use parameters
+    use derivs
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vx
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vy
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vz
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vx
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vy
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vz
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase
+
+    call get_phase(in_var, phase)
+    call deriv_x(cmplx(phase), tmp_vx)
+    call deriv_y(cmplx(phase), tmp_vy)
+    call deriv_z(cmplx(phase), tmp_vz)
+
+    vx = real(tmp_vx)
+    vy = real(tmp_vy)
+    vz = real(tmp_vz)
+
+    call mask(vx)
+    call mask(vy)
+    call mask(vz)
+
+    contains
+
+    subroutine mask(vel)
+      use parameters
+      implicit none
+
+      real, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: vel
+
+      where (2.0*pi-abs(vel) <= 0.5)
+        where (vel < 0)
+          vel = vel + 2.0*pi
+        else where (vel >= 0)
+          vel = vel - 2.0*pi
+        end where
+      end where
+
+      return
+    end subroutine mask
+
+  end subroutine get_velocity
+
+! ***************************************************************************  
+  
+  subroutine get_pdf(in_var, pdf)
+    ! Calculate a PDF
+    use parameters
+    implicit none
+
+    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(-nbins/2+1:nbins/2), intent(out) :: pdf
+    integer, dimension(-nbins/2+1:nbins/2) :: hist, total_hist
+    real, dimension(2) :: maxs, maxr, mins, minr
+    integer :: i, tmp_total, total
+    real :: amax
+
+    hist = 0
+
+    ! Find max/min on each process
+    maxs(1) = maxval(in_var)
+    maxs(2) = 0.0
+    mins(1) = minval(in_var)
+    mins(2) = 0.0
+
+    ! Find max/min over whole array
+    call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
+                       MPI_COMM_WORLD, ierr)
+                       
+    call MPI_ALLREDUCE(mins, minr, 1, MPI_2REAL, MPI_MINLOC, &
+                       MPI_COMM_WORLD, ierr)
+
+    ! Maximum permissible value is maximum of the absolute values
+    amax = max(abs(maxr(1)), abs(minr(1)))
+
+    ! Find the total number of values satisfying the conditions on each process
+    do i=-nbins/2+1,nbins/2
+      hist(i) = count(in_var > 2.0*real(i-1)*amax/real(nbins) .and. &
+                      in_var <= 2.0*real(i)*amax/real(nbins))
+    end do
+
+    ! Sum up the counts across all processes
+    call MPI_ALLREDUCE(hist, total_hist, nbins, MPI_INTEGER, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+
+    ! Overall total count
+    total = sum(total_hist)
+
+    ! Actual PDF
+    pdf = total_hist/real(total)
+
+    return
+  end subroutine get_pdf
 
 ! ***************************************************************************  
 

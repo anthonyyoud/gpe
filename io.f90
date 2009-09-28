@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.46 2009-02-21 14:10:19 youd Exp $
+! $Id: io.f90,v 1.47 2009-09-28 19:47:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -8,9 +8,10 @@ module io
 
   private
   public :: open_files, close_files, save_time, save_energy, &
-            save_surface, idl_surface, end_state, get_zeros, get_re_im_zeros, &
-            get_extra_zeros, save_linelength, save_momentum, save_norm, &
-            get_dirs, diag, condensed_particles, average, pp_save_filter
+            save_velocity_pdf, save_surface, idl_surface, end_state, &
+            get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
+            save_momentum, save_norm, get_dirs, diag, condensed_particles, &
+            average, pp_save_filter
   
   contains
 
@@ -166,6 +167,52 @@ module io
     return
   end subroutine save_energy
   
+! ***************************************************************************  
+
+  subroutine save_velocity_pdf(in_var)
+    ! Save the velocity PDF
+    use parameters
+    use ic, only : x, y, z
+    use variables, only : get_velocity, get_pdf
+    implicit none
+
+    complex, dimension(0:nx1,jsta:jsta,ksta:kend), intent(in) :: in_var
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: vx, vy, vz
+    real, dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz
+    integer :: i
+
+    call get_velocity(in_var, vx, vy, vz)
+    call get_pdf(vx, pdf_vx)
+    call get_pdf(vy, pdf_vy)
+    call get_pdf(vz, pdf_vz)
+
+    if (myrank == 0) then
+      open (21, status='unknown', file='pdf_vel'//itos(p)//'.dat')
+      do i=-nbins/2+1,nbins/2
+        write (21, '(i10,3e17.9)') i, pdf_vx(i), pdf_vy(i), pdf_vz(i)
+      end do
+      close (21)
+    end if
+    
+    !open (unit_no, status='unknown', file=proc_dir//'vel'//itos(p)//'.dat', &
+    !      form='unformatted')
+    !
+    !write (unit_no) t
+    !write (unit_no) nx, ny, nz
+    !write (unit_no) nyprocs, nzprocs
+    !write (unit_no) jsta, jend, ksta, kend
+    !write (unit_no) vx
+    !write (unit_no) vy
+    !write (unit_no) vz
+    !write (unit_no) x
+    !write (unit_no) y
+    !write (unit_no) z
+
+    !close (unit_no)
+
+    return
+  end subroutine save_velocity_pdf
+
 ! ***************************************************************************  
 
   subroutine condensed_particles(time, in_var)

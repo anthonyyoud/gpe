@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.47 2009-01-30 16:50:55 youd Exp $
+! $Id: gpe.f90,v 1.48 2009-09-28 19:47:36 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -209,6 +209,7 @@ program gpe
     
     if (t+im_t >= save_rate3*m) then
       call condensed_particles(t, psi%new)
+      call save_velocity_pdf(psi%new)
       m = m+1
     end if
     
