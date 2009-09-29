@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.48 2009-09-28 19:47:36 youd Exp $
+! $Id: gpe.f90,v 1.49 2009-09-29 18:34:54 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -209,7 +209,9 @@ program gpe
     
     if (t+im_t >= save_rate3*m) then
       call condensed_particles(t, psi%new)
-      call save_velocity_pdf(psi%new)
+      if (save_pdf) then
+        call save_velocity_pdf(psi%new)
+      end if
       m = m+1
     end if
     
@@ -259,7 +261,7 @@ program gpe
     if (.not. real_time) then
       call get_norm(psi%new, norm)
       call save_norm(t, prev_norm, norm)
-      call renormalise(psi%new, prev_norm, norm)
+      !call renormalise(psi%new, prev_norm, norm)
     end if
 
     ! Make sure all process know what the norm is

@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.55 2009-09-28 19:47:36 youd Exp $
+! $Id: ic.f90,v 1.56 2009-09-29 18:34:54 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -88,7 +88,7 @@ module ic
       !out_var = 1.0 !sphere2()
       !out_var = cmplx(fermi(),0.0)
       !out_var = vortex_pair()
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
+      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
       !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
       !          vortex_ring2(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
       !          vortex_ring2(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir)
@@ -101,15 +101,15 @@ module ic
       !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
       !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl2) * &
-                vortex_line(vl3) * &
-                vortex_line(vl4) * &
-                vortex_line(vl5) * &
-                vortex_line(vl6) * &
-                vortex_line(vl7) * &
-                vortex_line(vl8) * &
-                vortex_line(vl9) !* &
+      !out_var = vortex_line(vl1) * &
+      !          vortex_line(vl2) * &
+      !          vortex_line(vl3) * &
+      !          vortex_line(vl4) * &
+      !          vortex_line(vl5) * &
+      !          vortex_line(vl6) * &
+      !          vortex_line(vl7) * &
+      !          vortex_line(vl8) * &
+      !          vortex_line(vl9) !* &
       !          vortex_line(vl10) !* &
       !          vortex_line(vl11) * &
       !          vortex_line(vl12) * &
