@@ -1,6 +1,6 @@
 #!/bin/bash
-# Compile and setup ready to run in a separate directory
-# usage:  source setup <directory name> [compile params]
+# Compile and set up the code ready to run in a separate directory
+# usage:  ./setup <directory name>
 
 mkdir $1 2> /dev/null
 
@@ -17,7 +17,7 @@ else
   return 1
 fi
 
-#Compile
+#Compile.  Set j=nprocs+1 for efficient parallel make.
 make -j 3
 
 #Setup dir
