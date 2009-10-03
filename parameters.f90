@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.68 2009-09-29 18:34:54 youd Exp $
+! $Id: parameters.f90,v 1.69 2009-10-03 13:23:32 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -31,7 +31,7 @@ module parameters
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve = 1
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: nbins        = 128
@@ -47,7 +47,7 @@ module parameters
   logical,      parameter :: save_pdf     = .false.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
-  logical,      parameter :: restart      = .true.
+  logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
   logical                 :: real_time    = .true.
   logical                 :: diagnostic   = .false.
@@ -293,20 +293,25 @@ module parameters
   ! Vortex ring parameters **************************************************
   !
   type :: ring_param
-    real :: x0          ! x position
-    real :: y0          ! y position
-    real :: z0          ! z position
-    real :: r0          ! radius
-    real :: dir         ! Propagation direction (+/-1)
+    real    :: x0          ! x position
+    real    :: y0          ! y position
+    real    :: z0          ! z position
+    real    :: r0          ! radius
+    real    :: amp         ! Amplitude of a disturbance along the ring
+    integer :: mm          ! Wavenumber of the above disturbance
+    real    :: dir         ! Propagation in x-direction (+/-1)
   end type ring_param
 
-  type (ring_param), parameter :: vr1 = ring_param(0.0, 0.0, 0.0, 32.0, -1.0)
-  type (ring_param), parameter :: vr2 = ring_param(-60.0, 0.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr3 = ring_param(60.0, 0.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr4 = ring_param(0.0, -60.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr5 = ring_param(0.0, 60.0, 0.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr6 = ring_param(0.0, 0.0, -60.0, 16.0, -1.0)
-  type (ring_param), parameter :: vr7 = ring_param(0.0, 0.0, 60.0, 16.0, -1.0)
+  type (ring_param), parameter :: &
+    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 5.0, 4, -1.0)
+  type (ring_param), parameter :: &
+    vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
+  type (ring_param), parameter :: &
+    vr3 = ring_param(  0.0, 0.0, 0.0, 32.0, 5.0, 4, -1.0)
+  type (ring_param), parameter :: &
+    vr4 = ring_param( 16.0, 0.0, 0.0, 32.0, 5.0, 5, -1.0)
+  type (ring_param), parameter :: &
+    vr5 = ring_param( 32.0, 0.0, 0.0, 32.0, 5.0, 6, -1.0)
   !
   ! *************************************************************************
 

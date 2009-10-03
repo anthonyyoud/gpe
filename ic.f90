@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.56 2009-09-29 18:34:54 youd Exp $
+! $Id: ic.f90,v 1.57 2009-10-03 13:23:32 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -85,22 +85,11 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      !out_var = 1.0 !sphere2()
-      !out_var = cmplx(fermi(),0.0)
-      !out_var = vortex_pair()
-      out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
-      !          vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-      !          vortex_ring2(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
-      !          vortex_ring2(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_ring(vr1%x0, vr1%z0, vr1%r0) * &
-      !          vortex_ring(vr2%x0, vr2%z0, vr2%r0)
-      !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0) * &
-      !          pade_pulse_ring('pulse', vr2%x0, vr2%y0, vr2%z0, vr2%r0)
-      !out_var = vortex_line(vl1) * &
-      !          pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      !out_var = pade_pulse_ring('ring', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
-      !out_var = pade_pulse_ring('pulse', vr1%x0, vr1%y0, vr1%z0, vr1%r0)
+      out_var = vortex_ring(vr1) !* &
+      !          vortex_ring(vr2) * &
+      !          vortex_ring(vr3) * &
+      !          vortex_ring(vr4) * &
+      !          vortex_ring(vr5)
       !out_var = vortex_line(vl1) * &
       !          vortex_line(vl2) * &
       !          vortex_line(vl3) * &
@@ -139,20 +128,10 @@ module ic
       !          vortex_line(vl36) * &
       !          vortex_line(vl37) * &
       !          vortex_line(vl38)
-      !out_var = sphere() !* &
-                !vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = wall() !* &
-      !          vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+      !out_var = sphere() !* vortex_ring(vr1)
+      !out_var = wall() !* vortex_ring(vr1)
       !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir) !* &
-                !vortex_ring(vr2%x0, vr2%y0, vr2%z0, vr2%r0, vr2%dir) * &
-                !vortex_ring(vr3%x0, vr3%y0, vr3%z0, vr3%r0, vr3%dir) * &
-                !vortex_ring(vr4%x0, vr4%y0, vr4%z0, vr4%r0, vr4%dir) * &
-                !vortex_ring(vr5%x0, vr5%y0, vr5%z0, vr5%r0, vr5%dir) * &
-                !vortex_ring(vr6%x0, vr6%y0, vr6%z0, vr6%r0, vr6%dir) * &
-                !vortex_ring(vr7%x0, vr7%y0, vr7%z0, vr7%r0, vr7%dir) !* &
-      !          vortex_line(vl1)
+      !out_var = tmp_var !* vortex_ring(vr1)
     end if
   
     return
@@ -399,24 +378,35 @@ module ic
   
 ! ***************************************************************************  
 
-  function vortex_ring(x0, y0, z0, r0, dir)
+  function vortex_ring(vr)
     ! Vortex ring initial condition
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
-    real,    intent(in)                           :: x0, y0, z0, r0, dir
-    real,    dimension(jsta:jend,ksta:kend)       :: s
-    real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
-    integer                                       :: i, j, k
+    type (ring_param), intent(in) :: vr
+    real, dimension(jsta:jend,ksta:kend) :: s, theta, dist
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
+    integer :: i, j, k
 
-    call get_s(s, y0, z0)
+    call get_s(s, vr%y0, vr%z0)
     
     do k=ksta,kend
       do j=jsta,jend
+        theta(j,k) = atan2(z(k)-vr%z0, y(j)-vr%y0)
+      end do
+    end do
+
+    ! Mode-mm disturbance of amplitude amp to the ring
+    dist = vr%amp*cos(real(vr%mm)*theta)
+
+    do k=ksta,kend
+      do j=jsta,jend
         do i=0,nx1
-          d1(i,j,k) = sqrt( (scal*(x(i)-x0))**2 + (scal*(s(j,k)+r0))**2 )
-          d2(i,j,k) = sqrt( (scal*(x(i)-x0))**2 + (scal*(s(j,k)-r0))**2 )
+          d1(i,j,k) = sqrt( (scal*(x(i)-vr%x0))**2 + &
+            (scal*(s(j,k)+vr%r0-dist(j,k)))**2 )
+          d2(i,j,k) = sqrt( (scal*(x(i)-vr%x0))**2 + &
+            (scal*(s(j,k)-vr%r0-dist(j,k)))**2 )
         end do
       end do
     end do
@@ -424,16 +414,13 @@ module ic
     call get_rr(d1,rr1)
     call get_rr(d2,rr2)
     
-    !rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
-    !                    (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
-    !rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
-    !                    (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
-
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(x(i)-x0))+dir*eye*(scal*(s(j,k)+r0))) * &
-                               rr2(i,j,k)*((scal*(x(i)-x0))-dir*eye*(scal*(s(j,k)-r0)))
+          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(x(i)-vr%x0)) + &
+            vr%dir*eye*(scal*(s(j,k)+vr%r0-dist(j,k)))) * &
+                               rr2(i,j,k)*((scal*(x(i)-vr%x0)) - &
+            vr%dir*eye*(scal*(s(j,k)-vr%r0-dist(j,k))))
         end do
       end do
     end do

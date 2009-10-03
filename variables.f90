@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.30 2009-09-28 19:47:36 youd Exp $
+! $Id: variables.f90,v 1.31 2009-10-03 13:23:33 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -638,7 +638,7 @@ module variables
 
     !var = sqrt(8.0*xr*yr*zr) * var / sqrt(M)
     var = var * sqrt(prev_norm / norm) * &
-                vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
+                vortex_ring(vr1)
 
     return
   end subroutine renormalise
