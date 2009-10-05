@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.69 2009-10-03 13:23:32 youd Exp $
+! $Id: parameters.f90,v 1.70 2009-10-05 10:12:52 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -303,7 +303,7 @@ module parameters
   end type ring_param
 
   type (ring_param), parameter :: &
-    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 5.0, 4, -1.0)
+    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 5.0, 15, -1.0)
   type (ring_param), parameter :: &
     vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
   type (ring_param), parameter :: &
