@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: run.sh,v 1.3 2009-10-09 16:11:51 youd Exp $
+# $Id: run.sh,v 1.4 2009-10-11 20:17:48 youd Exp $
 #----------------------------------------------------------------------------
 
 # Simple script to run a job.
@@ -96,6 +96,7 @@ if [ ! -z $PREDIR ]; then
   echo Going to do a restart from $PREDIR.
   for i in `seq -f "%0${DIGITS}g" 0 $(($NPROCS-1))`
   do
+    PROCDIR=proc$i
     cp $PREDIR/$PROCDIR/end_state.dat end_state$i.dat
   done
 fi
