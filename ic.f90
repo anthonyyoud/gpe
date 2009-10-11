@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.58 2009-10-11 11:16:45 youd Exp $
+! $Id: ic.f90,v 1.59 2009-10-11 15:46:17 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -90,15 +90,15 @@ module ic
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
       !          vortex_ring(vr5)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl2) * &
-                vortex_line(vl3) * &
-                vortex_line(vl4) * &
-                vortex_line(vl5) * &
-                vortex_line(vl6) * &
-                vortex_line(vl7) * &
-                vortex_line(vl8) * &
-                vortex_line(vl9) !* &
+      !out_var = vortex_line(vl1) * &
+      !          vortex_line(vl2) * &
+      !          vortex_line(vl3) * &
+      !          vortex_line(vl4) * &
+      !          vortex_line(vl5) * &
+      !          vortex_line(vl6) * &
+      !          vortex_line(vl7) * &
+      !          vortex_line(vl8) * &
+      !          vortex_line(vl9) !* &
       !          vortex_line(vl10) !* &
       !          vortex_line(vl11) * &
       !          vortex_line(vl12) * &
@@ -130,8 +130,8 @@ module ic
       !          vortex_line(vl38)
       !out_var = sphere() !* vortex_ring(vr1)
       !out_var = wall() !* vortex_ring(vr1)
-      !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1)
+      call random_phase(tmp_var)
+      out_var = tmp_var !* vortex_ring(vr1)
     end if
   
     return

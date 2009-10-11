@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.48 2009-10-11 11:16:45 youd Exp $
+! $Id: io.f90,v 1.49 2009-10-11 15:46:17 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -178,7 +178,8 @@ module io
 
     complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
     real, allocatable, dimension(:) :: vx, vy, vz
-    real, dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz
+    real, dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz, &
+      gpdf_vx, gpdf_vy, gpdf_vz, vx_bins, vy_bins, vz_bins
     real, dimension(3) :: vel_bins, vmax, vmean, vstdev
     integer :: i
 
@@ -191,36 +192,45 @@ module io
     deallocate(vy)
     deallocate(vz)
 
+    do i=-nbins/2+1,nbins/2
+      vx_bins(i) = 2.0*real(i)*vmax(1)/real(nbins)
+      vy_bins(i) = 2.0*real(i)*vmax(2)/real(nbins)
+      vz_bins(i) = 2.0*real(i)*vmax(3)/real(nbins)
+    end do
+
+    gpdf_vx = gaussian_pdf(vx_bins, vmean(1), vstdev(1))
+    gpdf_vy = gaussian_pdf(vy_bins, vmean(2), vstdev(2))
+    gpdf_vz = gaussian_pdf(vz_bins, vmean(3), vstdev(3))
+
     if (myrank == 0) then
       open (21, status='unknown', file='pdf_vel'//itos(p)//'.dat')
-      write (21, '(a1,3e17.9)') '#', vmean(1), vmean(2), vmean(3)
-      write (21, '(a1,3e17.9)') '#', vstdev(1), vstdev(2), vstdev(3)
-      write (21, '(a1,3e17.9)') '#', sum(pdf_vx), sum(pdf_vy), sum(pdf_vz)
+      write (21, '(a1,3e17.9)') '# Mean:', vmean(1), vmean(2), vmean(3)
+      write (21, '(a1,3e17.9)') '# StDev:', vstdev(1), vstdev(2), vstdev(3)
+      write (21, '(a1,3e17.9)') '# Sum:', sum(pdf_vx), sum(pdf_vy), sum(pdf_vz)
       do i=-nbins/2+1,nbins/2
-        vel_bins = 2.0*real(i)*vmax/real(nbins)
-        write (21, '(6e17.9)') vel_bins(1), pdf_vx(i), &
-          vel_bins(2), pdf_vy(i), vel_bins(3), pdf_vz(i)
+        write (21, '(9e17.9)') vx_bins(i), pdf_vx(i), gpdf_vx(i), &
+          vy_bins(i), pdf_vy(i), gpdf_vy(i), &
+          vz_bins(i), pdf_vz(i), gpdf_vz(i)
       end do
       close (21)
     end if
     
-    !open (unit_no, status='unknown', file=proc_dir//'vel'//itos(p)//'.dat', &
-    !      form='unformatted')
-    !
-    !write (unit_no) t
-    !write (unit_no) nx, ny, nz
-    !write (unit_no) nyprocs, nzprocs
-    !write (unit_no) jsta, jend, ksta, kend
-    !write (unit_no) vx
-    !write (unit_no) vy
-    !write (unit_no) vz
-    !write (unit_no) x
-    !write (unit_no) y
-    !write (unit_no) z
+    contains
 
-    !close (unit_no)
+    function gaussian_pdf(pdf, mean, stdev)
+      use parameters
+      implicit none
 
-    return
+      real, dimension(-nbins/2+1:nbins/2), intent(in) :: pdf
+      real, intent(in) :: mean, stdev
+      real, dimension(-nbins/2+1:nbins/2) :: gaussian_pdf
+
+      gaussian_pdf = 1.0/(stdev*sqrt(2.0*pi)) * &
+        exp( (-0.5 * (pdf-mean)**2) / stdev**2 )
+
+      return
+    end function gaussian_pdf
+
   end subroutine save_velocity_pdf
 
 ! ***************************************************************************  
