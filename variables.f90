@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.32 2009-10-11 11:16:45 youd Exp $
+! $Id: variables.f90,v 1.33 2009-10-11 18:42:02 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -810,6 +810,8 @@ module variables
 ! ***************************************************************************  
 
   function mean(in_var)
+    ! Calculate the mean of a vector of values.  Use pack in the function call
+    ! if the data are not in a 1D vector.
     use parameters
     implicit none
 
@@ -833,6 +835,9 @@ module variables
 ! ***************************************************************************  
 
   function stdev(in_var, mean)
+    ! Calculate the standard deviation of a vector of values.  Use pack in the
+    ! function call if the data are not in a 1D vector.  Mean must already have
+    ! been calculated.
     use parameters
     implicit none
 
