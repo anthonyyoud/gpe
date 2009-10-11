@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.70 2009-10-05 10:12:52 youd Exp $
+! $Id: parameters.f90,v 1.71 2009-10-11 11:16:45 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -34,7 +34,7 @@ module parameters
   integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
-  integer,      parameter :: nbins        = 128
+  integer,      parameter :: nbins        = 256
   integer,      parameter :: save_rate    = 50
   real,         parameter :: save_rate2   = 10.0
   real,         parameter :: save_rate3   = 10.0
@@ -44,7 +44,7 @@ module parameters
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .false.
-  logical,      parameter :: save_pdf     = .false.
+  logical,      parameter :: save_pdf     = .true.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.

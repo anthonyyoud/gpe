@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.47 2009-09-28 19:47:36 youd Exp $
+! $Id: io.f90,v 1.48 2009-10-11 11:16:45 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -176,20 +176,30 @@ module io
     use variables, only : get_velocity, get_pdf
     implicit none
 
-    complex, dimension(0:nx1,jsta:jsta,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: vx, vy, vz
+    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
+    real, allocatable, dimension(:) :: vx, vy, vz
     real, dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz
+    real, dimension(3) :: vel_bins, vmax, vmean, vstdev
     integer :: i
 
-    call get_velocity(in_var, vx, vy, vz)
-    call get_pdf(vx, pdf_vx)
-    call get_pdf(vy, pdf_vy)
-    call get_pdf(vz, pdf_vz)
+    call get_velocity(in_var, vx, vy, vz, vmean, vstdev)
+    call get_pdf(vx, pdf_vx, vmax(1))
+    call get_pdf(vy, pdf_vy, vmax(2))
+    call get_pdf(vz, pdf_vz, vmax(3))
+
+    deallocate(vx)
+    deallocate(vy)
+    deallocate(vz)
 
     if (myrank == 0) then
       open (21, status='unknown', file='pdf_vel'//itos(p)//'.dat')
+      write (21, '(a1,3e17.9)') '#', vmean(1), vmean(2), vmean(3)
+      write (21, '(a1,3e17.9)') '#', vstdev(1), vstdev(2), vstdev(3)
+      write (21, '(a1,3e17.9)') '#', sum(pdf_vx), sum(pdf_vy), sum(pdf_vz)
       do i=-nbins/2+1,nbins/2
-        write (21, '(i10,3e17.9)') i, pdf_vx(i), pdf_vy(i), pdf_vz(i)
+        vel_bins = 2.0*real(i)*vmax/real(nbins)
+        write (21, '(6e17.9)') vel_bins(1), pdf_vx(i), &
+          vel_bins(2), pdf_vy(i), vel_bins(3), pdf_vz(i)
       end do
       close (21)
     end if

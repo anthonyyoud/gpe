@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.31 2009-10-03 13:23:33 youd Exp $
+! $Id: variables.f90,v 1.32 2009-10-11 11:16:45 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -64,6 +64,29 @@ module variables
 
     return
   end function laplacian
+
+! ***************************************************************************  
+
+  function grad(in_var)
+    ! Gradient in cartesian coordinates
+    use parameters
+    use derivs
+    implicit none
+
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: derx, dery, derz
+    complex, dimension(3,0:nx1,jsta:jend,ksta:kend) :: grad
+
+    call deriv_x(in_var,derx)
+    call deriv_y(in_var,dery)
+    call deriv_z(in_var,derz)
+    
+    grad(1,:,:,:) = derx
+    grad(2,:,:,:) = dery
+    grad(3,:,:,:) = derz
+
+    return
+  end function grad
 
 ! ***************************************************************************  
 
@@ -347,33 +370,60 @@ module variables
 
 ! ***************************************************************************  
 
-  subroutine get_velocity(in_var, vx, vy, vz)
+  subroutine get_velocity(in_var, vx, vy, vz, vmean, vstdev)
     ! Calculate the velocity
     use parameters
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vx
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vy
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: vz
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vx
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vy
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vz
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    real, allocatable, dimension(:) :: vx, vy, vz
+    real, dimension(3), intent(out) :: vmean, vstdev
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vx, tmp_vy, tmp_vz
+    real, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: phase
+    real, dimension(3,0:nx1,jsta:jend,ksta:kend) :: vel, gradient, gradstar
+    integer, dimension(3) :: valid_vel
+    integer :: i
 
-    call get_phase(in_var, phase)
-    call deriv_x(cmplx(phase), tmp_vx)
-    call deriv_y(cmplx(phase), tmp_vy)
-    call deriv_z(cmplx(phase), tmp_vz)
+    !call get_phase(in_var, phase)
+    !phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
+    !call deriv_x(cmplx(phase), tmp_vx)
+    !call deriv_y(cmplx(phase), tmp_vy)
+    !call deriv_z(cmplx(phase), tmp_vz)
 
-    vx = real(tmp_vx)
-    vy = real(tmp_vy)
-    vz = real(tmp_vz)
+    !vx = real(tmp_vx)
+    !vy = real(tmp_vy)
+    !vz = real(tmp_vz)
 
-    call mask(vx)
-    call mask(vy)
-    call mask(vz)
+    gradient = grad(in_var)
+    gradstar = grad(conjg(in_var))
+
+    do i=1,3
+      where (abs(in_var(:,jsta:jend,ksta:kend))**2 > 0.01)
+        vel(i,:,:,:) = -0.5*eye * ( &
+        conjg(in_var(:,jsta:jend,ksta:kend))*gradient(i,:,:,:) - &
+        in_var(:,jsta:jend,ksta:kend)*gradstar(i,:,:,:) ) / &
+        abs(in_var(:,jsta:jend,ksta:kend))**2
+      elsewhere
+        vel(i,:,:,:) = 1e3
+      end where
+      valid_vel(i) = count(vel(i,:,:,:) < 0.5e3)
+      !vel(i,:,:,:) = 2.0 !1e5*vel(i,:,:,:)
+      vmean(i) = mean(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3))
+      vstdev(i) = stdev(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3), vmean(i))
+    end do
+
+    allocate(vx(valid_vel(1)))
+    allocate(vy(valid_vel(2)))
+    allocate(vz(valid_vel(3)))
+
+    vx = pack(vel(1,:,:,:), vel(1,:,:,:) < 0.5e3)
+    vy = pack(vel(2,:,:,:), vel(2,:,:,:) < 0.5e3)
+    vz = pack(vel(3,:,:,:), vel(3,:,:,:) < 0.5e3)
+
+    !call mask(vx)
+    !call mask(vy)
+    !call mask(vz)
 
     contains
 
@@ -383,7 +433,7 @@ module variables
 
       real, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: vel
 
-      where (2.0*pi-abs(vel) <= 0.5)
+      where (2.0*pi-abs(vel) <= 0.1)
         where (vel < 0)
           vel = vel + 2.0*pi
         else where (vel >= 0)
@@ -398,17 +448,17 @@ module variables
 
 ! ***************************************************************************  
   
-  subroutine get_pdf(in_var, pdf)
+  subroutine get_pdf(in_var, pdf, max_vel)
     ! Calculate a PDF
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    real, dimension(:), intent(in) :: in_var
     real, dimension(-nbins/2+1:nbins/2), intent(out) :: pdf
+    real, intent(out) :: max_vel
     integer, dimension(-nbins/2+1:nbins/2) :: hist, total_hist
     real, dimension(2) :: maxs, maxr, mins, minr
     integer :: i, tmp_total, total
-    real :: amax
 
     hist = 0
 
@@ -426,12 +476,12 @@ module variables
                        MPI_COMM_WORLD, ierr)
 
     ! Maximum permissible value is maximum of the absolute values
-    amax = max(abs(maxr(1)), abs(minr(1)))
+    max_vel = max(abs(maxr(1)), abs(minr(1)))
 
     ! Find the total number of values satisfying the conditions on each process
     do i=-nbins/2+1,nbins/2
-      hist(i) = count(in_var > 2.0*real(i-1)*amax/real(nbins) .and. &
-                      in_var <= 2.0*real(i)*amax/real(nbins))
+      hist(i) = count(in_var > 2.0*real(i-1)*max_vel/real(nbins) .and. &
+                      in_var <= 2.0*real(i)*max_vel/real(nbins))
     end do
 
     ! Sum up the counts across all processes
@@ -756,6 +806,53 @@ module variables
 
     return
   end subroutine integrate_z
+
+! ***************************************************************************  
+
+  function mean(in_var)
+    use parameters
+    implicit none
+
+    real, dimension(:), intent(in) :: in_var
+    real :: mean, tmp_sum, total_sum
+    integer :: tmp_size, total_size
+
+    tmp_sum = sum(in_var)
+    tmp_size = size(in_var)
+
+    call MPI_ALLREDUCE(tmp_sum, total_sum, 1, MPI_REAL, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp_size, total_size, 1, MPI_INTEGER, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+
+    mean = total_sum / real(total_size)
+
+    return
+  end function mean
+
+! ***************************************************************************  
+
+  function stdev(in_var, mean)
+    use parameters
+    implicit none
+
+    real, dimension(:), intent(in) :: in_var
+    real, intent(in) :: mean
+    real :: stdev, tmp_sumsq, total_sumsq
+    integer :: tmp_size, total_size
+
+    tmp_sumsq = sum(in_var**2)
+    tmp_size = size(in_var)
+
+    call MPI_ALLREDUCE(tmp_sumsq, total_sumsq, 1, MPI_REAL, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp_size, total_size, 1, MPI_INTEGER, MPI_SUM, &
+                       MPI_COMM_WORLD, ierr)
+
+    stdev = sqrt( (total_sumsq / real(total_size)) - mean**2 )
+
+    return
+  end function stdev
 
 ! ***************************************************************************  
 
