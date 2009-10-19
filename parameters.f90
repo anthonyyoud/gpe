@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.71 2009-10-11 11:16:45 youd Exp $
+! $Id: parameters.f90,v 1.72 2009-10-19 16:43:23 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -19,7 +19,7 @@ module parameters
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: end_time     = 0.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
@@ -341,8 +341,8 @@ module parameters
   real               :: im_t        = 0.0
   real               :: kc2         = 0.0
   real               :: comp_amp    = 0.0
-  real, dimension(3) :: maxvar      = 0.0
-  real, dimension(3) :: minvar      = 0.0
+  real, dimension(4) :: maxvar      = 0.0
+  real, dimension(4) :: minvar      = 0.0
   real,    parameter :: pi          = 3.14159265358979
   real,    parameter :: xl          = -xr
   real,    parameter :: yl          = -yr

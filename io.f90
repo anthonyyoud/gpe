@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.49 2009-10-11 15:46:17 youd Exp $
+! $Id: io.f90,v 1.50 2009-10-19 16:43:23 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -427,15 +427,18 @@ module io
     ! IDL
     use parameters
     use ic, only : unit_no, x, y, z
+    use variables, only : get_phase
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: density
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: density, phase
     integer :: i, j, k
 
     density = abs(in_var)**2
+    call get_phase(in_var, phase)
 
     call get_minmax(density, 'dens')
+    call get_minmax(phase, 'phase')
 
     open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
           form='unformatted')
@@ -740,6 +743,24 @@ module io
           open (16, file='minmax_'//var//'.dat', form='unformatted')
           write (16) minvar(3)
           write (16) maxvar(3)
+          close (16)
+        end if
+
+      case ('phase')
+        if (minr(1) < minvar(4)) then
+          minvar(4) = minr(1)
+        end if
+
+        if (maxr(1) > maxvar(4)) then
+          maxvar(4) = maxr(1)
+        end if
+        
+        ! Save current max/min to file
+        if (myrank == 0) then
+          !print*, 'dens', minvar(1), maxvar(1)
+          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          write (16) minvar(4)
+          write (16) maxvar(4)
           close (16)
         end if
       case default
