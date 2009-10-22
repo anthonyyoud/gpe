@@ -5,20 +5,20 @@
 mkdir $1 2> /dev/null
 
 # Determine whether this run will be for filtered isosurfaces
-filter=`cat parameters.f90 | grep pp_filter | cut -c 47-`
-if [ $filter == '.false.' ]; then
-  echo FILTER will be set to 0
-  sed -i s/FILTER\=[01]/FILTER\=0/ run_script.sh
-elif [ $filter == '.true.' ]; then
-  echo FILTER will be set to 1
-  sed -i s/FILTER\=[01]/FILTER\=1/ run_script.sh
-else
-  echo ERROR: \$filter does not match one of .true. or .false.
-  return 1
-fi
+#filter=`cat parameters.f90 | grep pp_filter | cut -c 47-`
+#if [ $filter == '.false.' ]; then
+#  echo FILTER will be set to 0
+#  sed -i s/FILTER\=[01]/FILTER\=0/ run_script.sh
+#elif [ $filter == '.true.' ]; then
+#  echo FILTER will be set to 1
+#  sed -i s/FILTER\=[01]/FILTER\=1/ run_script.sh
+#else
+#  echo ERROR: \$filter does not match one of .true. or .false.
+#  return 1
+#fi
 
 #Compile.  Set j=nprocs+1 for efficient parallel make.
-make -j 3
+make -j 5
 
 #Setup dir
 if [ $? == 0 ]; then
