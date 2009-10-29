@@ -1,4 +1,4 @@
- $Id: README,v 1.6 2009-10-01 19:11:40 youd Exp $
+ $Id: README,v 1.7 2009-10-29 20:50:52 youd Exp $
 ----------------------------------------------------------------------------
 
 DESCRIPTION
@@ -25,7 +25,7 @@ implementations of MPI.
 
 The code uses some Fortran 2003 features such as allocatable arrays within
 user-defined types, so a compiler which allows Fortran 2003 constructs is
-required.  Compilers know to work include sunf95 (Sun Studio 12) and ifort
+required.  Compilers known to work include sunf95 (Sun Studio 12) and ifort
 (Intel Fortran Compiler).  The GNU fortran compiler gfortran does not compile
 the code.
 
