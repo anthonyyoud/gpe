@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.72 2009-10-19 16:43:23 youd Exp $
+! $Id: parameters.f90,v 1.73 2009-11-01 20:05:09 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -13,16 +13,16 @@ module parameters
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 2
-  integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nyprocs      = 1
+  integer,      parameter :: nzprocs      = 2
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 512
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 0.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
+  real,         parameter :: end_time     = 100.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 256.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
@@ -36,7 +36,7 @@ module parameters
   integer,      parameter :: order        = 4
   integer,      parameter :: nbins        = 256
   integer,      parameter :: save_rate    = 50
-  real,         parameter :: save_rate2   = 10.0
+  real,         parameter :: save_rate2   = 1.0
   real,         parameter :: save_rate3   = 10.0
   real,         parameter :: p_save       = 10.0
   logical,      parameter :: save_contour = .true.
@@ -44,7 +44,7 @@ module parameters
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .false.
-  logical,      parameter :: save_pdf     = .true.
+  logical,      parameter :: save_pdf     = .false.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
@@ -72,10 +72,10 @@ module parameters
     character(1) :: dir ! direction in which the line should extend
   end type line_param
 
-  !type (line_param), parameter :: &
-  !  vl1 = line_param(   0.0,   0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  !type (line_param), parameter :: &
-  !  vl2 = line_param(   0.0,-128.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  type (line_param), parameter :: &
+    vl1 = line_param(   0.0,   12.0, 0.0,-5.0, 512.0, 1.0, 'z')
+  type (line_param), parameter :: &
+    vl2 = line_param(   0.0,  -12.0, 0.0, 5.0, 512.0,-1.0, 'z')
   !type (line_param), parameter :: &
   !  vl3 = line_param(   0.0, 128.0, 0.0, 0.0, 33.0,-1.0, 'z')
   !type (line_param), parameter :: &
@@ -101,24 +101,24 @@ module parameters
   !  vl4 = line_param( 4.0,-4.0, 0.0, 0.1, 33.0, 1.0, 'z')
 
   ! Non-intersecting grid
-  type (line_param), parameter :: &
-    vl1 = line_param(  0.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
-  type (line_param), parameter :: &
-    vl3 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
-  type (line_param), parameter :: &
-    vl4 = line_param(-24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl5 = line_param( 24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
-  type (line_param), parameter :: &
-    vl6 = line_param( -6.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl7 = line_param(  6.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
-  type (line_param), parameter :: &
-    vl8 = line_param(-18.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
-  type (line_param), parameter :: &
-    vl9 = line_param( 18.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl1 = line_param(  0.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(-12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl3 = line_param( 12.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl4 = line_param(-24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl5 = line_param( 24.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'y')
+  !type (line_param), parameter :: &
+  !  vl6 = line_param( -6.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl7 = line_param(  6.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl8 = line_param(-18.0, 0.0, 0.0, 0.0, 33.0,-1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl9 = line_param( 18.0, 0.0, 0.0, 0.0, 33.0, 1.0, 'z')
 
   ! 2 bundles of 5 vortex lines
   !type (line_param), parameter :: &
@@ -319,7 +319,7 @@ module parameters
   integer, parameter :: nx1         = nx-1
   integer, parameter :: ny1         = ny-1
   integer, parameter :: nz1         = nz-1
-  integer, parameter :: nprocs      = nyprocs*nzprocs
+  integer            :: nprocs
   integer            :: end_proc    = 0
   integer            :: myrank, myranky, myrankz
   integer            :: jsta, jend, jlen, yprev, ynext

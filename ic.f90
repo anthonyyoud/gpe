@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.60 2009-10-19 16:43:23 youd Exp $
+! $Id: ic.f90,v 1.61 2009-11-01 20:05:09 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -74,8 +74,11 @@ module ic
       !real_time = .true.
       inquire(file=end_state_file, exist=state_exist)
       ! Exit if doing restart but end_state.dat does not exist
-      if (.not. state_exist) stop 'ERROR: restart=.true.&
-                                   &but '//end_state_file//' does not exist.'
+      if (.not. state_exist) then
+        print*, 'ERROR: restart=.true.&
+          &but '//end_state_file//' does not exist.'
+        stop
+      end if
       if (myrank == 0) then
         print*, 'Getting restart conditions'
       end if
@@ -85,13 +88,13 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = vortex_ring(vr1) !* &
+      !out_var = vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
       !          vortex_ring(vr5)
-      !out_var = vortex_line(vl1) * &
-      !          vortex_line(vl2) * &
+      out_var = vortex_line(vl1) * &
+                vortex_line(vl2) !* &
       !          vortex_line(vl3) * &
       !          vortex_line(vl4) * &
       !          vortex_line(vl5) * &
@@ -221,9 +224,9 @@ module ic
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
-    integer, dimension(1) :: seed
+    integer, allocatable, dimension(:) :: seed
     real :: phi, rand
-    integer :: i, j, k, ii2, jj2, kk2, irand
+    integer :: i, j, k, ii2, jj2, kk2, n, irand
     
     if (myrank == 0) then
       open (97, status='unknown', position='append', file='misc.dat')
@@ -240,7 +243,9 @@ module ic
 
     call MPI_BCAST(irand, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
-    seed(1) = myrank+irand
+    call random_seed(size=n)
+    allocate(seed(n))
+    seed = myrank + irand*(/ (i, i=0,n-1) /)
     call random_seed(put=seed)
 
     do k=ksta,kend

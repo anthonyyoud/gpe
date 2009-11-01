@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.50 2009-10-11 11:16:45 youd Exp $
+! $Id: gpe.f90,v 1.51 2009-11-01 20:05:09 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -127,8 +127,10 @@ program gpe
   if (.not. restart) then
     inquire(file=end_state_file, exist=state_exist)
     ! Exit if not doing restart but end_state.dat exists
-    if (state_exist) stop 'ERROR: restart=.false. but '&
-                          //end_state_file//' exists.'
+    if (state_exist) then
+      print*, 'ERROR: restart=.false. but ' //end_state_file//' exists.'
+      stop
+    end if
   end if
   
   ! Calculate the norm of the initial condition
