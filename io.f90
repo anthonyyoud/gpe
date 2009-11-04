@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.50 2009-10-19 16:43:23 youd Exp $
+! $Id: io.f90,v 1.51 2009-11-04 20:30:58 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -467,6 +467,7 @@ module io
   
   subroutine filtered_surface(a, flag, ind)
     ! Save a filtered 3D isosurface.  High-frequency harmonics are filtered
+    use error
     use parameters
     use ic, only : fft, x, y, z, unit_no
     use variables, only : send_recv_z, send_recv_y, &
@@ -552,7 +553,7 @@ module io
           write (unit_no) dt
           write (unit_no) filtered
         case default
-          STOP 'ERROR:  Invalid flag (filtered_surface)'
+          call emergency_stop('ERROR:  Invalid flag (filtered_surface).')
       end select
     
       close (unit_no)
@@ -664,6 +665,7 @@ module io
   subroutine get_minmax(in_var, var)
     ! Find the minimum and maximum values of a variable over time, and save the
     ! overall maximum to file
+    use error
     use parameters
     implicit none
 
@@ -764,7 +766,7 @@ module io
           close (16)
         end if
       case default
-        STOP 'ERROR: Unrecognised variable (get_minmax)'
+        call emergency_stop('ERROR: Unrecognised variable (get_minmax).')
     end select
     
     return

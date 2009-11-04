@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.73 2009-11-01 20:05:09 youd Exp $
+! $Id: parameters.f90,v 1.74 2009-11-04 20:30:58 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -15,14 +15,14 @@ module parameters
 
   integer,      parameter :: nyprocs      = 1
   integer,      parameter :: nzprocs      = 2
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 512
+  integer,      parameter :: nx           = 128
+  integer,      parameter :: ny           = 128
+  integer,      parameter :: nz           = 128
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 100.0
-  real,         parameter :: xr           = 32.0
-  real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 256.0
+  real,         parameter :: end_time     = 0.0
+  real,         parameter :: xr           = 64.0
+  real,         parameter :: yr           = 64.0
+  real,         parameter :: zr           = 64.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
@@ -73,9 +73,9 @@ module parameters
   end type line_param
 
   type (line_param), parameter :: &
-    vl1 = line_param(   0.0,   12.0, 0.0,-5.0, 512.0, 1.0, 'z')
-  type (line_param), parameter :: &
-    vl2 = line_param(   0.0,  -12.0, 0.0, 5.0, 512.0,-1.0, 'z')
+    vl1 = line_param(   0.0,   0.0, 0.0,1.0, 1.0, 1.0, 'z')
+  !type (line_param), parameter :: &
+  !  vl2 = line_param(   0.0,  -12.0, 0.0, 5.0, 512.0,-1.0, 'z')
   !type (line_param), parameter :: &
   !  vl3 = line_param(   0.0, 128.0, 0.0, 0.0, 33.0,-1.0, 'z')
   !type (line_param), parameter :: &

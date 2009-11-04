@@ -1,13 +1,14 @@
-! $Id: gpe.f90,v 1.51 2009-11-01 20:05:09 youd Exp $
+! $Id: gpe.f90,v 1.52 2009-11-04 20:30:58 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
   ! Code to solve the Gross-Pitaevskii equation in 3D.  Parallelised using MPI.
   ! See the README file for a description and usage instructions
-  use parameters
+  use derivs
+  use error
   use ic
   use io
-  use derivs
+  use parameters
   use solve
   use variables
   implicit none
@@ -21,8 +22,6 @@ program gpe
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
   call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
-  ! Find out on which host each process is running
-  !call system('hostname')
 
   ! Setup the lookup table for neighbouring processes
   call setup_itable()
@@ -64,7 +63,7 @@ program gpe
           print*, 'Explicit fifth order &
                   &Runge-Kutta-Fehlberg adaptive time stepping'
         case default
-          STOP 'ERROR: Unrecognised time stepping scheme'
+          call emergency_stop('ERROR: Unrecognised time stepping scheme.')
       end select
     end if
 
@@ -114,22 +113,15 @@ program gpe
   if (save_3d) then
     call idl_surface(psi%new)
   end if
-  !call fft(psi%new, test%new, 'forward', .false.)
-  !call fft(test%new, psi%new, 'backward', .false.)
   call condensed_particles(t, psi%new)
-  !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-  !stop
   
-  ! Call the FFT routine to transform the initial condition
-  !call fft(psi%new)
-
   ! If this is not a restart...
   if (.not. restart) then
     inquire(file=end_state_file, exist=state_exist)
     ! Exit if not doing restart but end_state.dat exists
     if (state_exist) then
-      print*, 'ERROR: restart=.false. but ' //end_state_file//' exists.'
-      stop
+      call emergency_stop('ERROR: restart=.false. but ' &
+        //end_state_file//' exists.')
     end if
   end if
   
@@ -145,8 +137,6 @@ program gpe
  
   ! Begin real time loop
   do while (t+im_t <= end_time)
-    !print*, p, t, dt
-
     ! Check to see whether the RUNNING file exists
     if (myrank == 0) then
       inquire(file='RUNNING', exist=run_exist)
@@ -188,17 +178,8 @@ program gpe
     call send_recv_y()
     call unpack_y(psi%old)
 
-    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-    !print*, t, real(dt)
-    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-
-    !if (.not. real_time) then
-    !  call renormalise(psi%old)
-    !end if
-
     ! Save time-series data
     if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
-    !if (mod(p, save_rate) == 0) then
       call save_energy(t, psi%old)
       !call save_mass(t, psi%new)
       !call save_momentum(t, psi%old)
@@ -206,7 +187,6 @@ program gpe
       if (save_ll) then
         call save_linelength(psi%old, 0)
       end if
-      !call condensed_particles(t, psi%new)
     end if
     
     if (t+im_t >= save_rate3*m) then
@@ -217,10 +197,7 @@ program gpe
       m = m+1
     end if
     
-    !if (modulo(t+im_t, abs(dt)*save_rate2) < abs(dt)) then
-    !if (mod(p, save_rate2) == 0) then
     if (t+im_t >= save_rate2*n) then
-      !call condensed_particles(t, psi%new)
       if (save_zeros) then
         ! Find the zeros of the wave function
         call get_zeros(psi%old)
@@ -243,7 +220,6 @@ program gpe
     end if
 
     ! Periodically save the state
-    !if (mod(p, save_rate2) == 0) then
     if (t+im_t >= p_save*ps) then
       ! 0 is a flag which means the run has not yet ended
       call end_state(psi%new, 0)

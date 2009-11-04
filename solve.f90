@@ -1,4 +1,4 @@
-! $Id: solve.f90,v 1.30 2009-01-10 11:18:04 youd Exp $
+! $Id: solve.f90,v 1.31 2009-11-04 20:30:58 youd Exp $
 !----------------------------------------------------------------------------
 
 module solve
@@ -13,6 +13,7 @@ module solve
 
   subroutine solver(var_in, var_out)
     ! General solver routine which calls a specific scheme
+    use error
     use parameters
     implicit none
 
@@ -31,7 +32,7 @@ module solve
         call rkqs(var_in, var_out)
       case default
         ! Error if scheme not recognised
-        STOP 'ERROR: Unrecognised time stepping scheme'
+        call emergency_stop('ERROR: Unrecognised time stepping scheme.')
     end select
 
     return

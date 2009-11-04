@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.62 2009-11-04 15:08:50 youd Exp $
+! $Id: ic.f90,v 1.63 2009-11-04 20:30:58 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -62,11 +62,12 @@ module ic
 
   subroutine ics(out_var)
     ! Set up the initial conditions
+    use error, only : emergency_stop
     use parameters
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend)              :: tmp_var
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_var
     logical :: state_exist
 
     ! If this is a restarted run...
@@ -75,9 +76,8 @@ module ic
       inquire(file=end_state_file, exist=state_exist)
       ! Exit if doing restart but end_state.dat does not exist
       if (.not. state_exist) then
-        print*, 'ERROR: restart=.true.&
-          &but '//end_state_file//' does not exist.'
-        stop
+        call emergency_stop('ERROR: restart=.true. &
+          &but '//end_state_file//' does not exist.')
       end if
       if (myrank == 0) then
         print*, 'Getting restart conditions'
@@ -93,8 +93,8 @@ module ic
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
       !          vortex_ring(vr5)
-      out_var = vortex_line(vl1) * &
-                vortex_line(vl2) !* &
+      out_var = vortex_line(vl1) !* &
+      !          vortex_line(vl2) !* &
       !          vortex_line(vl3) * &
       !          vortex_line(vl4) * &
       !          vortex_line(vl5) * &
@@ -329,22 +329,6 @@ module ic
 
 ! ***************************************************************************  
 
-  function ei(theta)
-    ! exp(i*theta) where theta is the argument arctan(y/x)
-    use parameters
-    implicit none
-
-    complex, dimension(0:nx1,jsta:jend,ksta:kend)             :: ei
-    real,    dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: theta
-    integer                                                   :: j, k
-
-    ei = cos(theta) + eye*sin(theta)
-
-    return
-  end function ei
-  
-! ***************************************************************************  
-
   function amp(r)
     ! Amplitude of a vortex line
     use parameters
@@ -368,15 +352,15 @@ module ic
     use parameters
     implicit none
 
-    complex,           dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
-    type (line_param), intent(in)                           :: vl
-    real,              dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
-    integer                                                 :: j, k
+    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
+    type (line_param), intent(in) :: vl
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
+    integer :: j, k
 
     call get_r(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%dir, r)
     call get_theta(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%sgn, vl%dir, theta)
 
-    vortex_line = amp(r)*ei(theta)
+    vortex_line = amp(r)*exp(eye*theta)
     
     return
   end function vortex_line
@@ -678,13 +662,26 @@ module ic
 
   subroutine get_r(x0, y0, z0, a, ll, dir, r)
     ! Get the cylindrical-polar radius r**2=x**2+y**2, y**2+z**2, or z**2+x**2
+    use error, only : emergency_stop
     use parameters
     implicit none
 
     real, intent(in)  :: x0, y0, z0, a, ll
     character, intent(in)  :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
-    integer :: i, j, k
+    integer :: i, j, k, safe
+
+    safe = 0.0
+
+    ! Guard against disturbance wavelength being zero, when amplitude non-zero.
+    if (abs(ll) < epsilon(ll)) then
+      if (abs(a) < epsilon(a)) then
+        safe = 1.0
+      else
+        call emergency_stop('ERROR: vortex line disturbance wavelength is &
+          &zero, but amplitude is non-zero.')
+      end if
+    end if
 
     select case (dir)
       case ('x')
@@ -692,7 +689,7 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               r(i,j,k) = sqrt(scal*(y(j)-y0)**2 + &
-                             (scal*(z(k)-z0-a*cos(2.0*pi*x(i)/ll))**2))
+                             (scal*(z(k)-z0-a*cos(2.0*pi*x(i)/(ll+safe)))**2))
             end do
           end do
         end do
@@ -701,7 +698,7 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               r(i,j,k) = sqrt(scal*(z(k)-z0)**2 + &
-                             (scal*(x(i)-x0-a*cos(2.0*pi*y(j)/ll))**2))
+                             (scal*(x(i)-x0-a*cos(2.0*pi*y(j)/(ll+safe)))**2))
             end do
           end do
         end do
@@ -710,7 +707,7 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               r(i,j,k) = sqrt(scal*(x(i)-x0)**2 + &
-                             (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll))**2))
+                             (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/(ll+safe)))**2))
             end do
           end do
         end do
@@ -743,13 +740,26 @@ module ic
 
   subroutine get_theta(x0, y0, z0, a, ll, sgn, dir, theta)
     ! Get the argument theta=arctan(y/x), arctan(z/y), or arctan(x/z)
+    use error, only : emergency_stop
     use parameters
     implicit none
 
     real, intent(in) :: x0, y0, z0, a, ll, sgn
     character, intent(in) :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
-    integer                                                 :: i, j, k
+    integer :: i, j, k, safe
+
+    safe = 0.0
+
+    ! Guard against disturbance wavelength being zero, when amplitude non-zero.
+    if (abs(ll) < epsilon(ll)) then
+      if (abs(a) < epsilon(a)) then
+        safe = 1.0
+      else
+        call emergency_stop('ERROR: vortex line disturbance wavelength is &
+          &zero, but amplitude is non-zero.')
+      end if
+    end if
 
     select case (dir)
       case ('x')
@@ -757,8 +767,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                             atan2(scal*(z(k)-z0-a*cos(2.0*pi*x(i)/ll)), &
-                                   scal*(y(j)-y0))
+                atan2(scal*(z(k)-z0-a*cos(2.0*pi*x(i)/(ll+safe))), & 
+                scal*(y(j)-y0))
             end do
           end do
         end do
@@ -767,8 +777,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                             atan2(scal*(x(i)-x0-a*cos(2.0*pi*y(j)/ll)), &
-                                   scal*(z(k)-z0))
+                atan2(scal*(x(i)-x0-a*cos(2.0*pi*y(j)/(ll+safe))), &
+                scal*(z(k)-z0))
             end do
           end do
         end do
@@ -777,8 +787,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                             atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/ll)), &
-                                   scal*(x(i)-x0))
+                atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/(ll+safe))), &
+                scal*(x(i)-x0))
             end do
           end do
         end do
@@ -808,6 +818,7 @@ module ic
 
   subroutine fft(in_var, out_var, dir, particles)
     ! Calculate the FFT (or inverse) of a variable
+    use error, only : emergency_stop
     use parameters
     use constants
     implicit none
@@ -845,7 +856,7 @@ module ic
         call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
                                         FFTW_BACKWARD, FFTW_ESTIMATE)
       case default
-        stop 'ERROR: Not a valid direction for FFT!'
+        call emergency_stop('ERROR: Not a valid direction for FFT!')
     end select
 
     ! Get the sizes of the arrays local to each process
