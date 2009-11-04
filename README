@@ -1,4 +1,4 @@
- $Id: README,v 1.7 2009-10-29 20:50:52 youd Exp $
+ $Id: README,v 1.8 2009-11-04 20:39:57 youd Exp $
 ----------------------------------------------------------------------------
 
 DESCRIPTION
@@ -38,6 +38,8 @@ PROGRAM FILES
 constants.f90                   - constants defined for fftw.
 
 derivs.f90			- Routines to calculate derivatives.
+
+error.f90                       - Routines for error handling.
 
 gpe.f90 			- Main program file.
 
@@ -306,4 +308,4 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-01/10/2009
+04/11/2009
