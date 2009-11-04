@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.61 2009-11-01 20:05:09 youd Exp $
+! $Id: ic.f90,v 1.62 2009-11-04 15:08:50 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -8,7 +8,7 @@ module ic
 
   private
   public :: get_grid, get_unit_no, ics, fft, get_kc_amp, wall, &
-            sphere, sphere2, vortex_ring
+            sphere, sphere2, vortex_line
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
