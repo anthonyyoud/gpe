@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.33 2009-10-11 18:42:02 youd Exp $
+! $Id: variables.f90,v 1.34 2009-11-04 14:45:58 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -678,7 +678,7 @@ module variables
   subroutine renormalise(var, prev_norm, norm)
     ! Renormalise when running in imaginary time
     use parameters
-    use ic, only : vortex_ring
+    use ic, only : vortex_line
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: var
@@ -687,8 +687,9 @@ module variables
     !call mass(var, M)
 
     !var = sqrt(8.0*xr*yr*zr) * var / sqrt(M)
-    var = var * sqrt(prev_norm / norm) * &
-                vortex_ring(vr1)
+    var = var * sqrt(prev_norm / norm) !* &
+    !            vortex_line(vl1) * &
+    !            vortex_line(vl2)
 
     return
   end subroutine renormalise
