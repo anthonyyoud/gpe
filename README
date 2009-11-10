@@ -1,4 +1,4 @@
- $Id: README,v 1.8 2009-11-04 20:39:57 youd Exp $
+ $Id: README,v 1.9 2009-11-10 21:00:19 youd Exp $
 ----------------------------------------------------------------------------
 
 DESCRIPTION
@@ -24,10 +24,10 @@ be available.  The code has only been tested with the MPICH and OpenMPI
 implementations of MPI.
 
 The code uses some Fortran 2003 features such as allocatable arrays within
-user-defined types, so a compiler which allows Fortran 2003 constructs is
-required.  Compilers known to work include sunf95 (Sun Studio 12) and ifort
-(Intel Fortran Compiler).  The GNU fortran compiler gfortran does not compile
-the code.
+user-defined types, so a compiler which allows some Fortran 2003 constructs is
+required.  Compilers known to work include sunf95 (Sun Studio 12), ifort (Intel
+Fortran Compiler), and gfortran (GNU Fortran Compiler).  Sunf95 with the -fast
+option gives the shortest execution times.
 
 A parallel FFT routine is included which uses the fftw library
 (http://www.fftw.org).  The single precision and MPI libraries will need to be
@@ -308,4 +308,4 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-04/11/2009
+10/11/2009
