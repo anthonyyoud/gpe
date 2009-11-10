@@ -1,4 +1,4 @@
- $Id: README,v 1.9 2009-11-10 21:00:19 youd Exp $
+ $Id: README,v 1.10 2009-11-10 21:06:46 youd Exp $
 ----------------------------------------------------------------------------
 
 DESCRIPTION
@@ -189,7 +189,7 @@ dt_increase (real)
 Two types are also defined in the parameters file in order to set up a vortex
 line or vortex ring.  Comments for how to set these up are in parameters.f90.
 
-Other parameters not mentioned here, can be left as they are.
+Other parameters not mentioned here can be left as they are.
 
 run_script*.sh
 -------------
@@ -208,10 +208,11 @@ OBJECTS		- The object files that should be linked.
 
 FC              - The Fortran compiler to be used.  Could be the MPI wrapper
                   compiler mpif90, but the underlying Fortran compiler must be
-                  able to compile the code (e.g. sunf95, ifort).
+                  able to compile the code (e.g. sunf95, ifort, gfortran).
 
-FFLAGS		- Compiler flags.  See the compiler's manual.  Sunf95 works
-                  well with -fast -fsimple=0 (the latter being essential).
+FFLAGS		- Compiler flags.  See the compiler's manual.  Sunf95 works well with
+            -fast.  If nonsense results are produced -fsimple=0 might be
+            required.
 
 LDFLAGS	        - Any extra flags required by the linker.  If mpif90 is not the
                   compiler, then all the MPI libraries will need to be linked.
