@@ -1,4 +1,4 @@
- $Id: README,v 1.10 2009-11-10 21:06:46 youd Exp $
+ $Id: README,v 1.11 2009-11-10 21:10:03 youd Exp $
 ----------------------------------------------------------------------------
 
 DESCRIPTION
@@ -202,23 +202,23 @@ Makefile
 Settings here will need to be changed, depending on the architecture on which
 the code is run.
 
-OBJECT          - The name of the executable produced on compilation.
+OBJECT    - The name of the executable produced on compilation.
 
-OBJECTS		- The object files that should be linked.
+OBJECTS   - The object files that should be linked.
 
-FC              - The Fortran compiler to be used.  Could be the MPI wrapper
-                  compiler mpif90, but the underlying Fortran compiler must be
-                  able to compile the code (e.g. sunf95, ifort, gfortran).
+FC        - The Fortran compiler to be used.  Could be the MPI wrapper
+            compiler mpif90, but the underlying Fortran compiler must be
+            able to compile the code (e.g. sunf95, ifort, gfortran).
 
-FFLAGS		- Compiler flags.  See the compiler's manual.  Sunf95 works well with
+FFLAGS    - Compiler flags.  See the compiler's manual.  Sunf95 works well with
             -fast.  If nonsense results are produced -fsimple=0 might be
             required.
 
-LDFLAGS	        - Any extra flags required by the linker.  If mpif90 is not the
-                  compiler, then all the MPI libraries will need to be linked.
-                  The FFTW libraries need to be linked here too.
+LDFLAGS   - Any extra flags required by the linker.  If mpif90 is not the
+            compiler, then all the MPI libraries will need to be linked.
+            The FFTW libraries need to be linked here too.
 
-INCLUDE         - Include path (i.e. for MPI header files).
+INCLUDE   - Include path (i.e. for MPI header files).
 
 TO RUN
 ------
