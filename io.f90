@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.51 2009-11-04 20:30:58 youd Exp $
+! $Id: io.f90,v 1.52 2009-11-10 20:54:26 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -321,6 +321,7 @@ module io
       E0 = (1.0/real(2*V))*(M**2+(M-n0)**2)
       H = E0 + temp*real(V-1)
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/V))/tot
+      ! Plot $5/$4 for n0/M for condensed particles.
       open (15, status='unknown', position='append', file='mass.dat')
       write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/V, M, n0, &
                              temp, temp2, H/V
