@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.64 2009-12-03 20:03:59 youd Exp $
+! $Id: ic.f90,v 1.65 2009-12-03 20:40:18 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -88,12 +88,12 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      !out_var = vortex_ring(vr1) !* &
+      out_var = vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
       !          vortex_ring(vr5)
-      out_var = vortex_line(vl1) !* &
+      !out_var = vortex_line(vl1) !* &
       !          vortex_line(vl2) !* &
       !          vortex_line(vl3) * &
       !          vortex_line(vl4) * &
@@ -375,14 +375,16 @@ module ic
     complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
     type (ring_param), intent(in) :: vr
     real, dimension(jsta:jend,ksta:kend) :: s, theta, dist
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2, xp
     integer :: i, j, k
 
-    call get_s(s, vr%y0, vr%z0)
+    !call get_s(s, vr%y0, vr%z0)
     
     do k=ksta,kend
       do j=jsta,jend
         theta(j,k) = atan2(z(k)-vr%z0, y(j)-vr%y0)
+        s(j,k) = sqrt((y(j)-vr%y0)**2 + (z(k)-vr%z0)**2) - &
+          vr%r1*sin(real(vr%kk)*theta(j,k))
       end do
     end do
 
@@ -392,9 +394,10 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          d1(i,j,k) = sqrt( (scal*(x(i)-vr%x0))**2 + &
+          xp(i,j,k) = x(i) - vr%r1*cos(real(vr%kk)*theta(j,k))
+          d1(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
             (scal*(s(j,k)+vr%r0-dist(j,k)))**2 )
-          d2(i,j,k) = sqrt( (scal*(x(i)-vr%x0))**2 + &
+          d2(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
             (scal*(s(j,k)-vr%r0-dist(j,k)))**2 )
         end do
       end do
@@ -406,9 +409,9 @@ module ic
     do k=ksta,kend
       do j=jsta,jend
         do i=0,nx1
-          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(x(i)-vr%x0)) + &
+          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) + &
             vr%dir*eye*(scal*(s(j,k)+vr%r0-dist(j,k)))) * &
-                               rr2(i,j,k)*((scal*(x(i)-vr%x0)) - &
+                               rr2(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) - &
             vr%dir*eye*(scal*(s(j,k)-vr%r0-dist(j,k))))
         end do
       end do

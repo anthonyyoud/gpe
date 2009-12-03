@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.75 2009-12-03 20:04:00 youd Exp $
+! $Id: parameters.f90,v 1.76 2009-12-03 20:40:18 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -294,25 +294,27 @@ module parameters
   ! Vortex ring parameters **************************************************
   !
   type :: ring_param
-    real    :: x0          ! x position
-    real    :: y0          ! y position
-    real    :: z0          ! z position
-    real    :: r0          ! radius
-    real    :: amp         ! Amplitude of a disturbance along the ring
-    integer :: mm          ! Wavenumber of the above disturbance
-    real    :: dir         ! Propagation in x-direction (+/-1)
+    real    :: x0      ! x position
+    real    :: y0      ! y position
+    real    :: z0      ! z position
+    real    :: r0      ! radius
+    real    :: amp     ! Amplitude of a planar disturbance
+    integer :: mm      ! Wavenumber of planar disturbance
+    real    :: r1      ! Radius of helical disturbance
+    integer :: kk      ! Wavenumber of helical disturbance
+    real    :: dir     ! Propagation in x-direction (+/-1)
   end type ring_param
 
   type (ring_param), parameter :: &
-    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 5.0, 15, -1.0)
-  type (ring_param), parameter :: &
-    vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
-  type (ring_param), parameter :: &
-    vr3 = ring_param(  0.0, 0.0, 0.0, 32.0, 5.0, 4, -1.0)
-  type (ring_param), parameter :: &
-    vr4 = ring_param( 16.0, 0.0, 0.0, 32.0, 5.0, 5, -1.0)
-  type (ring_param), parameter :: &
-    vr5 = ring_param( 32.0, 0.0, 0.0, 32.0, 5.0, 6, -1.0)
+    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 0.0, 5, 10.0, 7, -1.0)
+  !type (ring_param), parameter :: &
+  !  vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
+  !type (ring_param), parameter :: &
+  !  vr3 = ring_param(  0.0, 0.0, 0.0, 32.0, 5.0, 4, -1.0)
+  !type (ring_param), parameter :: &
+  !  vr4 = ring_param( 16.0, 0.0, 0.0, 32.0, 5.0, 5, -1.0)
+  !type (ring_param), parameter :: &
+  !  vr5 = ring_param( 32.0, 0.0, 0.0, 32.0, 5.0, 6, -1.0)
   !
   ! *************************************************************************
 
