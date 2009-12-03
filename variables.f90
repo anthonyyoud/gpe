@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.34 2009-11-04 14:45:58 youd Exp $
+! $Id: variables.f90,v 1.35 2009-12-03 20:04:00 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -7,10 +7,10 @@ module variables
   implicit none
 
   private
-  public :: laplacian, get_density, get_phase, get_velocity, get_norm, &
-            get_pdf, energy, mass, momentum, linelength, setup_itable, &
-            para_range, array_len, neighbours, send_recv_y, send_recv_z, &
-            pack_y, unpack_y, renormalise
+  public :: laplacian, get_density, get_phase, get_pdf_velocity, get_norm, &
+    get_pdf, energy, mass, momentum, linelength, setup_itable, para_range, &
+    array_len, neighbours, send_recv_y, send_recv_z, pack_y, unpack_y, &
+    renormalise
 
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
@@ -370,7 +370,7 @@ module variables
 
 ! ***************************************************************************  
 
-  subroutine get_velocity(in_var, vx, vy, vz, vmean, vstdev)
+  subroutine get_pdf_velocity(in_var, vx, vy, vz, vmean, vstdev)
     ! Calculate the velocity
     use parameters
     use derivs
@@ -385,16 +385,6 @@ module variables
     integer, dimension(3) :: valid_vel
     integer :: i
 
-    !call get_phase(in_var, phase)
-    !phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
-    !call deriv_x(cmplx(phase), tmp_vx)
-    !call deriv_y(cmplx(phase), tmp_vy)
-    !call deriv_z(cmplx(phase), tmp_vz)
-
-    !vx = real(tmp_vx)
-    !vy = real(tmp_vy)
-    !vz = real(tmp_vz)
-
     gradient = grad(in_var)
     gradstar = grad(conjg(in_var))
 
@@ -408,7 +398,6 @@ module variables
         vel(i,:,:,:) = 1e3
       end where
       valid_vel(i) = count(vel(i,:,:,:) < 0.5e3)
-      !vel(i,:,:,:) = 2.0 !1e5*vel(i,:,:,:)
       vmean(i) = mean(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3))
       vstdev(i) = stdev(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3), vmean(i))
     end do
@@ -421,30 +410,8 @@ module variables
     vy = pack(vel(2,:,:,:), vel(2,:,:,:) < 0.5e3)
     vz = pack(vel(3,:,:,:), vel(3,:,:,:) < 0.5e3)
 
-    !call mask(vx)
-    !call mask(vy)
-    !call mask(vz)
-
-    contains
-
-    subroutine mask(vel)
-      use parameters
-      implicit none
-
-      real, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: vel
-
-      where (2.0*pi-abs(vel) <= 0.1)
-        where (vel < 0)
-          vel = vel + 2.0*pi
-        else where (vel >= 0)
-          vel = vel - 2.0*pi
-        end where
-      end where
-
-      return
-    end subroutine mask
-
-  end subroutine get_velocity
+    return
+  end subroutine get_pdf_velocity
 
 ! ***************************************************************************  
   

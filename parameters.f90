@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.74 2009-11-04 20:30:58 youd Exp $
+! $Id: parameters.f90,v 1.75 2009-12-03 20:04:00 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -63,17 +63,18 @@ module parameters
   ! Vortex line parameters **************************************************
   !
   type :: line_param
-    real         :: x0  ! x position
-    real         :: y0  ! y position
-    real         :: z0  ! z position
-    real         :: amp ! amplitude of a disturbance of the vortex line
-    real         :: ll  ! wavelength of the above disturbance
-    real         :: sgn ! sign of the argument of the line
-    character(1) :: dir ! direction in which the line should extend
+    real         :: x0   ! x position
+    real         :: y0   ! y position
+    real         :: z0   ! z position
+    real         :: amp1 ! amplitude of a disturbance of the vortex line (dir1)
+    real         :: amp2 ! amplitude of a disturbance of the vortex line (dir2)
+    real         :: ll   ! wavelength of the above disturbance
+    real         :: sgn  ! sign of the argument of the line
+    character(1) :: dir  ! direction in which the line should extend
   end type line_param
 
   type (line_param), parameter :: &
-    vl1 = line_param(   0.0,   0.0, 0.0,1.0, 1.0, 1.0, 'z')
+    vl1 = line_param(   0.0,   0.0, 0.0,5.0, 5.0, 32.0, 1.0, 'z')
   !type (line_param), parameter :: &
   !  vl2 = line_param(   0.0,  -12.0, 0.0, 5.0, 512.0,-1.0, 'z')
   !type (line_param), parameter :: &

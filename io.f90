@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.52 2009-11-10 20:54:26 youd Exp $
+! $Id: io.f90,v 1.53 2009-12-03 20:03:59 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -173,7 +173,7 @@ module io
     ! Save the velocity PDF
     use parameters
     use ic, only : x, y, z
-    use variables, only : get_velocity, get_pdf
+    use variables, only : get_pdf_velocity, get_pdf
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
@@ -183,7 +183,7 @@ module io
     real, dimension(3) :: vel_bins, vmax, vmean, vstdev
     integer :: i
 
-    call get_velocity(in_var, vx, vy, vz, vmean, vstdev)
+    call get_pdf_velocity(in_var, vx, vy, vz, vmean, vstdev)
     call get_pdf(vx, pdf_vx, vmax(1))
     call get_pdf(vy, pdf_vy, vmax(2))
     call get_pdf(vz, pdf_vz, vmax(3))

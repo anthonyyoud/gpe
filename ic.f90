@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.63 2009-11-04 20:30:58 youd Exp $
+! $Id: ic.f90,v 1.64 2009-12-03 20:03:59 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -357,8 +357,8 @@ module ic
     real, dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
     integer :: j, k
 
-    call get_r(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%dir, r)
-    call get_theta(vl%x0, vl%y0, vl%z0, vl%amp, vl%ll, vl%sgn, vl%dir, theta)
+    call get_r(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%dir, r)
+    call get_theta(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%sgn, vl%dir, theta)
 
     vortex_line = amp(r)*exp(eye*theta)
     
@@ -660,23 +660,31 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine get_r(x0, y0, z0, a, ll, dir, r)
+  subroutine get_r(x0, y0, z0, a1, a2, ll, dir, r)
     ! Get the cylindrical-polar radius r**2=x**2+y**2, y**2+z**2, or z**2+x**2
     use error, only : emergency_stop
     use parameters
     implicit none
 
-    real, intent(in)  :: x0, y0, z0, a, ll
+    real, intent(in)  :: x0, y0, z0, a1, a2, ll
     character, intent(in)  :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
-    integer :: i, j, k, safe
+    integer :: i, j, k
+    real :: safe1, safe2
 
-    safe = 0.0
+    safe1 = 0.0
+    safe2 = 0.0
 
     ! Guard against disturbance wavelength being zero, when amplitude non-zero.
     if (abs(ll) < epsilon(ll)) then
-      if (abs(a) < epsilon(a)) then
-        safe = 1.0
+      if (abs(a1) < epsilon(a1)) then
+        safe1 = 1.0
+      else
+        call emergency_stop('ERROR: vortex line disturbance wavelength is &
+          &zero, but amplitude is non-zero.')
+      end if
+      if (abs(a2) < epsilon(a2)) then
+        safe2 = 1.0
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
@@ -688,8 +696,9 @@ module ic
         do k=ksta,kend
           do j=jsta,jend
             do i=0,nx1
-              r(i,j,k) = sqrt(scal*(y(j)-y0)**2 + &
-                             (scal*(z(k)-z0-a*cos(2.0*pi*x(i)/(ll+safe)))**2))
+              r(i,j,k) = &
+                sqrt(scal*(y(j)-y0-a1*sin(2.0*pi*x(i)/(ll+safe1)))**2 + &
+                     scal*(z(k)-z0-a2*cos(2.0*pi*x(i)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -697,8 +706,9 @@ module ic
         do k=ksta,kend
           do j=jsta,jend
             do i=0,nx1
-              r(i,j,k) = sqrt(scal*(z(k)-z0)**2 + &
-                             (scal*(x(i)-x0-a*cos(2.0*pi*y(j)/(ll+safe)))**2))
+              r(i,j,k) = &
+                sqrt(scal*(z(k)-z0-a1*sin(2.0*pi*y(j)/(ll+safe1)))**2 + &
+                     scal*(x(i)-x0-a2*cos(2.0*pi*y(j)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -706,8 +716,9 @@ module ic
         do k=ksta,kend
           do j=jsta,jend
             do i=0,nx1
-              r(i,j,k) = sqrt(scal*(x(i)-x0)**2 + &
-                             (scal*(y(j)-y0-a*cos(2.0*pi*z(k)/(ll+safe)))**2))
+              r(i,j,k) = &
+                sqrt(scal*(x(i)-x0-a1*sin(2.0*pi*z(k)/(ll+safe1)))**2 + &
+                     scal*(y(j)-y0-a2*cos(2.0*pi*z(k)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -738,23 +749,31 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine get_theta(x0, y0, z0, a, ll, sgn, dir, theta)
+  subroutine get_theta(x0, y0, z0, a1, a2, ll, sgn, dir, theta)
     ! Get the argument theta=arctan(y/x), arctan(z/y), or arctan(x/z)
     use error, only : emergency_stop
     use parameters
     implicit none
 
-    real, intent(in) :: x0, y0, z0, a, ll, sgn
+    real, intent(in) :: x0, y0, z0, a1, a2, ll, sgn
     character, intent(in) :: dir
     real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
-    integer :: i, j, k, safe
+    integer :: i, j, k
+    real :: safe1, safe2
 
-    safe = 0.0
+    safe1 = 0.0
+    safe2 = 0.0
 
     ! Guard against disturbance wavelength being zero, when amplitude non-zero.
     if (abs(ll) < epsilon(ll)) then
-      if (abs(a) < epsilon(a)) then
-        safe = 1.0
+      if (abs(a1) < epsilon(a1)) then
+        safe1 = 1.0
+      else
+        call emergency_stop('ERROR: vortex line disturbance wavelength is &
+          &zero, but amplitude is non-zero.')
+      end if
+      if (abs(a2) < epsilon(a2)) then
+        safe2 = 1.0
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
@@ -767,8 +786,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(z(k)-z0-a*cos(2.0*pi*x(i)/(ll+safe))), & 
-                scal*(y(j)-y0))
+                atan2(scal*(z(k)-z0-a2*cos(2.0*pi*x(i)/(ll+safe2))), & 
+                scal*(y(j)-y0-a1*sin(2.0*pi*x(i)/(ll+safe1))))
             end do
           end do
         end do
@@ -777,8 +796,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(x(i)-x0-a*cos(2.0*pi*y(j)/(ll+safe))), &
-                scal*(z(k)-z0))
+                atan2(scal*(x(i)-x0-a2*cos(2.0*pi*y(j)/(ll+safe2))), &
+                scal*(z(k)-z0-a1*sin(2.0*pi*y(j)/(ll+safe1))))
             end do
           end do
         end do
@@ -787,8 +806,8 @@ module ic
           do j=jsta,jend
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(y(j)-y0-a*cos(2.0*pi*z(k)/(ll+safe))), &
-                scal*(x(i)-x0))
+                atan2(scal*(y(j)-y0-a2*cos(2.0*pi*z(k)/(ll+safe2))), &
+                scal*(x(i)-x0-a1*sin(2.0*pi*z(k)/(ll+safe1))))
             end do
           end do
         end do
