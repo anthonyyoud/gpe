@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.54 2009-12-05 20:13:20 youd Exp $
+! $Id: io.f90,v 1.55 2009-12-05 20:19:52 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -160,7 +160,7 @@ module io
     
     if (myrank == 0) then
       open (12, status='unknown', position='append', file='energy.dat')
-      write (12, '(2e17.9)') time, E/real(nx*ny*nz)
+      write (12, '(3e17.9)') time, im_t, E/real(nx*ny*nz)
       close (12)
     end if
 
@@ -323,7 +323,7 @@ module io
       temp2 = ((M/(8.0*xr*yr*zr))-(n0/V))/tot
       ! Plot $5/$4 for n0/M for condensed particles.
       open (15, status='unknown', position='append', file='mass.dat')
-      write (15, '(8e17.9)') time, M/(8.0*xr*yr*zr), n0/V, M, n0, &
+      write (15, '(9e17.9)') time, im_t, M/(8.0*xr*yr*zr), n0/V, M, n0, &
                              temp, temp2, H/V
       close (15)
     end if
@@ -351,7 +351,7 @@ module io
     real, intent(in) :: time, prev_norm, norm
 
     open (20, status='unknown', position='append', file='norm.dat')
-    write (20, '(3e17.9)') time, prev_norm, norm
+    write (20, '(4e17.9)') time, im_t, prev_norm, norm
     close (20)
 
     return
