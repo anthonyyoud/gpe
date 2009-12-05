@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.53 2009-12-03 20:03:59 youd Exp $
+! $Id: io.f90,v 1.54 2009-12-05 20:13:20 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -438,13 +438,13 @@ module io
     density = abs(in_var)**2
     call get_phase(in_var, phase)
 
-    call get_minmax(density, 'dens')
-    call get_minmax(phase, 'phase')
+    !call get_minmax(density, 'dens')
+    !call get_minmax(phase, 'phase')
 
     open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
           form='unformatted')
     
-    write (unit_no) t
+    write (unit_no) t+im_t
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
     write (unit_no) jsta, jend, ksta, kend
@@ -1370,12 +1370,12 @@ module io
       if (flag == 0) then
         ! Write the unfiltered line length
         open (13, status='unknown', position='append', file='linelength.dat')
-        write (13, '(2e17.9)') t, length
+        write (13, '(3e17.9)') t, im_t, length
         close (13)
       else if (flag == 1) then
         ! Write the filtered line length
         open (18, status='unknown', position='append', file='filtered_ll.dat')
-        write (18, '(2e17.9)') t, length
+        write (18, '(3e17.9)') t, im_t, length
         close (18)
       end if
     end if
