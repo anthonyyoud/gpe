@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.52 2009-11-04 20:30:58 youd Exp $
+! $Id: gpe.f90,v 1.53 2009-12-08 17:30:19 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -238,8 +238,10 @@ program gpe
     ! Calculate the norm
     if (.not. real_time) then
       call get_norm(psi%new, norm)
-      call save_norm(t, prev_norm, norm)
-      !call renormalise(psi%new, prev_norm, norm)
+      if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
+        call save_norm(t, prev_norm, norm)
+        !call renormalise(psi%new, prev_norm, norm)
+      end if
     end if
 
     ! Make sure all process know what the norm is

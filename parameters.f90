@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.77 2009-12-05 20:13:20 youd Exp $
+! $Id: parameters.f90,v 1.78 2009-12-08 17:30:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -13,16 +13,16 @@ module parameters
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 2
+  integer,      parameter :: nyprocs      = 4
   integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
+  integer,      parameter :: nx           = 256
+  integer,      parameter :: ny           = 256
+  integer,      parameter :: nz           = 256
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 1000.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
+  real,         parameter :: end_time     = 2000.0
+  real,         parameter :: xr           = 128.0
+  real,         parameter :: yr           = 128.0
+  real,         parameter :: zr           = 128.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
@@ -35,7 +35,7 @@ module parameters
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: nbins        = 256
-  integer,      parameter :: save_rate    = 50
+  integer,      parameter :: save_rate    = 10
   real,         parameter :: save_rate2   = 10.0
   real,         parameter :: save_rate3   = 10.0
   real,         parameter :: p_save       = 10.0
@@ -306,7 +306,7 @@ module parameters
   end type ring_param
 
   type (ring_param), parameter :: &
-    vr1 = ring_param(-32.0, 0.0, 0.0, 32.0, 0.0, 5, 20.0, 10, -1.0)
+    vr1 = ring_param(32.0, 0.0, 0.0, 32.0, 0.0, 5, 20.0, 10, -1.0)
   !type (ring_param), parameter :: &
   !  vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
   !type (ring_param), parameter :: &

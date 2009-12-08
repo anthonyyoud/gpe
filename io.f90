@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.55 2009-12-05 20:19:52 youd Exp $
+! $Id: io.f90,v 1.56 2009-12-08 17:30:19 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -350,9 +350,11 @@ module io
 
     real, intent(in) :: time, prev_norm, norm
 
-    open (20, status='unknown', position='append', file='norm.dat')
-    write (20, '(4e17.9)') time, im_t, prev_norm, norm
-    close (20)
+    if (myrank == 0) then
+      open (20, status='unknown', position='append', file='norm.dat')
+      write (20, '(4e17.9)') time, im_t, prev_norm, norm
+      close (20)
+    end if
 
     return
   end subroutine save_norm
