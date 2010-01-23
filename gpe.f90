@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.54 2010-01-23 11:38:11 youd Exp $
+! $Id: gpe.f90,v 1.55 2010-01-23 14:18:16 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -194,8 +194,8 @@ program gpe
       if (save_pdf) then
         call save_velocity_pdf(psi%old)
       end if
-      if (save_velcf) then
-        call save_vcf(psi%old)
+      if (save_vcf) then
+        call save_vel_corr(psi%old)
       end if
       m = m+1
     end if

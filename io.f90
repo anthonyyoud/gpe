@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.58 2010-01-23 14:12:27 youd Exp $
+! $Id: io.f90,v 1.59 2010-01-23 14:18:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -8,7 +8,7 @@ module io
 
   private
   public :: open_files, close_files, save_time, save_energy, &
-    save_velocity_pdf, save_vcf, save_surface, idl_surface, end_state, &
+    save_velocity_pdf, save_vel_corr, save_surface, idl_surface, end_state, &
     get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
     save_momentum, save_norm, get_dirs, diag, condensed_particles, &
     average, pp_save_filter
@@ -236,7 +236,7 @@ module io
 
 ! ***************************************************************************  
 
-  subroutine save_vcf(in_var)
+  subroutine save_vel_corr(in_var)
     ! Save the velocity correlation function.
     use parameters
     use variables, only : get_vcf
@@ -258,7 +258,7 @@ module io
     end if
     
     return
-  end subroutine save_vcf
+  end subroutine save_vel_corr
 
 ! ***************************************************************************  
 

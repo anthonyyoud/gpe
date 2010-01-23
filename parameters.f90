@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.80 2010-01-23 14:12:27 youd Exp $
+! $Id: parameters.f90,v 1.81 2010-01-23 14:18:16 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -13,16 +13,16 @@ module parameters
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
-  integer,      parameter :: nyprocs      = 1
-  integer,      parameter :: nzprocs      = 2
-  integer,      parameter :: nx           = 64
-  integer,      parameter :: ny           = 64
-  integer,      parameter :: nz           = 64
+  integer,      parameter :: nyprocs      = 2
+  integer,      parameter :: nzprocs      = 4
+  integer,      parameter :: nx           = 128
+  integer,      parameter :: ny           = 128
+  integer,      parameter :: nz           = 128
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 25.0
-  real,         parameter :: xr           = 32.0
-  real,         parameter :: yr           = 32.0
-  real,         parameter :: zr           = 32.0
+  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: xr           = 64.0
+  real,         parameter :: yr           = 64.0
+  real,         parameter :: zr           = 64.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
@@ -45,7 +45,7 @@ module parameters
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .false.
   logical,      parameter :: save_pdf     = .false.
-  logical,      parameter :: save_velcf   = .true.
+  logical,      parameter :: save_vcf     = .true.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
