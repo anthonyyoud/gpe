@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: run.sh,v 1.4 2009-10-11 20:17:48 youd Exp $
+# $Id: run.sh,v 1.5 2010-01-23 14:12:27 youd Exp $
 #----------------------------------------------------------------------------
 
 # Simple script to run a job.
@@ -100,6 +100,9 @@ if [ ! -z $PREDIR ]; then
     cp $PREDIR/$PROCDIR/end_state.dat end_state$i.dat
   done
 fi
+
+# Make directories in which to hold the PDFs and VCFs.
+mkdir pdf vcf
 
 echo Running job...
 nohup /usr/bin/time -p mpiexec -n $NPROCS $EXE &> $LOGFILE &

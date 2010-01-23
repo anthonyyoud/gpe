@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.36 2010-01-23 11:38:11 youd Exp $
+! $Id: variables.f90,v 1.37 2010-01-23 14:12:27 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -474,10 +474,11 @@ module variables
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
     real, dimension(0:nx1), intent(out) :: f
-    real, dimension(0:nx1) :: Qxx
+    real, dimension(0:nx1) :: Qxx, total_Qxx
     real, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: phase
     real, dimension(3,0:nx1,jsta:jend,ksta:kend) :: vel, gradient, gradstar
-    integer :: i, r, num, count_yz
+    integer, dimension(0:nx1) :: num
+    integer :: i, r
 
     gradient = grad(in_var)
     gradstar = grad(conjg(in_var))
@@ -489,19 +490,21 @@ module variables
       abs(in_var(:,jsta:jend,ksta:kend))**2
     end do
 
-    count_yz = (jend-jsta+1) * (kend-ksta+1)
     Qxx = 0.0
+    num = 0
     do r=0,nx1
-      num = 0
       do i=0,nx1
         if (i+r <= nx1) then
-          num = num+1
+          num(r) = num(r)+1
           Qxx(r) = Qxx(r) + sum(vel(1,i,:,:) * vel(1,i+r,:,:))
         end if
       end do
-      Qxx(r) = Qxx(r)/real(num)
     end do
 
+    call MPI_ALLREDUCE(Qxx, total_Qxx, nx, MPI_REAL, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
+
+    Qxx = total_Qxx/real(num*ny*nz)
     f = Qxx/Qxx(0)
 
     return

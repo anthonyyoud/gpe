@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.57 2010-01-23 11:38:11 youd Exp $
+! $Id: io.f90,v 1.58 2010-01-23 14:12:27 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -203,10 +203,11 @@ module io
     gpdf_vz = gaussian_pdf(vz_bins, vmean(3), vstdev(3))
 
     if (myrank == 0) then
-      open (21, status='unknown', file='pdf_vel'//itos(p)//'.dat')
-      write (21, '(a1,3e17.9)') '# Mean:', vmean(1), vmean(2), vmean(3)
-      write (21, '(a1,3e17.9)') '# StDev:', vstdev(1), vstdev(2), vstdev(3)
-      write (21, '(a1,3e17.9)') '# Sum:', sum(pdf_vx), sum(pdf_vy), sum(pdf_vz)
+      open (21, status='unknown', file='pdf/pdf_vel'//itos(p)//'.dat')
+      write (21, '(a10,e17.9)') '# t:', t
+      write (21, '(a10,3e17.9)') '# Mean:', vmean(1), vmean(2), vmean(3)
+      write (21, '(a10,3e17.9)') '# StDev:', vstdev(1), vstdev(2), vstdev(3)
+      write (21, '(a10,3e17.9)') '# Sum:', sum(pdf_vx), sum(pdf_vy), sum(pdf_vz)
       do i=-nbins/2+1,nbins/2
         write (21, '(9e17.9)') vx_bins(i), pdf_vx(i), gpdf_vx(i), &
           vy_bins(i), pdf_vy(i), gpdf_vy(i), &
@@ -248,7 +249,8 @@ module io
     call get_vcf(in_var, f)
 
     if (myrank == 0) then
-      open (21, status='unknown', file='vcf'//itos(p)//'.dat')
+      open (21, status='unknown', file='vcf/vcf'//itos(p)//'.dat')
+      write (21, '(a4,e17.9)') '# t:', t
       do r=0,nx1
         write (21, '(i5,e17.9)') r, f(r)
       end do

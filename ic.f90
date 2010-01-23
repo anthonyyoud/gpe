@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.65 2009-12-03 20:40:18 youd Exp $
+! $Id: ic.f90,v 1.66 2010-01-23 14:12:27 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -88,7 +88,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = vortex_ring(vr1) !* &
+      !out_var = vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
@@ -133,8 +133,8 @@ module ic
       !          vortex_line(vl38)
       !out_var = sphere() !* vortex_ring(vr1)
       !out_var = wall() !* vortex_ring(vr1)
-      !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1)
+      call random_phase(tmp_var)
+      out_var = tmp_var !* vortex_ring(vr1)
     end if
   
     return
