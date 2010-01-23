@@ -1,4 +1,4 @@
-! $Id: gpe.f90,v 1.53 2009-12-08 17:30:19 youd Exp $
+! $Id: gpe.f90,v 1.54 2010-01-23 11:38:11 youd Exp $
 !----------------------------------------------------------------------------
 
 program gpe
@@ -193,6 +193,9 @@ program gpe
       call condensed_particles(t, psi%new)
       if (save_pdf) then
         call save_velocity_pdf(psi%old)
+      end if
+      if (save_velcf) then
+        call save_vcf(psi%old)
       end if
       m = m+1
     end if

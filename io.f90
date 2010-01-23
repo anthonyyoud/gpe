@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.56 2009-12-08 17:30:19 youd Exp $
+! $Id: io.f90,v 1.57 2010-01-23 11:38:11 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -8,10 +8,10 @@ module io
 
   private
   public :: open_files, close_files, save_time, save_energy, &
-            save_velocity_pdf, save_surface, idl_surface, end_state, &
-            get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
-            save_momentum, save_norm, get_dirs, diag, condensed_particles, &
-            average, pp_save_filter
+    save_velocity_pdf, save_vcf, save_surface, idl_surface, end_state, &
+    get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
+    save_momentum, save_norm, get_dirs, diag, condensed_particles, &
+    average, pp_save_filter
   
   contains
 
@@ -232,6 +232,31 @@ module io
     end function gaussian_pdf
 
   end subroutine save_velocity_pdf
+
+! ***************************************************************************  
+
+  subroutine save_vcf(in_var)
+    ! Save the velocity correlation function.
+    use parameters
+    use variables, only : get_vcf
+    implicit none
+
+    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
+    real, dimension(0:nx1) :: f
+    integer :: r
+
+    call get_vcf(in_var, f)
+
+    if (myrank == 0) then
+      open (21, status='unknown', file='vcf'//itos(p)//'.dat')
+      do r=0,nx1
+        write (21, '(i5,e17.9)') r, f(r)
+      end do
+      close (21)
+    end if
+    
+    return
+  end subroutine save_vcf
 
 ! ***************************************************************************  
 

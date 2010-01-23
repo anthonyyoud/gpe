@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.78 2009-12-08 17:30:19 youd Exp $
+! $Id: parameters.f90,v 1.79 2010-01-23 11:38:11 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -39,12 +39,13 @@ module parameters
   real,         parameter :: save_rate2   = 10.0
   real,         parameter :: save_rate3   = 10.0
   real,         parameter :: p_save       = 10.0
-  logical,      parameter :: save_contour = .true.
+  logical,      parameter :: save_contour = .false.
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
   logical,      parameter :: save_spectrum= .false.
   logical,      parameter :: save_pdf     = .false.
+  logical,      parameter :: save_velcf   = .true.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .true.

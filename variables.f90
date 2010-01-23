@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.35 2009-12-03 20:04:00 youd Exp $
+! $Id: variables.f90,v 1.36 2010-01-23 11:38:11 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -8,9 +8,9 @@ module variables
 
   private
   public :: laplacian, get_density, get_phase, get_pdf_velocity, get_norm, &
-    get_pdf, energy, mass, momentum, linelength, setup_itable, para_range, &
-    array_len, neighbours, send_recv_y, send_recv_z, pack_y, unpack_y, &
-    renormalise
+    get_pdf, get_vcf, energy, mass, momentum, linelength, setup_itable, &
+    para_range, array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
+    unpack_y, renormalise
 
   type, public :: var
     complex, allocatable, dimension(:,:,:) :: new
@@ -463,6 +463,49 @@ module variables
 
     return
   end subroutine get_pdf
+
+! ***************************************************************************  
+
+  subroutine get_vcf(in_var, f)
+    ! Calculate the velocity correlation function.
+    use parameters
+    use derivs
+    implicit none
+
+    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    real, dimension(0:nx1), intent(out) :: f
+    real, dimension(0:nx1) :: Qxx
+    real, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: phase
+    real, dimension(3,0:nx1,jsta:jend,ksta:kend) :: vel, gradient, gradstar
+    integer :: i, r, num, count_yz
+
+    gradient = grad(in_var)
+    gradstar = grad(conjg(in_var))
+
+    do i=1,3
+      vel(i,:,:,:) = -0.5*eye * ( &
+      conjg(in_var(:,jsta:jend,ksta:kend))*gradient(i,:,:,:) - &
+      in_var(:,jsta:jend,ksta:kend)*gradstar(i,:,:,:) ) / &
+      abs(in_var(:,jsta:jend,ksta:kend))**2
+    end do
+
+    count_yz = (jend-jsta+1) * (kend-ksta+1)
+    Qxx = 0.0
+    do r=0,nx1
+      num = 0
+      do i=0,nx1
+        if (i+r <= nx1) then
+          num = num+1
+          Qxx(r) = Qxx(r) + sum(vel(1,i,:,:) * vel(1,i+r,:,:))
+        end if
+      end do
+      Qxx(r) = Qxx(r)/real(num)
+    end do
+
+    f = Qxx/Qxx(0)
+
+    return
+  end subroutine get_vcf
 
 ! ***************************************************************************  
 
