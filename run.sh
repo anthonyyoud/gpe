@@ -1,13 +1,12 @@
 #!/bin/bash
-# $Id: run.sh,v 1.5 2010-01-23 14:12:27 youd Exp $
+# $Id: run.sh,v 1.6 2010-01-30 13:54:36 youd Exp $
 #----------------------------------------------------------------------------
 
 # Simple script to run a job.
 
 PATH=.:/bin:/usr/bin
 
-usage()
-{
+usage() {
 cat <<EOF
 run.sh
 ---------
@@ -35,13 +34,21 @@ OPTIONS:
                     created and the script aborts.  Use -f to force removal of
                     the existing process directories and create new ones.
 
+        -p|--post-process
+                    Should be used when post-processing isosurfaces.
+
         -h|--help
                     Show usage information.
 EOF
 }
 
+run() {
+  echo Running job...
+  nohup /usr/bin/time -p mpiexec -n $NPROCS $EXE &> $LOGFILE &
+}
+
 # Get command line options
-options=`getopt -o r:fh -l restart:,force,help -n run.sh -- "$@"`
+options=`getopt -o r:fph -l restart:,force,post-process,help -n run.sh -- "$@"`
 
 # If no options, show the help
 if [ $# == 0 ]; then
@@ -52,12 +59,14 @@ fi
 eval set -- "$options"
 
 FORCE=0
+POST=0
 # Set parameters depending on options
 while true
 do
   case "$1" in
     -r|--restart) PREDIR=$2; shift 2;;
     -f|--force) FORCE=1; shift;;
+    -p|--post-process) POST=1; shift;;
     -h|--help) usage; exit 1;;
     --) shift ; break ;;
     *) echo "Invalid flag" ; exit 1 ;;
@@ -76,6 +85,13 @@ EXE=gpe
 LOGFILE=log.txt
 
 echo Going to run on $NPROCS processes.
+
+if [ $POST -eq 1 ]; then
+  # If post-processing just do the run.
+  echo Post-processing isosurfaces...
+  run
+  exit 0
+fi
 
 for i in `seq -f "%0${DIGITS}g" 0 $(($NPROCS-1))`
 do
@@ -101,8 +117,8 @@ if [ ! -z $PREDIR ]; then
   done
 fi
 
-# Make directories in which to hold the PDFs and VCFs.
-mkdir pdf vcf
+# Make directories in which to hold the PDFs, VCFs, spectra, and IDF.
+mkdir pdf vcf spectrum idf &> /dev/null
 
-echo Running job...
-nohup /usr/bin/time -p mpiexec -n $NPROCS $EXE &> $LOGFILE &
+# Run the job.
+run

@@ -1,4 +1,4 @@
-! $Id: parameters.f90,v 1.81 2010-01-23 14:18:16 youd Exp $
+! $Id: parameters.f90,v 1.82 2010-01-30 13:54:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module parameters
@@ -9,7 +9,7 @@ module parameters
   include 'mpif.h'
 
   logical, parameter :: pp_filtered_surface = .false.
-  integer, parameter :: nlines              = 41
+  integer, parameter :: nlines              = 3
   integer, parameter :: nfilter             = 1
   real,    parameter :: fscale              = 1.0
 
@@ -19,19 +19,19 @@ module parameters
   integer,      parameter :: ny           = 128
   integer,      parameter :: nz           = 128
   real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 1000.0
+  real,         parameter :: end_time     = 5000.0
   real,         parameter :: xr           = 64.0
   real,         parameter :: yr           = 64.0
   real,         parameter :: zr           = 64.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
-  real,         parameter :: nv           = 0.5
+  real,         parameter :: nv           = 0.75
   real,         parameter :: enerv        = 0.75
   ! see bottom of solve.f90 for possible values
-  integer,      parameter :: eqn_to_solve = 1
+  integer,      parameter :: eqn_to_solve = 2
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 2
+  integer,      parameter :: bcs          = 1
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: nbins        = 256
@@ -43,8 +43,8 @@ module parameters
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
-  logical,      parameter :: save_spectrum= .false.
-  logical,      parameter :: save_pdf     = .false.
+  logical,      parameter :: save_spectrum= .true.
+  logical,      parameter :: save_pdf     = .true.
   logical,      parameter :: save_vcf     = .true.
   logical,      parameter :: save_ll      = .true.
   logical,      parameter :: save_zeros   = .false.

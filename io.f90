@@ -1,4 +1,4 @@
-! $Id: io.f90,v 1.59 2010-01-23 14:18:16 youd Exp $
+! $Id: io.f90,v 1.60 2010-01-30 13:54:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module io
@@ -538,7 +538,8 @@ module io
           end if
           k2 = ii2 + jj2 + kk2
           !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
-          a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(9.0-1e-3*t)**2),0.0)
+          !a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(9.0-1e-3*t)**2),0.0)
+          a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(10.0)**2),0.0)
         end do
       end do
     end do
@@ -669,14 +670,14 @@ module io
       end do
     
       ! Write mean occupation number to file
-      open (unit_no, file=proc_dir//'spectrum'//itos(p)//'.dat')
+      open (unit_no, file='spectrum/spectrum'//itos(p)//'.dat')
       do m=1,nshells
         write (unit_no, '(2i9,e17.9)') m, tot_nharm(m), tot_eta(m)
       end do
       close (unit_no)
 
       ! Write integral distribution function to file
-      open (unit_no, file=proc_dir//'idf'//itos(p)//'.dat')
+      open (unit_no, file='idf/idf'//itos(p)//'.dat')
       do kk=1,nx/2
         write (unit_no, '(i9,e17.9)') kk, tot_F(kk)
       end do
@@ -1497,8 +1498,9 @@ module io
     do j=1,nfilter
       if (myrank == 0) then
         open (50, file='p_saved.dat')
-        open (18, status='unknown', position='append', file='filtered_ll.dat')
-        write (18, *) '# ', j
+        open (22, status='unknown', position='append', file='filtered_ll.dat')
+        write (22, *) '# ', j
+        close (22)
       end if
       do i=1,nlines
         if (myrank == 0) then
@@ -1524,9 +1526,10 @@ module io
         call filtered_surface(a, 0, j)
       end do
       if (myrank == 0) then
-        write (18, *)
-        write (18, *)
-        close (18)
+        open (22, status='unknown', position='append', file='filtered_ll.dat')
+        write (22, *)
+        write (22, *)
+        close (22)
         close (50)
       end if
     end do
