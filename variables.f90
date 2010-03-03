@@ -1,4 +1,4 @@
-! $Id: variables.f90,v 1.37 2010-01-23 14:12:27 youd Exp $
+! $Id: variables.f90,v 1.38 2010-03-03 16:28:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module variables
@@ -38,12 +38,12 @@ module variables
   !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: z
   !end type vel
 
-  integer, dimension(-1:nyprocs, -1:nzprocs), public :: itable
+  integer, dimension(-1:nyprocs, -1:nzprocs), private :: itable
   
   ! Constants for numerical integration
   real, parameter, private :: c1 = 3.0/8.0, &
-                                c2 = 7.0/6.0, &
-                                c3 = 23.0/24.0
+                              c2 = 7.0/6.0, &
+                              c3 = 23.0/24.0
 
   contains
 

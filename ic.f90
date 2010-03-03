@@ -1,4 +1,4 @@
-! $Id: ic.f90,v 1.66 2010-01-23 14:12:27 youd Exp $
+! $Id: ic.f90,v 1.67 2010-03-03 16:28:36 youd Exp $
 !----------------------------------------------------------------------------
 
 module ic
@@ -14,7 +14,7 @@ module ic
   real, dimension(0:ny1), public :: y
   real, dimension(0:nz1), public :: z
 
-  integer, public :: unit_no
+  integer, protected, public :: unit_no
 
   contains
 
