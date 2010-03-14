@@ -2,9 +2,9 @@ OBJECT	= gpe
 OBJS	= constants.o derivs.o error.o gpe.o ic.o io.o parameters.o \
         solve.o variables.o
 FC	= sunf95
-FFLAGS	= -fast #-fsimple=0
+FFLAGS	= -fast -xmodel=medium #-fsimple=0
 #FC	= gfortran
-#FFLAGS	= -O3 -march=core2 -mfpmath=sse
+#FFLAGS	= -O3 -march=core2 -mfpmath=sse #-mcmodel=medium
 LDFLAGS	= -lmpi_f90 -lmpi_f77 -lmpi -lopen-rte -lopen-pal \
           -ldl -lnsl -lutil -lm -lsrfftw_mpi -lsfftw_mpi -lsrfftw -lsfftw
 INCLUDE	= -I/usr/lib/openmpi/include
