@@ -1,3 +1,6 @@
+# $Id$
+#----------------------------------------------------------------------------
+
 OBJECT	= gpe
 OBJS	= constants.o derivs.o error.o gpe.o ic.o io.o parameters.o \
         solve.o variables.o
