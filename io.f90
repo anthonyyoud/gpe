@@ -370,16 +370,16 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine save_norm(time, prev_norm, norm)
+  subroutine save_norm(time, norm)
     ! Save the norm
     use parameters
     implicit none
 
-    real, intent(in) :: time, prev_norm, norm
+    real, intent(in) :: time, norm
 
     if (myrank == 0) then
       open (20, status='unknown', position='append', file='norm.dat')
-      write (20, '(4e17.9)') time, im_t, prev_norm, norm
+      write (20, '(4e17.9)') time, im_t, norm
       close (20)
     end if
 

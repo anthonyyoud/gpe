@@ -110,6 +110,11 @@ program gpe
   if (.not. pp_filtered_surface) then
   ! Get the initial conditions
   call ics(psi%new)
+  if (eqn_to_solve == 4 .and. .not. real_time) then
+    call get_norm(psi%new, prev_norm)
+    call renormalise(psi%new, prev_norm)
+    call save_norm(t, prev_norm)
+  end if
   if (save_3d) then
     call idl_surface(psi%new)
   end if
@@ -125,9 +130,6 @@ program gpe
     end if
   end if
   
-  ! Calculate the norm of the initial condition
-  call get_norm(psi%new, prev_norm)
-
   ps = int(t/p_save)
   n = int(t/save_rate2)
   m = int(t/save_rate3)
@@ -239,40 +241,38 @@ program gpe
     end if
     
     ! Calculate the norm
-    if (.not. real_time) then
+    if (eqn_to_solve == 4) then
       call get_norm(psi%new, norm)
       if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
-        call save_norm(t, prev_norm, norm)
-        !call renormalise(psi%new, prev_norm, norm)
+        call save_norm(t, norm)
+      end if
+      if (.not. real_time) then
+        call renormalise(psi%new, norm)
       end if
     end if
 
-    ! Make sure all process know what the norm is
-    call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+    ! Make sure all processes know what the norm is
+    !call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
     ! Calculate the relative difference of successive norms.  If the difference
     ! is small enough switch to real time
-    !if (.not. real_time) then
-    !  if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
-    !    real_time = .true.
-    !    switched = .true.
-    !    im_t = 0.0
-    !    ps = int(t/p_save)
-    !    n = int(t/save_rate2)
-    !    m = int(t/save_rate3)
-    !!    call idl_surface(p, psi%new)
-    !!    call save_surface(p, psi%new)
-    !    if (myrank == 0) then
-    !      print*, 'Switching to real time'
-    !    end if
-    !  end if
-    !end if
-    
-    ! Flag to denote whether this is the first time step after switching to
-    ! real time
-    if (switched) then
-      dt = cmplx(abs(aimag(dt)), abs(real(dt)))
-      switched = .false.
+    if (eqn_to_solve == 4 .and. .not. real_time) then
+      if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
+        real_time = .true.
+        im_t = 0.0
+        ps = int(t/p_save)
+        n = int(t/save_rate2)
+        m = int(t/save_rate3)
+        if (save_3d) then
+          call idl_surface(psi%new)
+        end if
+        dt = cmplx(abs(aimag(dt)), abs(real(dt)))
+        if (myrank == 0) then
+          print*, 'Switching to real time'
+          print*, 't =', im_t
+          print*, 'p =', p
+        end if
+      end if
     end if
     
     ! Update the norm

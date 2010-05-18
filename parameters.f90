@@ -15,23 +15,26 @@ module parameters
 
   integer,      parameter :: nyprocs      = 2
   integer,      parameter :: nzprocs      = 4
-  integer,      parameter :: nx           = 128
-  integer,      parameter :: ny           = 128
-  integer,      parameter :: nz           = 128
-  real,         parameter :: tau          = 0.001
-  real,         parameter :: end_time     = 5000.0
-  real,         parameter :: xr           = 64.0
-  real,         parameter :: yr           = 64.0
-  real,         parameter :: zr           = 64.0
+  integer,      parameter :: nx           = 64
+  integer,      parameter :: ny           = 64
+  integer,      parameter :: nz           = 64
+  real,         parameter :: tau          = 0.01
+  real,         parameter :: end_time     = 500.0
+  real,         parameter :: xr           = 32.0
+  real,         parameter :: yr           = 32.0
+  real,         parameter :: zr           = 32.0
   real,         parameter :: Urhs         = 0.0 !0.35
   real,         parameter :: diss_amp     = 0.0 !0.005
   real,         parameter :: scal         = 1.0 !0.64315009229562
   real,         parameter :: nv           = 0.75
   real,         parameter :: enerv        = 0.75
+  real,         parameter :: g            = 3.0
+  real,         parameter :: mu           = 0.0
+  real,         parameter :: nn           = 1e5
   ! see bottom of solve.f90 for possible values
-  integer,      parameter :: eqn_to_solve = 2
+  integer,      parameter :: eqn_to_solve = 4
   ! bcs = 1 for periodic, 2 for reflective
-  integer,      parameter :: bcs          = 1
+  integer,      parameter :: bcs          = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
   integer,      parameter :: order        = 4
   integer,      parameter :: nbins        = 256
@@ -43,14 +46,14 @@ module parameters
   logical,      parameter :: save_3d      = .true.
   logical,      parameter :: save_filter  = .false.
   logical,      parameter :: save_average = .false.
-  logical,      parameter :: save_spectrum= .true.
-  logical,      parameter :: save_pdf     = .true.
-  logical,      parameter :: save_vcf     = .true.
-  logical,      parameter :: save_ll      = .true.
+  logical,      parameter :: save_spectrum= .false.
+  logical,      parameter :: save_pdf     = .false.
+  logical,      parameter :: save_vcf     = .false.
+  logical,      parameter :: save_ll      = .false.
   logical,      parameter :: save_zeros   = .false.
   logical,      parameter :: restart      = .false.
   logical,      parameter :: saved_restart= .false.
-  logical                 :: real_time    = .true.
+  logical                 :: real_time    = .false.
   logical                 :: diagnostic   = .false.
   character(*), parameter :: scheme       = 'rk_adaptive'
 
@@ -307,7 +310,7 @@ module parameters
   end type ring_param
 
   type (ring_param), parameter :: &
-    vr1 = ring_param(32.0, 0.0, 0.0, 32.0, 0.0, 5, 20.0, 10, -1.0)
+    vr1 = ring_param(-48.0, 0.0, 0.0, 25.0, 0.0, 5, 0.0, 10, -1.0)
   !type (ring_param), parameter :: &
   !  vr2 = ring_param(-16.0, 0.0, 0.0, 32.0, 5.0, 3, -1.0)
   !type (ring_param), parameter :: &

@@ -8,7 +8,7 @@ module ic
 
   private
   public :: get_grid, get_unit_no, ics, fft, get_kc_amp, wall, &
-            sphere, sphere2, vortex_line
+            sphere, sphere2, vortex_line, Vtrap
 
   real, dimension(0:nx1), public :: x
   real, dimension(0:ny1), public :: y
@@ -88,7 +88,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      !out_var = vortex_ring(vr1) !* &
+      out_var = 1.0 !vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
@@ -133,8 +133,8 @@ module ic
       !          vortex_line(vl38)
       !out_var = sphere() !* vortex_ring(vr1)
       !out_var = wall() !* vortex_ring(vr1)
-      call random_phase(tmp_var)
-      out_var = tmp_var !* vortex_ring(vr1)
+      !call random_phase(tmp_var)
+      !out_var = tmp_var !* vortex_ring(vr1)
     end if
   
     return
@@ -299,33 +299,33 @@ module ic
 
 ! ***************************************************************************  
 
-  function fermi()
-    ! Thomas-Fermi initial condition
-    use parameters
-    implicit none
+  !function fermi()
+  !  ! Thomas-Fermi initial condition
+  !  use parameters
+  !  implicit none
 
-    real, parameter                            :: c=450.0
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: fermi, r
-    real                                       :: mu
-    integer                                    :: i, j, k
+  !  real, parameter                            :: c=450.0
+  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: fermi, r
+  !  real                                       :: mu
+  !  integer                                    :: i, j, k
 
-    mu = sqrt(c/pi)
+  !  mu = sqrt(c/pi)
 
-    do k=ksta,kend
-      do j=jsta,jend
-        do i=0,nx1
-          r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
-          if (r(i,j,k)<=sqrt(2.0*mu)) then
-            fermi(i,j,k) = sqrt((2.0*mu - r(i,j,k)**2)/(2.0*c))
-          else
-            fermi(i,j,k) = 0.0
-          end if
-        end do
-      end do
-    end do
-    
-    return
-  end function fermi
+  !  do k=ksta,kend
+  !    do j=jsta,jend
+  !      do i=0,nx1
+  !        r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
+  !        if (r(i,j,k)<=sqrt(2.0*mu)) then
+  !          fermi(i,j,k) = sqrt((2.0*mu - r(i,j,k)**2)/(2.0*c))
+  !        else
+  !          fermi(i,j,k) = 0.0
+  !        end if
+  !      end do
+  !    end do
+  !  end do
+  !  
+  !  return
+  !end function fermi
 
 ! ***************************************************************************  
 
@@ -660,6 +660,24 @@ module ic
 
     return
   end function wall
+
+! ***************************************************************************  
+
+  function Vtrap()
+    use parameters
+    implicit none
+
+    real, dimension(0:nx1,jsta:jend,ksta:kend) :: Vtrap
+    integer :: i, j, k
+    do k=ksta,kend
+      do j=jsta,jend
+        do i=0,nx1
+          Vtrap(i,j,k) = 0.5*(x(i)**2 + y(j)**2 + z(k)**2)
+        end do
+      end do
+    end do
+
+  end function Vtrap
 
 ! ***************************************************************************  
 

@@ -688,21 +688,15 @@ module variables
 
 ! ***************************************************************************  
 
-  subroutine renormalise(var, prev_norm, norm)
+  subroutine renormalise(var, norm)
     ! Renormalise when running in imaginary time
     use parameters
-    use ic, only : vortex_line
     implicit none
 
     complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: var
-    real, intent(in) :: prev_norm, norm
+    real, intent(in) :: norm
 
-    !call mass(var, M)
-
-    !var = sqrt(8.0*xr*yr*zr) * var / sqrt(M)
-    var = var * sqrt(prev_norm / norm) !* &
-    !            vortex_line(vl1) * &
-    !            vortex_line(vl2)
+    var = sqrt(nn) * var / sqrt(norm)
 
     return
   end subroutine renormalise

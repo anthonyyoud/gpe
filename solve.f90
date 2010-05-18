@@ -342,7 +342,7 @@ module solve
     use parameters
     use variables
     use derivs
-    use ic, only : x, y, z, wall, sphere, sphere2
+    use ic, only : x, y, z, wall, sphere, sphere2, Vtrap
     implicit none
 
     complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
@@ -386,12 +386,12 @@ module solve
                                  in_var(:,jsta:jend,ksta:kend) ) + &
                          Urhs*dpsidx) * sphere()
       case (4)
-        !-2i*dpsi/dt + 2iU*dpsi/dx = del^2(psi) + (1-|psi|^2)psi + Vtrap*psi
-        rhs = 0.5*(eye+diss) * ( laplacian(in_var) + &
-                        (1.0-abs(in_var(:,jsta:jend,ksta:kend))**2)*&
-                                in_var(:,jsta:jend,ksta:kend) + &
-                         sphere2() * in_var(:,jsta:jend,ksta:kend) ) + &
-                        Urhs*dpsidx
+        !i*dpsi/dt = -0.5*del^2(psi) + Vtrap*psi + g(|psi|^2)psi - mu*psi
+        rhs = -eye * ( -0.5*laplacian(in_var) + &
+          Vtrap()*in_var(:,jsta:jend,ksta:kend) + &
+          g*(abs(in_var(:,jsta:jend,ksta:kend)**2) * &
+          in_var(:,jsta:jend,ksta:kend)) - &
+          mu*in_var(:,jsta:jend,ksta:kend) )
     end select
 
     return
