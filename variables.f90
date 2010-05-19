@@ -13,37 +13,31 @@ module variables
     unpack_y, renormalise
 
   type, public :: var
-    complex, allocatable, dimension(:,:,:) :: new
-    complex, allocatable, dimension(:,:,:) :: old
-    complex, allocatable, dimension(:,:,:) :: old2
+    complex (pr), allocatable, dimension(:,:,:) :: new
+    complex (pr), allocatable, dimension(:,:,:) :: old
+    complex (pr), allocatable, dimension(:,:,:) :: old2
   end type var
 
   type, public :: deriv
-    complex, allocatable, dimension(:,:,:) :: x
-    complex, allocatable, dimension(:,:,:) :: y
-    complex, allocatable, dimension(:,:,:) :: z
-    complex, allocatable, dimension(:,:,:) :: xx
-    complex, allocatable, dimension(:,:,:) :: yy
-    complex, allocatable, dimension(:,:,:) :: zz
+    complex (pr), allocatable, dimension(:,:,:) :: x
+    complex (pr), allocatable, dimension(:,:,:) :: y
+    complex (pr), allocatable, dimension(:,:,:) :: z
+    complex (pr), allocatable, dimension(:,:,:) :: xx
+    complex (pr), allocatable, dimension(:,:,:) :: yy
+    complex (pr), allocatable, dimension(:,:,:) :: zz
   end type deriv
 
   type, public :: re_im
-    real, allocatable, dimension(:,:,:) :: re
-    real, allocatable, dimension(:,:,:) :: im
+    real (pr), allocatable, dimension(:,:,:) :: re
+    real (pr), allocatable, dimension(:,:,:) :: im
   end type re_im
-
-  !type, private :: vel
-  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: x
-  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: y
-  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: z
-  !end type vel
 
   integer, dimension(-1:nyprocs, -1:nzprocs), private :: itable
   
   ! Constants for numerical integration
-  real, parameter, private :: c1 = 3.0/8.0, &
-                              c2 = 7.0/6.0, &
-                              c3 = 23.0/24.0
+  real (pr), parameter, private :: c1 = 3.0_pr/8.0_pr, &
+                                   c2 = 7.0_pr/6.0_pr, &
+                                   c3 = 23.0_pr/24.0_pr
 
   contains
 
@@ -53,8 +47,8 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: laplacian, dxx, dyy, dzz
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: laplacian, dxx, dyy, dzz
 
     call deriv_xx(in_var,dxx)
     call deriv_yy(in_var,dyy)
@@ -73,9 +67,9 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: derx, dery, derz
-    complex, dimension(3,0:nx1,jsta:jend,ksta:kend) :: grad
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: derx, dery, derz
+    complex (pr), dimension(3,0:nx1,js:je,ks:ke) :: grad
 
     call deriv_x(in_var,derx)
     call deriv_y(in_var,dery)
@@ -153,10 +147,10 @@ module variables
     use parameters
     implicit none
 
-    jlen = jend-jsta+1
-    kksta = max(0, ksta-1)
-    kkend = min(nz1, kend+1)
-    klen = kkend-kksta+1
+    jlen = je-js+1
+    kks = max(0, ks-1)
+    kke = min(nz1, ke+1)
+    klen = kke-kks+1
 
     return
   end subroutine array_len
@@ -185,21 +179,21 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     integer, dimension(4) :: jsend, jrecv
 
     ! Send the data two away from the boundary (to allow for fourth order
     ! derivatives)
-    call MPI_ISEND(in_var(0,jsta,kend-1), nx*jlen, MPI_COMPLEX, znext, 1, &
-                   MPI_COMM_WORLD, jsend(1), ierr)
-    call MPI_ISEND(in_var(0,jsta,ksta+1), nx*jlen, MPI_COMPLEX, zprev, 1, &
-                   MPI_COMM_WORLD, jsend(2), ierr)
-                   
+    call MPI_ISEND(in_var(0,js,ke-1), nx*jlen, gpe_mpi_complex, &
+      znext, 1, MPI_COMM_WORLD, jsend(1), ierr)
+    call MPI_ISEND(in_var(0,js,ks+1), nx*jlen, gpe_mpi_complex, &
+      zprev, 1, MPI_COMM_WORLD, jsend(2), ierr)
+                 
     ! Receive the data two away from the boundary
-    call MPI_IRECV(in_var(0,jsta,ksta-2), nx*jlen, MPI_COMPLEX, zprev, 1, &
-                   MPI_COMM_WORLD, jrecv(1), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+2), nx*jlen, MPI_COMPLEX, znext, 1, &
-                   MPI_COMM_WORLD, jrecv(2), ierr)
+    call MPI_IRECV(in_var(0,js,ks-2), nx*jlen, gpe_mpi_complex, &
+      zprev, 1, MPI_COMM_WORLD, jrecv(1), ierr)
+    call MPI_IRECV(in_var(0,js,ke+2), nx*jlen, gpe_mpi_complex, &
+      znext, 1, MPI_COMM_WORLD, jrecv(2), ierr)
 
     ! Wait until all send/receive operations have been completed
     call MPI_WAIT(jsend(1), istatus, ierr)
@@ -208,16 +202,16 @@ module variables
     call MPI_WAIT(jrecv(2), istatus, ierr)
 
     ! Send the data one away from the boundary
-    call MPI_ISEND(in_var(0,jsta,kend), nx*jlen, MPI_COMPLEX, znext, 1, &
-                   MPI_COMM_WORLD, jsend(3), ierr)
-    call MPI_ISEND(in_var(0,jsta,ksta), nx*jlen, MPI_COMPLEX, zprev, 1, &
-                   MPI_COMM_WORLD, jsend(4), ierr)
+    call MPI_ISEND(in_var(0,js,ke), nx*jlen, gpe_mpi_complex, &
+      znext, 1, MPI_COMM_WORLD, jsend(3), ierr)
+    call MPI_ISEND(in_var(0,js,ks), nx*jlen, gpe_mpi_complex, &
+      zprev, 1, MPI_COMM_WORLD, jsend(4), ierr)
                    
     ! Receive the data one away from the boundary
-    call MPI_IRECV(in_var(0,jsta,ksta-1), nx*jlen, MPI_COMPLEX, zprev, 1, &
-                   MPI_COMM_WORLD, jrecv(3), ierr)
-    call MPI_IRECV(in_var(0,jsta,kend+1), nx*jlen, MPI_COMPLEX, znext, 1, &
-                   MPI_COMM_WORLD, jrecv(4), ierr)
+    call MPI_IRECV(in_var(0,js,ks-1), nx*jlen, gpe_mpi_complex, &
+      zprev, 1, MPI_COMM_WORLD, jrecv(3), ierr)
+    call MPI_IRECV(in_var(0,js,ke+1), nx*jlen, gpe_mpi_complex, &
+      znext, 1, MPI_COMM_WORLD, jrecv(4), ierr)
 
     ! Wait until all send/receive operations have been completed
     call MPI_WAIT(jsend(3), istatus, ierr)
@@ -241,16 +235,16 @@ module variables
     integer, dimension(2) :: ksend, krecv
 
     ! Send the boundary data to neighbouring processes
-    call MPI_ISEND(works1(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
-                   MPI_COMM_WORLD, ksend(1), ierr)
-    call MPI_ISEND(works2(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
-                   MPI_COMM_WORLD, ksend(2), ierr)
+    call MPI_ISEND(works1(0,1,kks), nx*2*klen, gpe_mpi_complex, &
+      ynext, 1, MPI_COMM_WORLD, ksend(1), ierr)
+    call MPI_ISEND(works2(0,1,kks), nx*2*klen, gpe_mpi_complex, &
+      yprev, 1, MPI_COMM_WORLD, ksend(2), ierr)
 
     ! Receive the boundary data from neighbouring processes
-    call MPI_IRECV(workr1(0,1,kksta), nx*2*klen, MPI_COMPLEX, yprev, 1, &
-                   MPI_COMM_WORLD, krecv(1), ierr)
-    call MPI_IRECV(workr2(0,1,kksta), nx*2*klen, MPI_COMPLEX, ynext, 1, &
-                   MPI_COMM_WORLD, krecv(2), ierr)
+    call MPI_IRECV(workr1(0,1,kks), nx*2*klen, gpe_mpi_complex, &
+      yprev, 1, MPI_COMM_WORLD, krecv(1), ierr)
+    call MPI_IRECV(workr2(0,1,kks), nx*2*klen, gpe_mpi_complex, &
+      ynext, 1, MPI_COMM_WORLD, krecv(2), ierr)
 
     ! Wait until all send/receive operations have been completed
     call MPI_WAIT(ksend(1), istatus, ierr)
@@ -269,12 +263,12 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     integer :: k
 
     if (myranky /= nyprocs-1) then
-      do k=kksta,kkend
-        works1(:,:,k) = in_var(:,jend-1:jend,k)
+      do k=kks,kke
+        works1(:,:,k) = in_var(:,je-1:je,k)
       end do
     end if
 
@@ -282,15 +276,15 @@ module variables
       ! If using periodic BCs then make sure that the boundary processes also
       ! pack their boundary data
       if (myranky == nyprocs-1) then
-        do k=kksta,kkend
-          works1(:,:,k) = in_var(:,jend-1:jend,k)
+        do k=kks,kke
+          works1(:,:,k) = in_var(:,je-1:je,k)
         end do
       end if
     end if
 
     if (myranky /= 0) then
-      do k=kksta,kkend
-        works2(:,:,k) = in_var(:,jsta:jsta+1,k)
+      do k=kks,kke
+        works2(:,:,k) = in_var(:,js:js+1,k)
       end do
     end if
 
@@ -298,8 +292,8 @@ module variables
       ! If using periodic BCs then make sure that the boundary processes also
       ! pack their boundary data
       if (myranky == 0) then
-        do k=kksta,kkend
-          works2(:,:,k) = in_var(:,jsta:jsta+1,k)
+        do k=kks,kke
+          works2(:,:,k) = in_var(:,js:js+1,k)
         end do
       end if
     end if
@@ -314,12 +308,12 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(out) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(out) :: in_var
     integer :: i, k
     
     if (myranky /= 0) then
-      do k=kksta,kkend
-        in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
+      do k=kks,kke
+        in_var(:,js-2:js-1,k) = workr1(:,:,k)
       end do
     end if
 
@@ -327,15 +321,15 @@ module variables
       ! If using periodic BCs then make sure that the boundary processes also
       ! unpack their boundary data
       if (myranky == 0) then
-        do k=kksta,kkend
-          in_var(:,jsta-2:jsta-1,k) = workr1(:,:,k)
+        do k=kks,kke
+          in_var(:,js-2:js-1,k) = workr1(:,:,k)
         end do
       end if
     end if
 
     if (myranky /= nyprocs-1) then
-      do k=kksta,kkend
-        in_var(:,jend+1:jend+2,k) = workr2(:,:,k)
+      do k=kks,kke
+        in_var(:,je+1:je+2,k) = workr2(:,:,k)
       end do
     end if
 
@@ -343,8 +337,8 @@ module variables
       ! If using periodic BCs then make sure that the boundary processes also
       ! unpack their boundary data
       if (myranky == nyprocs-1) then
-        do k=kksta,kkend
-          in_var(:,jend+1:jend+2,k) = workr2(:,:,k)
+        do k=kks,kke
+          in_var(:,je+1:je+2,k) = workr2(:,:,k)
         end do
       end if
     end if
@@ -359,11 +353,11 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: phase
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: phase
     integer :: j, k
 
-    phase = atan2(aimag(in_var)+1.0e-6, real(in_var))
+    phase = atan2(aimag(in_var)+1.0e-6_pr, real(in_var, pr))
 
     return
   end subroutine get_phase
@@ -376,12 +370,12 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, allocatable, dimension(:) :: vx, vy, vz
-    real, dimension(3), intent(out) :: vmean, vstdev
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_vx, tmp_vy, tmp_vz
-    real, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: phase
-    real, dimension(3,0:nx1,jsta:jend,ksta:kend) :: vel, gradient, gradstar
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), allocatable, dimension(:) :: vx, vy, vz
+    real (pr), dimension(3), intent(out) :: vmean, vstdev
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: tmp_vx, tmp_vy, tmp_vz
+    real (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: phase
+    real (pr), dimension(3,0:nx1,js:je,ks:ke) :: vel, gradient, gradstar
     integer, dimension(3) :: valid_vel
     integer :: i
 
@@ -389,26 +383,26 @@ module variables
     gradstar = grad(conjg(in_var))
 
     do i=1,3
-      where (abs(in_var(:,jsta:jend,ksta:kend))**2 > 0.01)
-        vel(i,:,:,:) = -0.5*eye * ( &
-        conjg(in_var(:,jsta:jend,ksta:kend))*gradient(i,:,:,:) - &
-        in_var(:,jsta:jend,ksta:kend)*gradstar(i,:,:,:) ) / &
-        abs(in_var(:,jsta:jend,ksta:kend))**2
+      where (abs(in_var(:,js:je,ks:ke))**2 > 0.01_pr)
+        vel(i,:,:,:) = -0.5_pr*eye * ( &
+        conjg(in_var(:,js:je,ks:ke))*gradient(i,:,:,:) - &
+        in_var(:,js:je,ks:ke)*gradstar(i,:,:,:) ) / &
+        abs(in_var(:,js:je,ks:ke))**2
       elsewhere
-        vel(i,:,:,:) = 1e3
+        vel(i,:,:,:) = 1e3_pr
       end where
-      valid_vel(i) = count(vel(i,:,:,:) < 0.5e3)
-      vmean(i) = mean(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3))
-      vstdev(i) = stdev(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3), vmean(i))
+      valid_vel(i) = count(vel(i,:,:,:) < 0.5e3_pr)
+      vmean(i) = mean(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3_pr))
+      vstdev(i) = stdev(pack(vel(i,:,:,:), vel(i,:,:,:) < 0.5e3_pr), vmean(i))
     end do
 
     allocate(vx(valid_vel(1)))
     allocate(vy(valid_vel(2)))
     allocate(vz(valid_vel(3)))
 
-    vx = pack(vel(1,:,:,:), vel(1,:,:,:) < 0.5e3)
-    vy = pack(vel(2,:,:,:), vel(2,:,:,:) < 0.5e3)
-    vz = pack(vel(3,:,:,:), vel(3,:,:,:) < 0.5e3)
+    vx = pack(vel(1,:,:,:), vel(1,:,:,:) < 0.5e3_pr)
+    vy = pack(vel(2,:,:,:), vel(2,:,:,:) < 0.5e3_pr)
+    vz = pack(vel(3,:,:,:), vel(3,:,:,:) < 0.5e3_pr)
 
     return
   end subroutine get_pdf_velocity
@@ -420,46 +414,47 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(:), intent(in) :: in_var
-    real, dimension(-nbins/2+1:nbins/2), intent(out) :: pdf
-    real, intent(out) :: max_vel
+    real (pr), dimension(:), intent(in) :: in_var
+    real (pr), dimension(-nbins/2+1:nbins/2), intent(out) :: pdf
+    real (pr), intent(out) :: max_vel
     integer, dimension(-nbins/2+1:nbins/2) :: hist, total_hist
-    real, dimension(2) :: maxs, maxr, mins, minr
+    real (pr), dimension(2) :: maxs, maxr, mins, minr
     integer :: i, tmp_total, total
 
     hist = 0
 
     ! Find max/min on each process
     maxs(1) = maxval(in_var)
-    maxs(2) = 0.0
+    maxs(2) = 0.0_pr
     mins(1) = minval(in_var)
-    mins(2) = 0.0
+    mins(2) = 0.0_pr
 
     ! Find max/min over whole array
-    call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(maxs, maxr, 1, gpe_mpi_2real, MPI_MAXLOC, &
+      MPI_COMM_WORLD, ierr)
                        
-    call MPI_ALLREDUCE(mins, minr, 1, MPI_2REAL, MPI_MINLOC, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(mins, minr, 1, gpe_mpi_2real, MPI_MINLOC, &
+      MPI_COMM_WORLD, ierr)
 
     ! Maximum permissible value is maximum of the absolute values
     max_vel = max(abs(maxr(1)), abs(minr(1)))
 
     ! Find the total number of values satisfying the conditions on each process
     do i=-nbins/2+1,nbins/2
-      hist(i) = count(in_var > 2.0*real(i-1)*max_vel/real(nbins) .and. &
-                      in_var <= 2.0*real(i)*max_vel/real(nbins))
+      hist(i) = count( &
+        in_var > 2.0_pr*real(i-1, pr)*max_vel/real(nbins, pr) .and. &
+        in_var <= 2.0_pr*real(i, pr)*max_vel/real(nbins, pr))
     end do
 
     ! Sum up the counts across all processes
     call MPI_ALLREDUCE(hist, total_hist, nbins, MPI_INTEGER, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+      MPI_COMM_WORLD, ierr)
 
     ! Overall total count
     total = sum(total_hist)
 
     ! Actual PDF
-    pdf = total_hist/real(total)
+    pdf = total_hist/real(total, pr)
 
     return
   end subroutine get_pdf
@@ -472,11 +467,11 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(0:nx1), intent(out) :: f
-    real, dimension(0:nx1) :: Qxx, total_Qxx
-    real, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: phase
-    real, dimension(3,0:nx1,jsta:jend,ksta:kend) :: vel, gradient, gradstar
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), dimension(0:nx1), intent(out) :: f
+    real (pr), dimension(0:nx1) :: Qxx, total_Qxx
+    real (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: phase
+    real (pr), dimension(3,0:nx1,js:je,ks:ke) :: vel, gradient, gradstar
     integer, dimension(0:nx1) :: num
     integer :: i, r
 
@@ -484,13 +479,13 @@ module variables
     gradstar = grad(conjg(in_var))
 
     do i=1,3
-      vel(i,:,:,:) = -0.5*eye * ( &
-      conjg(in_var(:,jsta:jend,ksta:kend))*gradient(i,:,:,:) - &
-      in_var(:,jsta:jend,ksta:kend)*gradstar(i,:,:,:) ) / &
-      abs(in_var(:,jsta:jend,ksta:kend))**2
+      vel(i,:,:,:) = -0.5_pr*eye * ( &
+      conjg(in_var(:,js:je,ks:ke))*gradient(i,:,:,:) - &
+      in_var(:,js:je,ks:ke)*gradstar(i,:,:,:) ) / &
+      abs(in_var(:,js:je,ks:ke))**2
     end do
 
-    Qxx = 0.0
+    Qxx = 0.0_pr
     num = 0
     do r=0,nx1
       do i=0,nx1
@@ -501,10 +496,10 @@ module variables
       end do
     end do
 
-    call MPI_ALLREDUCE(Qxx, total_Qxx, nx, MPI_REAL, MPI_SUM, &
+    call MPI_ALLREDUCE(Qxx, total_Qxx, nx, gpe_mpi_real, MPI_SUM, &
       MPI_COMM_WORLD, ierr)
 
-    Qxx = total_Qxx/real(num*ny*nz)
+    Qxx = total_Qxx/real(num*ny*nz, pr)
     f = Qxx/Qxx(0)
 
     return
@@ -517,8 +512,8 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: density
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: density
     integer :: j, k
 
     density = abs(in_var)**2
@@ -533,12 +528,12 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, intent(out) :: norm
-    real :: int_z
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
-    real, dimension(jsta:jend,ksta:kend) :: int_x
-    real, dimension(ksta:kend) :: int_y
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), intent(out) :: norm
+    real (pr) :: int_z
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: int_var
+    real (pr), dimension(js:je,ks:ke) :: int_x
+    real (pr), dimension(ks:ke) :: int_y
     integer :: j, k
     
     int_var = abs(in_var)**2
@@ -560,21 +555,20 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, intent(inout) :: E
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
-    real :: tmp
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), intent(inout) :: E
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: int_var
+    real (pr) :: tmp
 
-    int_var = real( -laplacian(in_var) * &
-                   conjg(in_var(:,jsta:jend,ksta:kend)) + &
-                 0.5*abs(in_var(:,jsta:jend,ksta:kend))**4 )
+    int_var = real( -laplacian(in_var) * conjg(in_var(:,js:je,ks:ke)) + &
+      0.5_pr*abs(in_var(:,js:je,ks:ke))**4, pr )
 
-    tmp = 0.0
+    tmp = 0.0_pr
 
     tmp = sum(int_var)
 
-    call MPI_ALLREDUCE(tmp, E, 1, MPI_REAL, MPI_SUM, &
-                    MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, E, 1, gpe_mpi_real, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
 
     E = E*dx*dy*dz
     
@@ -588,18 +582,17 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, intent(inout) :: M
-    real :: tmp
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), intent(inout) :: M
+    real (pr) :: tmp
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: int_var
 
     int_var = abs(in_var)**2
 
-    tmp = 0.0
+    tmp = 0.0_pr
     tmp = sum(int_var)
           
-    call MPI_ALLREDUCE(tmp, M, 1, MPI_REAL, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, M, 1, gpe_mpi_real, MPI_SUM, MPI_COMM_WORLD, ierr)
 
     M = M*dx*dy*dz
                        
@@ -614,21 +607,21 @@ module variables
     use derivs
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(3), intent(out) :: mom
-    real :: int_z
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: int_var
-    real, dimension(jsta:jend,ksta:kend) :: int_x
-    real, dimension(ksta:kend) :: int_y
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), dimension(3), intent(out) :: mom
+    real (pr) :: int_z
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: int_var
+    real (pr), dimension(js:je,ks:ke) :: int_x
+    real (pr), dimension(ks:ke) :: int_y
     type (deriv) :: dpsi, dpsistar
     integer :: j, k
 
-    allocate(dpsi%x(0:nx1,jsta:jend,ksta:kend))
-    allocate(dpsi%y(0:nx1,jsta:jend,ksta:kend))
-    allocate(dpsi%z(0:nx1,jsta:jend,ksta:kend))
-    allocate(dpsistar%x(0:nx1,jsta:jend,ksta:kend))
-    allocate(dpsistar%y(0:nx1,jsta:jend,ksta:kend))
-    allocate(dpsistar%z(0:nx1,jsta:jend,ksta:kend))
+    allocate(dpsi%x(0:nx1,js:je,ks:ke))
+    allocate(dpsi%y(0:nx1,js:je,ks:ke))
+    allocate(dpsi%z(0:nx1,js:je,ks:ke))
+    allocate(dpsistar%x(0:nx1,js:je,ks:ke))
+    allocate(dpsistar%y(0:nx1,js:je,ks:ke))
+    allocate(dpsistar%z(0:nx1,js:je,ks:ke))
     
     call deriv_x(in_var, dpsi%x)
     call deriv_y(in_var, dpsi%y)
@@ -637,10 +630,11 @@ module variables
     call deriv_y(conjg(in_var), dpsistar%y)
     call deriv_z(conjg(in_var), dpsistar%z)
     
-    do k=ksta,kend
-      do j=jsta,jend
-        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%x(:,j,k)) - &
-                          aimag(in_var(:,j,k))*real(dpsi%x(:,j,k))
+    do k=ks,ke
+      do j=js,je
+        int_var(:,j,k) = (real(in_var(:,j,k), pr)-1.0_pr) * &
+          aimag(dpsistar%x(:,j,k)) - &
+          aimag(in_var(:,j,k))*real(dpsi%x(:,j,k), pr)
       end do
     end do
 
@@ -650,10 +644,11 @@ module variables
     
     mom(1) = int_z
     
-    do k=ksta,kend
-      do j=jsta,jend
-        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%y(:,j,k)) - &
-                          aimag(in_var(:,j,k))*real(dpsi%y(:,j,k))
+    do k=ks,ke
+      do j=js,je
+        int_var(:,j,k) = (real(in_var(:,j,k), pr)-1.0_pr) * &
+          aimag(dpsistar%y(:,j,k)) - &
+          aimag(in_var(:,j,k))*real(dpsi%y(:,j,k), pr)
       end do
     end do
 
@@ -663,10 +658,11 @@ module variables
     
     mom(2) = int_z
     
-    do k=ksta,kend
-      do j=jsta,jend
-        int_var(:,j,k) = (real(in_var(:,j,k))-1.0)*aimag(dpsistar%z(:,j,k)) - &
-                          aimag(in_var(:,j,k))*real(dpsi%z(:,j,k))
+    do k=ks,ke
+      do j=js,je
+        int_var(:,j,k) = (real(in_var(:,j,k), pr)-1.0_pr) * &
+          aimag(dpsistar%z(:,j,k)) - &
+          aimag(in_var(:,j,k))*real(dpsi%z(:,j,k), pr)
       end do
     end do
 
@@ -693,8 +689,8 @@ module variables
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: var
-    real, intent(in) :: norm
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(inout) :: var
+    real (pr), intent(in) :: norm
 
     var = sqrt(nn) * var / sqrt(norm)
 
@@ -709,12 +705,12 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(jsta:jend,ksta:kend), intent(out) :: x_int
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(js:je,ks:ke), intent(out) :: x_int
     integer :: j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         x_int(j,k) = (c1*in_var(0,j,k) + &
                       c2*in_var(1,j,k) + &
                       c3*in_var(2,j,k) + &
@@ -735,17 +731,17 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(ksta:kend), intent(out) :: y_int
-    real, dimension(jsta:jend,ksta:kend) :: tmp_var
-    real, dimension(0:nz1) :: tmp, total
+    real (pr), dimension(js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(ks:ke), intent(out) :: y_int
+    real (pr), dimension(js:je,ks:ke) :: tmp_var
+    real (pr), dimension(0:nz1) :: tmp, total
     integer :: j, k, irank
 
     ! Create a temporary variable on which to perform operations
     tmp_var = in_var
     
     ! Update the elements which must be multiplied by the integrating constants
-    do j=jsta,jend
+    do j=js,je
       if (j==0) tmp_var(j,:) = c1*in_var(j,:)
       if (j==1) tmp_var(j,:) = c2*in_var(j,:)
       if (j==2) tmp_var(j,:) = c3*in_var(j,:)
@@ -755,18 +751,18 @@ module variables
     end do
       
     ! Sum the variable on individual processes
-    tmp = 0.0
-    do k=ksta,kend
+    tmp = 0.0_pr
+    do k=ks,ke
       tmp(k) = sum(tmp_var(:,k))
     end do
 
     ! Sum the variable over all processes and make sure each process has the
     ! result
-    call MPI_ALLREDUCE(tmp, total, nz, MPI_REAL, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, total, nz, gpe_mpi_real, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
 
     ! Calculate the final integrated result
-    do k=ksta,kend
+    do k=ks,ke
       y_int(k) = total(k) * dy
     end do
 
@@ -780,17 +776,17 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(ksta:kend), intent(in) :: in_var
-    real, intent(out) :: z_int
-    real, dimension(ksta:kend) :: tmp_var
-    real :: tmp
+    real (pr), dimension(ks:ke), intent(in) :: in_var
+    real (pr), intent(out) :: z_int
+    real (pr), dimension(ks:ke) :: tmp_var
+    real (pr) :: tmp
     integer :: k
 
     ! Create a temporary variable
     tmp_var = in_var
     
     ! Update the elements which must be multiplied by the integrating constants
-    do k=ksta,kend
+    do k=ks,ke
       if (k==0) tmp_var(k) = c1*in_var(k)
       if (k==1) tmp_var(k) = c2*in_var(k)
       if (k==2) tmp_var(k) = c3*in_var(k)
@@ -802,12 +798,12 @@ module variables
     ! Calculate the sum on each individual process but DO NOT include those
     ! processes over which the variable is not distributed
     tmp = sum(tmp_var)
-    if (myranky /= 0) tmp = 0.0
+    if (myranky /= 0) tmp = 0.0_pr
 
     ! Calculate the sum over all processes and make sure each process has the
     ! result
-    call MPI_ALLREDUCE(tmp, z_int, 1, MPI_REAL, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, z_int, 1, gpe_mpi_real, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
 
     ! Calculate the final result
     z_int = z_int*dz
@@ -823,19 +819,19 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(:), intent(in) :: in_var
-    real :: mean, tmp_sum, total_sum
+    real (pr), dimension(:), intent(in) :: in_var
+    real (pr) :: mean, tmp_sum, total_sum
     integer :: tmp_size, total_size
 
     tmp_sum = sum(in_var)
     tmp_size = size(in_var)
 
-    call MPI_ALLREDUCE(tmp_sum, total_sum, 1, MPI_REAL, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp_sum, total_sum, 1, gpe_mpi_real, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
     call MPI_ALLREDUCE(tmp_size, total_size, 1, MPI_INTEGER, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+      MPI_COMM_WORLD, ierr)
 
-    mean = total_sum / real(total_size)
+    mean = total_sum / real(total_size, pr)
 
     return
   end function mean
@@ -849,20 +845,20 @@ module variables
     use parameters
     implicit none
 
-    real, dimension(:), intent(in) :: in_var
-    real, intent(in) :: mean
-    real :: stdev, tmp_sumsq, total_sumsq
+    real (pr), dimension(:), intent(in) :: in_var
+    real (pr), intent(in) :: mean
+    real (pr) :: stdev, tmp_sumsq, total_sumsq
     integer :: tmp_size, total_size
 
     tmp_sumsq = sum(in_var**2)
     tmp_size = size(in_var)
 
-    call MPI_ALLREDUCE(tmp_sumsq, total_sumsq, 1, MPI_REAL, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp_sumsq, total_sumsq, 1, gpe_mpi_real, &
+      MPI_SUM, MPI_COMM_WORLD, ierr)
     call MPI_ALLREDUCE(tmp_size, total_size, 1, MPI_INTEGER, MPI_SUM, &
-                       MPI_COMM_WORLD, ierr)
+      MPI_COMM_WORLD, ierr)
 
-    stdev = sqrt( (total_sumsq / real(total_size)) - mean**2 )
+    stdev = sqrt( (total_sumsq / real(total_size, pr)) - mean**2 )
 
     return
   end function stdev
@@ -876,19 +872,19 @@ module variables
     use parameters
     implicit none
   
-    real :: linelength
-    complex, intent(in) :: psi(0:nx1,jsta-2:jend+2,ksta-2:kend+2)
-    real, intent(in) :: time
-    real :: xx, yy, h, a, den
+    real (pr) :: linelength
+    complex (pr), intent(in) :: psi(0:nx1,js-2:je+2,ks-2:ke+2)
+    real (pr), intent(in) :: time
+    real (pr) :: xx, yy, h, a, den
     integer :: i, j, k, n, m, q, lv, lu
-    real :: x(6), y(6), z(6), u(5), v(5), xu(6), xv(6), yu(6), yv(6)
+    real (pr) :: x(6), y(6), z(6), u(5), v(5), xu(6), xv(6), yu(6), yv(6)
   
   ! MUST have dx=dy=dz
   
-    linelength = 0.0
-    do k=ksta,kend
+    linelength = 0.0_pr
+    do k=ks,ke
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         iloop: do i=1,nx1-1
           m=1
@@ -896,58 +892,58 @@ module variables
   ! 1-front,2-back, 3-right, 4-left, 5-top, 6-bottom
             select case (n)
               case (1)
-                u(1) = real(psi(i,j,k))
+                u(1) = real(psi(i,j,k), pr)
                 v(1) = aimag(psi(i,j,k))
-                u(2) = real(psi(i+1,j,k))
+                u(2) = real(psi(i+1,j,k), pr)
                 v(2) = aimag(psi(i+1,j,k))
-                u(4) = real(psi(i,j+1,k))
+                u(4) = real(psi(i,j+1,k), pr)
                 v(4) = aimag(psi(i,j+1,k))
-                u(3) = real(psi(i+1,j+1,k))
+                u(3) = real(psi(i+1,j+1,k), pr)
                 v(3) = aimag(psi(i+1,j+1,k))
               case (2) 
-                u(1) = real(psi(i,j,k+1))
+                u(1) = real(psi(i,j,k+1), pr)
                 v(1) = aimag(psi(i,j,k+1))
-                u(2) = real(psi(i+1,j,k+1))
+                u(2) = real(psi(i+1,j,k+1), pr)
                 v(2) = aimag(psi(i+1,j,k+1))
-                u(4) = real(psi(i,j+1,k+1))
+                u(4) = real(psi(i,j+1,k+1), pr)
                 v(4) = aimag(psi(i,j+1,k+1))
-                u(3) = real(psi(i+1,j+1,k+1))
+                u(3) = real(psi(i+1,j+1,k+1), pr)
                 v(3) = aimag(psi(i+1,j+1,k+1))
               case(3)
-                u(1) = real(psi(i+1,j,k))
+                u(1) = real(psi(i+1,j,k), pr)
                 v(1) = aimag(psi(i+1,j,k))
-                u(2) = real(psi(i+1,j,k+1))
+                u(2) = real(psi(i+1,j,k+1), pr)
                 v(2) = aimag(psi(i+1,j,k+1))
-                u(4) = real(psi(i+1,j+1,k))
+                u(4) = real(psi(i+1,j+1,k), pr)
                 v(4) = aimag(psi(i+1,j+1,k))
-                u(3) = real(psi(i+1,j+1,k+1))
+                u(3) = real(psi(i+1,j+1,k+1), pr)
                 v(3) = aimag(psi(i+1,j+1,k+1))
               case (4)
-                u(1) = real(psi(i,j,k))
+                u(1) = real(psi(i,j,k), pr)
                 v(1) = aimag(psi(i,j,k))
-                u(2) = real(psi(i,j,k+1))
+                u(2) = real(psi(i,j,k+1), pr)
                 v(2) = aimag(psi(i,j,k+1))
-                u(4) = real(psi(i,j+1,k))
+                u(4) = real(psi(i,j+1,k), pr)
                 v(4) = aimag(psi(i,j+1,k))
-                u(3) = real(psi(i,j+1,k+1))
+                u(3) = real(psi(i,j+1,k+1), pr)
                 v(3) = aimag(psi(i,j+1,k+1))
               case (5)
-                u(1) = real(psi(i,j+1,k))
+                u(1) = real(psi(i,j+1,k), pr)
                 v(1) = aimag(psi(i,j+1,k))
-                u(2) = real(psi(i+1,j+1,k))
+                u(2) = real(psi(i+1,j+1,k), pr)
                 v(2) = aimag(psi(i+1,j+1,k))
-                u(4) = real(psi(i,j+1,k+1))
+                u(4) = real(psi(i,j+1,k+1), pr)
                 v(4) = aimag(psi(i,j+1,k+1))
-                u(3) = real(psi(i+1,j+1,k+1))
+                u(3) = real(psi(i+1,j+1,k+1), pr)
                 v(3) = aimag(psi(i+1,j+1,k+1))
               case (6)
-                u(1) = real(psi(i,j,k))
+                u(1) = real(psi(i,j,k), pr)
                 v(1) = aimag(psi(i,j,k))
-                u(2) = real(psi(i+1,j,k))
+                u(2) = real(psi(i+1,j,k), pr)
                 v(2) = aimag(psi(i+1,j,k))
-                u(4) = real(psi(i,j,k+1))
+                u(4) = real(psi(i,j,k+1), pr)
                 v(4) = aimag(psi(i,j,k+1))
-                u(3) = real(psi(i+1,j,k+1))
+                u(3) = real(psi(i+1,j,k+1), pr)
                 v(3) = aimag(psi(i+1,j,k+1))
             end select
             u(5) = u(1)
@@ -955,68 +951,65 @@ module variables
   
   ! find zero line in u and v
   ! deal with planes first
-            if ((u(1)==0.0 .and. u(2)==0.0 .and. u(3)==0.0 .and. &
-                 u(4)==0.0 .and. &
-                (v(1)*v(2)<0.0 .or. v(2)*v(3)<0.0 .or. &
-                 v(3)*v(4)<0.0 .or. v(4)*v(1)<0.0)) .or. &
-                (v(1)==0.0 .and. v(2)==0.0 .and. v(3)==0.0 .and. &
-                 v(4)==0.0 .and. &
-                (u(1)*u(2)<0.0 .or. u(2)*u(3)<0.0 .or. &
-                 u(3)*u(4)<0.0 .or. u(4)*u(1)<0.0))) then
-              linelength = linelength+0.5
+            if ((u(1)==0.0_pr .and. u(2)==0.0_pr .and. u(3)==0.0_pr .and. &
+                 u(4)==0.0_pr .and. &
+                (v(1)*v(2)<0.0_pr .or. v(2)*v(3)<0.0_pr .or. &
+                 v(3)*v(4)<0.0_pr .or. v(4)*v(1)<0.0_pr)) .or. &
+                (v(1)==0.0_pr .and. v(2)==0.0_pr .and. v(3)==0.0_pr .and. &
+                 v(4)==0.0_pr .and. &
+                (u(1)*u(2)<0.0_pr .or. u(2)*u(3)<0.0_pr .or. &
+                 u(3)*u(4)<0.0_pr .or. u(4)*u(1)<0.0_pr))) then
+              linelength = linelength+0.5_pr
               !print*, 'cycle iloop'
-              a = 1.0
+              a = 1.0_pr
               cycle iloop
-              !goto 200
             end if
   ! deal with edge
             do q=1,4
-              if(u(q)==0.0 .and. u(q+1)==0.0 .and. &
-                 v(q)==0.0 .and. v(q+1)==0.0) then
-                linelength = linelength+0.25
+              if(u(q)==0.0_pr .and. u(q+1)==0.0_pr .and. &
+                 v(q)==0.0_pr .and. v(q+1)==0.0_pr) then
+                linelength = linelength+0.25_pr
                 !print*, 'cycle iloop'
-                a = 1.0
+                a = 1.0_pr
                 cycle iloop
-                !goto 200
               end if
             end do
   
             lu=1
             do q=1,4
-              if(u(q)==0.0 .and. u(q+1)==0.0 .and. &
-                 v(q)==0.0 .and. v(q+1)==0.0) then
+              if(u(q)==0.0_pr .and. u(q+1)==0.0_pr .and. &
+                 v(q)==0.0_pr .and. v(q+1)==0.0_pr) then
                 m=m+1
                 print*, 'exit nloop'
                 exit nloop
-                !goto 100
-              else if (u(q)==0.0) then
+              else if (u(q)==0.0_pr) then
                 select case (q)
                   case (1)
-                    xu(lu)=0.0
-                    yu(lu)=0.0
+                    xu(lu)=0.0_pr
+                    yu(lu)=0.0_pr
                   case (2)
-                    xu(lu)=1.0
-                    yu(lu)=0.0
+                    xu(lu)=1.0_pr
+                    yu(lu)=0.0_pr
                   case (3)
-                    xu(lu)=1.0
-                    yu(lu)=1.0
+                    xu(lu)=1.0_pr
+                    yu(lu)=1.0_pr
                   case (4)
-                    xu(lu)=0.0
-                    yu(lu)=1.0
+                    xu(lu)=0.0_pr
+                    yu(lu)=1.0_pr
                 end select
-              else if (u(q)*u(q+1)<0.0) then
+              else if (u(q)*u(q+1)<0.0_pr) then
                 select case (q)
                   case (1)
                     xu(lu) = abs(u(q)/(u(q)-u(q+1)))
-                    yu(lu) = 0.0
+                    yu(lu) = 0.0_pr
                   case (2)
-                    xu(lu) = 1.0
+                    xu(lu) = 1.0_pr
                     yu(lu) = abs(u(q)/(u(q)-u(q+1)))
                   case (3)
                     xu(lu) = abs(u(q+1)/(u(q)-u(q+1)))
-                    yu(lu) = 1.0
+                    yu(lu) = 1.0_pr
                   case (4)
-                    xu(lu) = 0.0
+                    xu(lu) = 0.0_pr
                     yu(lu) = abs(u(q+1)/(u(q)-u(q+1)))
                 end select
   
@@ -1027,34 +1020,34 @@ module variables
             end do
             lv = 1
             do q=1,4
-              if (v(q)==0.0) then
+              if (v(q)==0.0_pr) then
                 select case (q)
                   case (1)
-                    xv(lv) = 0.0
-                    yv(lv) = 0.0
+                    xv(lv) = 0.0_pr
+                    yv(lv) = 0.0_pr
                   case (2)
-                    xv(lv) = 1.0
-                    yv(lv) = 0.0
+                    xv(lv) = 1.0_pr
+                    yv(lv) = 0.0_pr
                   case (3)
-                    xv(lv) = 1.0
-                    yv(lv) = 1.0
+                    xv(lv) = 1.0_pr
+                    yv(lv) = 1.0_pr
                   case (4)
-                    xv(lv) = 0.0
-                    yv(lv) = 1.0
+                    xv(lv) = 0.0_pr
+                    yv(lv) = 1.0_pr
                 end select
-              else if (v(q)*v(q+1)<0.0) then
+              else if (v(q)*v(q+1)<0.0_pr) then
                 select case (q)
                   case (1)
                     xv(lv) = abs(v(q)/(v(q)-v(q+1)))
-                    yv(lv) = 0.0
+                    yv(lv) = 0.0_pr
                   case (2)
-                    xv(lv) = 1.0
+                    xv(lv) = 1.0_pr
                     yv(lv) = abs(v(q)/(v(q)-v(q+1)))
                   case (3)
                     xv(lv) = abs(v(q+1)/(v(q)-v(q+1)))
-                    yv(lv) = 1.0
+                    yv(lv) = 1.0_pr
                   case (4)
-                    xv(lv) = 0.0
+                    xv(lv) = 0.0_pr
                     yv(lv) = abs(v(q+1)/(v(q)-v(q+1)))
                 end select
   
@@ -1066,11 +1059,11 @@ module variables
             if (lu>2 .and. lv>2) then
               den = xv(2)*(yu(1)-yu(2))+xv(1)*(yu(2)-yu(1))+ &
                    (xu(1)-xu(2))*(yv(1)-yv(2))
-              if (den==0.0)  then
+              if (den==0.0_pr)  then
                 write (*,*) i, j, k, xu(1), yu(1), xu(2), yu(2), &
                             xv(1), yv(1), xv(2), yv(2)
                 print*, 'ZERO DENOM IN linelength'
-                den = den + 0.0000001
+                den = den + 0.0000001_pr
               end if
               xx = (xu(1)*(xv(2)*(yv(1)-yu(2))+xv(1)*(yu(2)-yv(2)))+ &
                     xu(2)*(xv(2)*(yu(1)-yv(1))+xv(1)*(yv(2)-yu(1))))/den
@@ -1078,32 +1071,32 @@ module variables
                     xv(1)*yu(1)*yv(2)-xu(1)*yu(2)*yv(2)+xv(1)*yu(2)*yv(2)+ &
                     xu(2)*yu(1)*(yv(2)-yv(1)))/den
   
-              if (xx>=0.0 .and. xx<=1.0 .and. yy>=0.0 .and. yy<=1.0) then
+              if (xx>=0.0_pr .and. xx<=1.0_pr .and. yy>=0.0_pr .and. yy<=1.0_pr) then
   ! found zero inside the square
                 select case (n)
                   case (1)
                     x(m) = xx
                     y(m) = yy
-                    z(m) = 0.0
+                    z(m) = 0.0_pr
                   case (2)
                     x(m) = xx
                     y(m) = yy
-                    z(m) = 1.0
+                    z(m) = 1.0_pr
                   case (3)
-                    x(m) = 1.0
+                    x(m) = 1.0_pr
                     y(m) = yy
                     z(m) = xx
                   case (4)
-                    x(m) = 0.0
+                    x(m) = 0.0_pr
                     y(m) = yy
                     z(m) = xx
                   case (5)
                     x(m) = xx
-                    y(m) = 1.0
+                    y(m) = 1.0_pr
                     z(m) = yy
                   case (6)
                     x(m) = xx
-                    y(m) = 0.0
+                    y(m) = 0.0_pr
                     z(m) = yy
                 end select
   
@@ -1114,24 +1107,24 @@ module variables
               end if
             end if
           end do nloop
-  100     if (m>1) then      ! found zero in at least two sides
-            a = 1.0 !scale
-            if (x(1)==x(2) .and. (x(1)==0.0 .or. x(1)==1.0) .or. &
-                y(1)==y(2) .and. (y(1)==0.0 .or. y(1)==1.0) .or. &
-                y(1)==y(2) .and. (y(1)==0.0 .or. y(1)==1.0)) then
-              a = a*0.5
-              if ((x(1)==x(2) .and. (x(1)==0.0 .or. x(1)==1.0) .and. &
-                  (y(1)==y(2) .and. (y(1)==0.0 .or. y(1)==1.0) .or. &
-                   y(1)==y(2) .and. (y(1)==0.0 .or. y(1)==1.0))) .or. &
-                  (y(1)==y(2) .and. (y(1)==0.0 .or. y(1)==1.0) .and. &
-                  (z(1)==z(2) .and. (z(1)==0.0 .or. z(1)==1.0)))) then
-                a=a*0.5
+          if (m>1) then      ! found zero in at least two sides
+            a = 1.0_pr !scale
+            if (x(1)==x(2) .and. (x(1)==0.0_pr .or. x(1)==1.0_pr) .or. &
+                y(1)==y(2) .and. (y(1)==0.0_pr .or. y(1)==1.0_pr) .or. &
+                y(1)==y(2) .and. (y(1)==0.0_pr .or. y(1)==1.0_pr)) then
+              a = a*0.5_pr
+              if ((x(1)==x(2) .and. (x(1)==0.0_pr .or. x(1)==1.0_pr) .and. &
+                  (y(1)==y(2) .and. (y(1)==0.0_pr .or. y(1)==1.0_pr) .or. &
+                   y(1)==y(2) .and. (y(1)==0.0_pr .or. y(1)==1.0_pr))) .or. &
+                  (y(1)==y(2) .and. (y(1)==0.0_pr .or. y(1)==1.0_pr) .and. &
+                  (z(1)==z(2) .and. (z(1)==0.0_pr .or. z(1)==1.0_pr)))) then
+                a=a*0.5_pr
               end if
             end if
             linelength = linelength+a*sqrt((x(1)-x(2))**2+(y(1)-y(2))**2+ &
                                            (z(1)-z(2))**2)
           end if
-  200     a = 1.0
+          a = 1.0_pr
         end do iloop
       end do
     end do

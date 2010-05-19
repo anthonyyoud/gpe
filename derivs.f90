@@ -16,34 +16,34 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fx
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fx
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: i, j, k
+    integer :: i, j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               call second_index(i, nx1, minus, plus, .true.)
 
-              fx(i,j,k) = ( f(plus(1),j,k) - f(minus(1),j,k) ) / (2.0*dx)
+              fx(i,j,k) = ( f(plus(1),j,k) - f(minus(1),j,k) ) / (2.0_pr*dx)
             end do
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               call fourth_index(i, nx1, minus, plus, .true.)
 
               fx(i,j,k) = ( -f(plus(2),j,k) + &
-                         8.0*f(plus(1),j,k) - &
-                         8.0*f(minus(1),j,k) + &
-                             f(minus(2),j,k) ) / (12.0*dx)
+                      8.0_pr*f(plus(1),j,k) - &
+                      8.0_pr*f(minus(1),j,k) + &
+                             f(minus(2),j,k) ) / (12.0_pr*dx)
             end do
           end do
         end do
@@ -59,31 +59,31 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fy
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fy
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: j, k
+    integer :: j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call second_index(j, ny1, minus, plus, .false.)
 
-            fy(:,j,k) = ( f(:,plus(1),k) - f(:,minus(1),k) ) / (2.0*dy)
+            fy(:,j,k) = ( f(:,plus(1),k) - f(:,minus(1),k) ) / (2.0_pr*dy)
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call fourth_index(j, ny1, minus, plus, .false.)
 
             fy(:,j,k) = ( -f(:,plus(2),k) + &
-                       8.0*f(:,plus(1),k) - &
-                       8.0*f(:,minus(1),k) + &
-                           f(:,minus(2),k) ) / (12.0*dy)
+                    8.0_pr*f(:,plus(1),k) - &
+                    8.0_pr*f(:,minus(1),k) + &
+                           f(:,minus(2),k) ) / (12.0_pr*dy)
           end do
         end do
     end select
@@ -98,31 +98,31 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fz
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fz
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: j, k
+    integer :: j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call second_index(k, nz1, minus, plus, .false.)
 
-            fz(:,j,k) = ( f(:,j,plus(1)) - f(:,j,minus(1)) ) / (2.0*dz)
+            fz(:,j,k) = ( f(:,j,plus(1)) - f(:,j,minus(1)) ) / (2.0_pr*dz)
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call fourth_index(k, nz1, minus, plus, .false.)
 
             fz(:,j,k) = ( -f(:,j,plus(2)) + &
-                       8.0*f(:,j,plus(1)) - &
-                       8.0*f(:,j,minus(1)) + &
-                           f(:,j,minus(2)) ) / (12.0*dz)
+                    8.0_pr*f(:,j,plus(1)) - &
+                    8.0_pr*f(:,j,minus(1)) + &
+                           f(:,j,minus(2)) ) / (12.0_pr*dz)
           end do
         end do
     end select
@@ -137,37 +137,37 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fxx
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fxx
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: i, j, k
+    integer :: i, j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               call second_index(i, nx1, minus, plus, .true.)
 
               fxx(i,j,k) = ( f(plus(1),j,k) - &
-                         2.0*f(i,j,k) + &
+                      2.0_pr*f(i,j,k) + &
                              f(minus(1),j,k) ) / dx2
             end do
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               call fourth_index(i, nx1, minus, plus, .true.)
 
               fxx(i,j,k) = ( -f(plus(2),j,k) + &
-                         16.0*f(plus(1),j,k) - &
-                         30.0*f(i,j,k) + &
-                         16.0*f(minus(1),j,k) - &
-                              f(minus(2),j,k) ) / (12.0*dx2)
+                      16.0_pr*f(plus(1),j,k) - &
+                      30.0_pr*f(i,j,k) + &
+                      16.0_pr*f(minus(1),j,k) - &
+                              f(minus(2),j,k) ) / (12.0_pr*dx2)
             end do
           end do
         end do
@@ -183,34 +183,34 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fyy
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fyy
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: j, k
+    integer :: j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call second_index(j, ny1, minus, plus, .false.)
 
             fyy(:,j,k) = ( f(:,plus(1),k) - &
-                       2.0*f(:,j,k) + &
+                    2.0_pr*f(:,j,k) + &
                            f(:,minus(1),k) ) / dy2
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call fourth_index(j, ny1, minus, plus, .false.)
           
             fyy(:,j,k) = ( -f(:,plus(2),k) + &
-                       16.0*f(:,plus(1),k) - &
-                       30.0*f(:,j,k) + &
-                       16.0*f(:,minus(1),k) - &
-                            f(:,minus(2),k) ) / (12.0*dy2)
+                    16.0_pr*f(:,plus(1),k) - &
+                    30.0_pr*f(:,j,k) + &
+                    16.0_pr*f(:,minus(1),k) - &
+                            f(:,minus(2),k) ) / (12.0_pr*dy2)
           end do
         end do
     end select
@@ -225,34 +225,34 @@ module derivs
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in)  :: f
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(out) :: fzz
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in)  :: f
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: fzz
     integer, dimension(2) :: minus=0, plus=0
-    integer               :: j, k
+    integer :: j, k
 
     select case (order)
       case (2)
         ! Second order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call second_index(k, nz1, minus, plus, .false.)
 
             fzz(:,j,k) = ( f(:,j,plus(1)) - &
-                       2.0*f(:,j,k) + &
+                    2.0_pr*f(:,j,k) + &
                            f(:,j,minus(1)) ) / dz2
           end do
         end do
       case (4)
         ! Fourth order centred difference
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             call fourth_index(k, nz1, minus, plus, .false.)
           
             fzz(:,j,k) = ( -f(:,j,plus(2)) + &
-                       16.0*f(:,j,plus(1)) - &
-                       30.0*f(:,j,k) + &
-                       16.0*f(:,j,minus(1)) - &
-                            f(:,j,minus(2)) ) / (12.0*dz2)
+                    16.0_pr*f(:,j,plus(1)) - &
+                    30.0_pr*f(:,j,k) + &
+                    16.0_pr*f(:,j,minus(1)) - &
+                            f(:,j,minus(2)) ) / (12.0_pr*dz2)
           end do
         end do
     end select
@@ -267,8 +267,8 @@ module derivs
     ! reflective boundaries are chosen in the case of second order differences
     implicit none
 
-    integer,               intent(in)  :: indx, n
-    logical,               intent(in)  :: x_deriv
+    integer, intent(in) :: indx, n
+    logical, intent(in) :: x_deriv
     integer, dimension(2), intent(out) :: minus, plus
     
     select case (bcs)
@@ -312,8 +312,8 @@ module derivs
     ! reflective boundaries are chosen in the case of fourth order differences
     implicit none
 
-    integer,               intent(in)  :: indx, n
-    logical,               intent(in)  :: x_deriv
+    integer, intent(in) :: indx, n
+    logical, intent(in) :: x_deriv
     integer, dimension(2), intent(out) :: minus, plus
     
     select case (bcs)

@@ -20,10 +20,9 @@ module io
     implicit none
 
     integer, intent(in) :: n 
-    integer             :: i, n_, d(7)
-    character(7)        :: itos
-    character           :: c(0:9) = (/'0','1','2','3','4','5',&
-                                      '6','7','8','9'/)
+    integer :: i, n_, d(7)
+    character(7) :: itos
+    character :: c(0:9) = (/'0','1','2','3','4','5','6','7','8','9'/)
 
     n_ = n
     do i = 7, 1, -1
@@ -100,10 +99,10 @@ module io
     use variables, only : get_phase, get_density
     implicit none
 
-    real, intent(in) :: time
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
-    complex, dimension(3) :: tmp, var
+    real (pr), intent(in) :: time
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: phase, density
+    complex (pr), dimension(3) :: tmp, var
     integer :: xpos, ypos, zpos
     integer :: i, j, k
 
@@ -114,11 +113,11 @@ module io
     ypos = ny/2
     zpos = nz/2
 
-    tmp = 0.0
+    tmp = 0.0_pr
     ! Find out on which process the data occurs and copy it into a temporary
     ! array
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
           if ((i==xpos) .and. (j==ypos) .and. (k==zpos)) then
             tmp(1) = in_var(xpos,ypos,zpos)
@@ -130,14 +129,14 @@ module io
     end do
 
     ! Make sure process 0 has the correct data to write
-    call MPI_REDUCE(tmp, var, 3, MPI_COMPLEX, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(tmp, var, 3, gpe_mpi_complex, MPI_SUM, 0, &
+      MPI_COMM_WORLD, ierr)
 
     ! Write the data to file
     if (myrank == 0) then
       open (10, status='unknown', position='append', file='u_time.dat')
-      write (10, '(6e17.9)') time, im_t, real(var(1)), &
-                             aimag(var(1)), real(var(2)), real(var(3))
+      write (10, '(6e17.9)') time, im_t, real(var(1), pr), &
+        aimag(var(1)), real(var(2), pr), real(var(3), pr)
       close (10)
     end if
 
@@ -152,15 +151,15 @@ module io
     use variables, only : energy
     implicit none
 
-    real, intent(in) :: time
-    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
-    real :: E
+    real (pr), intent(in) :: time
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr) :: E
 
     call energy(in_var, E)
     
     if (myrank == 0) then
       open (12, status='unknown', position='append', file='energy.dat')
-      write (12, '(3e17.9)') time, im_t, E/real(nx*ny*nz)
+      write (12, '(3e17.9)') time, im_t, E/real(nx*ny*nz, pr)
       close (12)
     end if
 
@@ -176,11 +175,11 @@ module io
     use variables, only : get_pdf_velocity, get_pdf
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
-    real, allocatable, dimension(:) :: vx, vy, vz
-    real, dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz, &
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), allocatable, dimension(:) :: vx, vy, vz
+    real (pr), dimension(-nbins/2+1:nbins/2) :: pdf_vx, pdf_vy, pdf_vz, &
       gpdf_vx, gpdf_vy, gpdf_vz, vx_bins, vy_bins, vz_bins
-    real, dimension(3) :: vel_bins, vmax, vmean, vstdev
+    real (pr), dimension(3) :: vel_bins, vmax, vmean, vstdev
     integer :: i
 
     call get_pdf_velocity(in_var, vx, vy, vz, vmean, vstdev)
@@ -193,9 +192,9 @@ module io
     deallocate(vz)
 
     do i=-nbins/2+1,nbins/2
-      vx_bins(i) = 2.0*real(i)*vmax(1)/real(nbins)
-      vy_bins(i) = 2.0*real(i)*vmax(2)/real(nbins)
-      vz_bins(i) = 2.0*real(i)*vmax(3)/real(nbins)
+      vx_bins(i) = 2.0_pr*real(i, pr)*vmax(1)/real(nbins, pr)
+      vy_bins(i) = 2.0_pr*real(i, pr)*vmax(2)/real(nbins, pr)
+      vz_bins(i) = 2.0_pr*real(i, pr)*vmax(3)/real(nbins, pr)
     end do
 
     gpdf_vx = gaussian_pdf(vx_bins, vmean(1), vstdev(1))
@@ -222,12 +221,12 @@ module io
       use parameters
       implicit none
 
-      real, dimension(-nbins/2+1:nbins/2), intent(in) :: pdf
-      real, intent(in) :: mean, stdev
-      real, dimension(-nbins/2+1:nbins/2) :: gaussian_pdf
+      real (pr), dimension(-nbins/2+1:nbins/2), intent(in) :: pdf
+      real (pr), intent(in) :: mean, stdev
+      real (pr), dimension(-nbins/2+1:nbins/2) :: gaussian_pdf
 
-      gaussian_pdf = 1.0/(stdev*sqrt(2.0*pi)) * &
-        exp( (-0.5 * (pdf-mean)**2) / stdev**2 )
+      gaussian_pdf = 1.0_pr/(stdev*sqrt(2.0_pr*pi)) * &
+        exp( (-0.5_pr * (pdf-mean)**2) / stdev**2 )
 
       return
     end function gaussian_pdf
@@ -242,8 +241,8 @@ module io
     use variables, only : get_vcf
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jsta+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(0:nx1) :: f
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), dimension(0:nx1) :: f
     integer :: r
 
     call get_vcf(in_var, f)
@@ -270,40 +269,22 @@ module io
     use variables, only : mass
     implicit none
 
-    real, intent(in) :: time
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a, filtered
-    real :: M, n0, temp, temp2, tot, tmp, &
-            rho0, E0, H, k2, k4, kx, ky, kz, kc, dk
+    real (pr), intent(in) :: time
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a, filtered
+    real (pr) :: M, n0, temp, temp2, tot, tmp, rho0, E0, H, k2, k4, &
+      kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
 
     kc = pi !sqrt(kc2)
-    dk = 2.0*kc/real(nx1)
+    dk = 2.0_pr*kc/real(nx1, pr)
     V = nx*ny*nz
 
     call fft(in_var, a, 'backward', .true.)
 
-    !call fft(a, in_var, 'forward', .true.)
-    !open (unit_no, status='unknown', file=proc_dir//'fft'//itos(p)//'.dat', &
-    !      form='unformatted')
-    !
-    !write (unit_no) t
-    !write (unit_no) nx, ny, nz
-    !write (unit_no) nyprocs, nzprocs
-    !write (unit_no) jsta, jend, ksta, kend
-    !write (unit_no) abs(in_var)
-    !write (unit_no) x
-    !write (unit_no) y
-    !write (unit_no) z
-
-    !close (unit_no)
-
-    !call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-    !stop
-    
     ! Calculate the number of condensed particles
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         if ((j==0) .and. (k==0)) then
           n0 = abs(a(0,0,0))**2
           exit
@@ -314,44 +295,47 @@ module io
     ! Calculate the mass
     call mass(in_var, M)
     
-    call MPI_BCAST(n0, 1, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
+    call MPI_BCAST(n0, 1, gpe_mpi_real, 0, MPI_COMM_WORLD, ierr)
 
-    tmp = 0.0
+    tmp = 0.0_pr
 
     ! Density of condensed particles
     rho0 = n0/V
     
     ! Total energy <H>, and temperature T (?)
-    tmp = 0.0
-    do k=ksta,kend
-      kz = -kc+real(k)*dk
-      do j=jsta,jend
-        ky = -kc+real(j)*dk
+    tmp = 0.0_pr
+    do k=ks,ke
+      kz = -kc+real(k, pr)*dk
+      do j=js,je
+        ky = -kc+real(j, pr)*dk
         do i=0,nx1
-          kx = -kc+real(i)*dk
-          k2 = -(1.0/12.0) * &  ! minus sign by comparison with spectral
-                ( ((-2.0*cos(2.0*kx*dx) + 32.0*cos(kx*dx) - 30.0) / dx2) + &
-                  ((-2.0*cos(2.0*ky*dy) + 32.0*cos(ky*dy) - 30.0) / dy2) + &
-                  ((-2.0*cos(2.0*kz*dz) + 32.0*cos(kz*dz) - 30.0) / dz2) )
-          if (k2==0.0) cycle
+          kx = -kc+real(i, pr)*dk
+          k2 = -(1.0_pr/12.0_pr) * &  ! minus sign by comparison with spectral
+            ( ((-2.0_pr*cos(2.0_pr*kx*dx) + &
+                32.0_pr*cos(kx*dx) - 30.0_pr) / dx2) + &
+              ((-2.0_pr*cos(2.0_pr*ky*dy) + &
+                32.0_pr*cos(ky*dy) - 30.0_pr) / dy2) + &
+              ((-2.0_pr*cos(2.0_pr*kz*dz) + &
+                32.0_pr*cos(kz*dz) - 30.0_pr) / dz2) )
+          if (k2==0.0_pr) cycle
           k4 = k2**2
-          tmp = tmp + (k2+rho0)/(k4+2.0*rho0*k2)
+          tmp = tmp + (k2+rho0)/(k4+2.0_pr*rho0*k2)
         end do
       end do
     end do
     
-    call MPI_REDUCE(tmp, tot, 1, MPI_REAL, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(tmp, tot, 1, gpe_mpi_real, MPI_SUM, 0, &
+      MPI_COMM_WORLD, ierr)
 
     if (myrank == 0) then
       temp = (M-n0)/tot
-      E0 = (1.0/real(2*V))*(M**2+(M-n0)**2)
-      H = E0 + temp*real(V-1)
-      temp2 = ((M/(8.0*xr*yr*zr))-(n0/V))/tot
+      E0 = (1.0_pr/real(2*V, pr))*(M**2+(M-n0)**2)
+      H = E0 + temp*real(V-1, pr)
+      temp2 = ((M/(8.0_pr*xr*yr*zr))-(n0/V))/tot
       ! Plot $5/$4 for n0/M for condensed particles.
       open (15, status='unknown', position='append', file='mass.dat')
-      write (15, '(9e17.9)') time, im_t, M/(8.0*xr*yr*zr), n0/V, M, n0, &
-                             temp, temp2, H/V
+      write (15, '(9e17.9)') time, im_t, M/(8.0_pr*xr*yr*zr), n0/V, M, n0, &
+        temp, temp2, H/V
       close (15)
     end if
 
@@ -370,16 +354,16 @@ module io
   
 ! ***************************************************************************  
 
-  subroutine save_norm(time, norm)
+  subroutine save_norm(time, norm, relnorm)
     ! Save the norm
     use parameters
     implicit none
 
-    real, intent(in) :: time, norm
+    real (pr), intent(in) :: time, norm, relnorm
 
     if (myrank == 0) then
       open (20, status='unknown', position='append', file='norm.dat')
-      write (20, '(4e17.9)') time, im_t, norm
+      write (20, '(4e17.9)') time, im_t, norm, relnorm
       close (20)
     end if
 
@@ -394,9 +378,9 @@ module io
     use variables, only : momentum
     implicit none
 
-    real, intent(in) :: time
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
-    real, dimension(3) :: mom
+    real (pr), intent(in) :: time
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
+    real (pr), dimension(3) :: mom
 
     call momentum(in_var, mom)
     
@@ -419,8 +403,8 @@ module io
     use ic, only : x, y, z, unit_no
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: phase, density
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: phase, density
     integer :: zpos
     integer :: i, j, k
 
@@ -432,13 +416,13 @@ module io
 
     ! Write each process's own data to file, but only if 'zpos' resides on that
     ! particular process
-    do k=ksta,kend
+    do k=ks,ke
       if (k==zpos) then
         open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
         do i=0,nx1
           write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
-                                  phase(i,j,zpos), real(in_var(i,j,zpos)), &
-                                  aimag(in_var(i,j,zpos)), j=jsta,jend)
+            phase(i,j,zpos), real(in_var(i,j,zpos), pr), &
+            aimag(in_var(i,j,zpos)), j=js,je)
           write (unit_no, *)
         end do
         close (unit_no)
@@ -460,8 +444,8 @@ module io
     use variables, only : get_phase
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: density, phase
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: density, phase
     integer :: i, j, k
 
     density = abs(in_var)**2
@@ -471,12 +455,12 @@ module io
     !call get_minmax(phase, 'phase')
 
     open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
-          form='unformatted')
+      form='unformatted')
     
     write (unit_no) t+im_t
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
-    write (unit_no) jsta, jend, ksta, kend
+    write (unit_no) js, je, ks, ke
     write (unit_no) in_var
     write (unit_no) x
     write (unit_no) y
@@ -500,31 +484,30 @@ module io
     use error
     use parameters
     use ic, only : fft, x, y, z, unit_no
-    use variables, only : send_recv_z, send_recv_y, &
-                          pack_y, unpack_y
+    use variables, only : send_recv_z, send_recv_y, pack_y, unpack_y
     implicit none
 
     integer, intent(in) :: flag
     integer, optional, intent(in) :: ind
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(inout) :: a
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: filtered
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2) :: filtered_tmp
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(inout) :: a
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: filtered
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: filtered_tmp
     integer :: i, j, k, ii2, jj2, kk2, k2
-    real :: m
+    real (pr) :: m
 
     if (present(ind)) then
-      m = fscale*real(ind)
+      m = fscale*real(ind, pr)
     else
-      m = 1.0
+      m = 1.0_pr
     end if
     
-    do k=ksta,kend
+    do k=ks,ke
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=jsta,jend
+      do j=js,je
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
@@ -537,17 +520,17 @@ module io
             ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
-          !a(i,j,k) = a(i,j,k)*max(1.0-(real(k2)/kc2),0.0)
-          !a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(9.0-1e-3*t)**2),0.0)
-          a(i,j,k) = a(i,j,k)*max(1.0-(m*real(k2)/(10.0)**2),0.0)
+          !a(i,j,k) = a(i,j,k)*max(1.0_pr-(real(k2, pr)/kc2),0.0_pr)
+          !a(i,j,k) = a(i,j,k)*max(1.0_pr-(m*real(k2, pr)/(9.0_pr-1e-3_pr*t)**2),0.0_pr)
+          a(i,j,k) = a(i,j,k)*max(1.0_pr-(m*real(k2, pr)/(10.0_pr)**2),0.0_pr)
         end do
       end do
     end do
     
     call fft(a, filtered, 'forward', .true.)
     
-    filtered_tmp = 0.0
-    filtered_tmp(:,jsta:jend,ksta:kend) = filtered
+    filtered_tmp = 0.0_pr
+    filtered_tmp(:,js:je,ks:ke) = filtered
     call send_recv_z(filtered_tmp)
     call pack_y(filtered_tmp)
     call send_recv_y()
@@ -562,20 +545,18 @@ module io
       select case (flag)
         case (0)
           open (unit_no, status='unknown', &
-                        file=proc_dir//'filtered'//itos(p)//'.dat', &
-                        form='unformatted')
+            file=proc_dir//'filtered'//itos(p)//'.dat', form='unformatted')
           write (unit_no) t
           write (unit_no) nx, ny, nz
           write (unit_no) nyprocs, nzprocs
-          write (unit_no) jsta, jend, ksta, kend
+          write (unit_no) js, je, ks, ke
           write (unit_no) filtered
           write (unit_no) x
           write (unit_no) y
           write (unit_no) z
         case (1)
           open (unit_no, status='unknown', &
-          file=proc_dir//'end_state_filtered.dat', &
-                        form='unformatted')
+            file=proc_dir//'end_state_filtered.dat', form='unformatted')
           write (unit_no) nx
           write (unit_no) ny
           write (unit_no) nz
@@ -604,25 +585,25 @@ module io
     use ic, only : x, y, z, unit_no
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: a
-    real :: log2k
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: a
+    real (pr) :: log2k
     integer :: i, j, k, m, ii2, jj2, kk2, k2, kk
     integer, parameter :: nshells = 7
-    real, dimension(nshells) :: eta, tot_eta
-    real, dimension(nx/2) :: F, tot_F
+    real (pr), dimension(nshells) :: eta, tot_eta
+    real (pr), dimension(nx/2) :: F, tot_F
     integer, dimension(nshells) :: nharm, tot_nharm
 
-    eta = 0.0
+    eta = 0.0_pr
     nharm = 0
-    F = 0.0
+    F = 0.0_pr
     
-    do k=ksta,kend
+    do k=ks,ke
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=jsta,jend
+      do j=js,je
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
@@ -635,17 +616,18 @@ module io
             ii2 = (nx1-i+1)**2
           end if
           k2 = ii2 + jj2 + kk2
-          if (sqrt(real(k2)) == 0.0) cycle
+          if (sqrt(real(k2, pr)) == 0.0_pr) cycle
           ! Calculate integral distribution function
           do kk=1,nx/2
-            if (sqrt(real(k2)) <= real(kk)) then
+            if (sqrt(real(k2, pr)) <= real(kk, pr)) then
               F(kk) = F(kk) + abs(a(i,j,k))**2
             end if
           end do
           ! Calculate mean occupation number
-          log2k = log( 0.5*sqrt(real(k2))/pi ) / log(2.0)
+          log2k = log( 0.5_pr*sqrt(real(k2, pr))/pi ) / log(2.0_pr)
           do m=1,nshells
-            if ((abs(log2k) < real(m)) .and. (abs(log2k) >= real(m-1))) then
+            if ((abs(log2k) < real(m, pr)) .and. &
+              (abs(log2k) >= real(m-1, pr))) then
               eta(m) = eta(m) + abs(a(i,j,k))**2
               nharm(m) = nharm(m) + 1
               exit
@@ -656,17 +638,17 @@ module io
     end do
 
     ! Sum measurements onto master process
-    call MPI_REDUCE(eta, tot_eta, nshells, MPI_REAL, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(eta, tot_eta, nshells, gpe_mpi_real, MPI_SUM, 0, &
+      MPI_COMM_WORLD, ierr)
     call MPI_REDUCE(nharm, tot_nharm, nshells, MPI_INTEGER, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
-    call MPI_REDUCE(F, tot_F, nx/2, MPI_REAL, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr)
+      MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(F, tot_F, nx/2, gpe_mpi_real, MPI_SUM, 0, &
+      MPI_COMM_WORLD, ierr)
 
     if (myrank == 0) then
       do m=1,nshells
-        if (tot_eta(m) == 0.0) cycle
-        tot_eta(m) = tot_eta(m)/real(tot_nharm(m))
+        if (tot_eta(m) == 0.0_pr) cycle
+        tot_eta(m) = tot_eta(m)/real(tot_nharm(m), pr)
       end do
     
       ! Write mean occupation number to file
@@ -700,28 +682,27 @@ module io
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    real, dimension(2) :: maxs, maxr, mins, minr
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    real (pr), dimension(2) :: maxs, maxr, mins, minr
     character(*), intent(in) :: var
     integer :: k
 
     ! maxs/r and mins/r are arrays of length 2 because the MPI functions find
     ! the max/min value as well as its location
     ! Find max/min on each process
-    do k=ksta,kend
+    do k=ks,ke
       if (k /= nz/2) cycle
       maxs(1) = maxval(in_var(:,:,nz/2))
-      maxs(2) = 0.0
+      maxs(2) = 0.0_pr
       mins(1) = minval(in_var(:,:,nz/2))
-      mins(2) = 0.0
+      mins(2) = 0.0_pr
     end do
     
     ! Find max/min over whole array
-    call MPI_ALLREDUCE(maxs, maxr, 1, MPI_2REAL, MPI_MAXLOC, &
-                       MPI_COMM_WORLD, ierr)
-                       
-    call MPI_ALLREDUCE(mins, minr, 1, MPI_2REAL, MPI_MINLOC, &
-                       MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(maxs, maxr, 1, gpe_mpi_2real, MPI_MAXLOC, &
+      MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(mins, minr, 1, gpe_mpi_2real, MPI_MINLOC, &
+      MPI_COMM_WORLD, ierr)
 
     ! Update max/min if correct conditions are met
     select case (var)
@@ -813,8 +794,8 @@ module io
     implicit none
 
     integer, intent(in) :: flag
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
     integer :: j, k
 
     open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
@@ -854,15 +835,6 @@ module io
       end if
     end if
     
-    !if (myrank == 0) then
-    !  ! flag = 1 if the run has been ended
-    !  if (flag == 1) then
-    !    ! Delete RUNNING file to cleanly terminate the run
-    !    open (99, file = 'RUNNING')
-    !    close (99, status = 'delete')
-    !  end if
-    !end if
-
     return
   end subroutine end_state
   
@@ -880,25 +852,25 @@ module io
     use variables, only : re_im
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     type (re_im) :: var
-    real :: zero
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
+    real (pr) :: zero
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: denom
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
     integer :: z_start, z_end
 
     ! Decide whether to find the zeros over the whole 3D box or just over a 2D
     ! plane
-    z_start=ksta
-    z_end=kend
+    z_start=ks
+    z_end=ke
 
-    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
-    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%re(0:nx1,js-2:je+2,ks-2:ke+2))
+    allocate(var%im(0:nx1,js-2:je+2,ks-2:ke+2))
     
     open (unit_no, status='unknown', file=proc_dir//'zeros'//itos(p)//'.dat')
     
-    var%re = real(in_var)
+    var%re = real(in_var, pr)
     var%im = aimag(in_var)
 
     write (unit_no, *) "# i,j,k --> i+1,j,k"
@@ -906,19 +878,19 @@ module io
     !do k=nz/2+0, nz/2+0
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if (((var%re(i,j,k) == 0.0) .and. &
-               (var%im(i,j,k) == 0.0)) .or. &
-              ((var%re(i,j,k) == 0.0) .and. &
-               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0)) .or. &
-              ((var%im(i,j,k) == 0.0) .and. &
-               (var%re(i,j,k)*var%re(i+1,j,k) < 0.0)) .or. &
-              ((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
-               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0)) ) then
+          if (((var%re(i,j,k) == 0.0_pr) .and. &
+               (var%im(i,j,k) == 0.0_pr)) .or. &
+              ((var%re(i,j,k) == 0.0_pr) .and. &
+               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0_pr)) .or. &
+              ((var%im(i,j,k) == 0.0_pr) .and. &
+               (var%re(i,j,k)*var%re(i+1,j,k) < 0.0_pr)) .or. &
+              ((var%re(i,j,k)*var%re(i+1,j,k) < 0.0_pr) .and. &
+               (var%im(i,j,k)*var%im(i+1,j,k) < 0.0_pr)) ) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i+1,j,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%re(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%re(i,j,k)*x(i+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') zero, y(j), z(k)
@@ -931,19 +903,19 @@ module io
 
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if (((var%re(i,j,k) == 0.0) .and. &
-               (var%im(i,j,k) == 0.0)) .or. &
-              ((var%re(i,j,k) == 0.0) .and. &
-               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0)) .or. &
-              ((var%im(i,j,k) == 0.0) .and. &
-               (var%re(i,j,k)*var%re(i,j+1,k) < 0.0)) .or. &
-              ((var%re(i,j,k)*var%re(i,j+1,k) < 0.0) .and. &
-               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0)) ) then
+          if (((var%re(i,j,k) == 0.0_pr) .and. &
+               (var%im(i,j,k) == 0.0_pr)) .or. &
+              ((var%re(i,j,k) == 0.0_pr) .and. &
+               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0_pr)) .or. &
+              ((var%im(i,j,k) == 0.0_pr) .and. &
+               (var%re(i,j,k)*var%re(i,j+1,k) < 0.0_pr)) .or. &
+              ((var%re(i,j,k)*var%re(i,j+1,k) < 0.0_pr) .and. &
+               (var%im(i,j,k)*var%im(i,j+1,k) < 0.0_pr)) ) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i,j+1,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%re(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%re(i,j,k)*y(j+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') x(i), zero, z(k)
@@ -957,19 +929,19 @@ module io
 
       do k=z_start,z_end
         if ((k==0) .or. (k==nz1)) cycle
-        do j=jsta,jend
+        do j=js,je
           if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
-            if (((var%re(i,j,k) == 0.0) .and. &
-                 (var%im(i,j,k) == 0.0)) .or. &
-                ((var%re(i,j,k) == 0.0) .and. &
-                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0)) .or. &
-                ((var%im(i,j,k) == 0.0) .and. &
-                 (var%re(i,j,k)*var%re(i,j,k+1) < 0.0)) .or. &
-                ((var%re(i,j,k)*var%re(i,j,k+1) < 0.0) .and. &
-                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0)) ) then
+            if (((var%re(i,j,k) == 0.0_pr) .and. &
+                 (var%im(i,j,k) == 0.0_pr)) .or. &
+                ((var%re(i,j,k) == 0.0_pr) .and. &
+                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0_pr)) .or. &
+                ((var%im(i,j,k) == 0.0_pr) .and. &
+                 (var%re(i,j,k)*var%re(i,j,k+1) < 0.0_pr)) .or. &
+                ((var%re(i,j,k)*var%re(i,j,k+1) < 0.0_pr) .and. &
+                 (var%im(i,j,k)*var%im(i,j,k+1) < 0.0_pr)) ) then
               denom(i,j,k) = var%re(i,j,k)-var%re(i,j,k+1)
-              if (denom(i,j,k) == 0.0) cycle
+              if (denom(i,j,k) == 0.0_pr) cycle
               zero = -var%re(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%re(i,j,k)*z(k+1)/denom(i,j,k)
               write (unit_no, '(3e17.9)') x(i), y(j), zero
@@ -996,44 +968,44 @@ module io
     use variables, only : re_im
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     type (re_im) :: var
-    real, dimension(4) :: zero
-    real, dimension(2) :: m
-    real, dimension(4,0:nx1,jsta:jend,ksta:kend) :: denom
-    real :: xp, yp, zp
+    real (pr), dimension(4) :: zero
+    real (pr), dimension(2) :: m
+    real (pr), dimension(4,0:nx1,js:je,ks:ke) :: denom
+    real (pr) :: xp, yp, zp
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
     integer :: z_start, z_end
 
-    z_start=ksta
-    z_end=kend
+    z_start=ks
+    z_end=ke
 
-    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
-    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%re(0:nx1,js-2:je+2,ks-2:ke+2))
+    allocate(var%im(0:nx1,js-2:je+2,ks-2:ke+2))
 
     ! Write these new zeros to the same file as for the get_zeros routine
     open (unit_no, status='old', position='append', &
-                   file=proc_dir//'zeros'//itos(p)//'.dat')
+      file=proc_dir//'zeros'//itos(p)//'.dat')
 
-    var%re = real(in_var)
+    var%re = real(in_var, pr)
     var%im = aimag(in_var)
     
     write (unit_no, *) "# i,j,k --> i+1,j,k --> i+1,j+1,k --> i,j+1,k"
     
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
-               (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
-              ((var%im(i+1,j,k)*var%im(i+1,j+1,k) < 0.0) .and. &
-               (var%re(i+1,j,k)*var%re(i+1,j+1,k) >= 0.0)) .and. &
-              ((var%re(i+1,j+1,k)*var%re(i,j+1,k) < 0.0) .and. &
-               (var%im(i+1,j+1,k)*var%im(i,j+1,k) >= 0.0)) .and. &
-              ((var%im(i,j+1,k)*var%im(i,j,k) < 0.0) .and. &
-               (var%re(i,j+1,k)*var%re(i,j,k) >= 0.0)) ) then
+          if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0_pr) .and. &
+               (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0_pr)) .and. &
+              ((var%im(i+1,j,k)*var%im(i+1,j+1,k) < 0.0_pr) .and. &
+               (var%re(i+1,j,k)*var%re(i+1,j+1,k) >= 0.0_pr)) .and. &
+              ((var%re(i+1,j+1,k)*var%re(i,j+1,k) < 0.0_pr) .and. &
+               (var%im(i+1,j+1,k)*var%im(i,j+1,k) >= 0.0_pr)) .and. &
+              ((var%im(i,j+1,k)*var%im(i,j,k) < 0.0_pr) .and. &
+               (var%re(i,j+1,k)*var%re(i,j,k) >= 0.0_pr)) ) then
             denom(1,i,j,k) = var%re(i,j,k)-var%re(i+1,j,k)
             zero(1) = -var%re(i+1,j,k)*x(i)/denom(1,i,j,k) + &
                        var%re(i,j,k)*x(i+1)/denom(1,i,j,k)
@@ -1052,14 +1024,14 @@ module io
             yp = xp*m(1)+y(j)-zero(1)*m(1)
             
             write (unit_no, '(3e17.9)') xp, yp, z(k)
-          else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0) .and. &
-                    (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0)) .and. &
-                   ((var%re(i+1,j,k)*var%re(i+1,j+1,k) < 0.0) .and. &
-                    (var%im(i+1,j,k)*var%im(i+1,j+1,k) >= 0.0)) .and. &
-                   ((var%im(i+1,j+1,k)*var%im(i,j+1,k) < 0.0) .and. &
-                    (var%re(i+1,j+1,k)*var%re(i,j+1,k) >= 0.0)) .and. &
-                   ((var%re(i,j+1,k)*var%re(i,j,k) < 0.0) .and. &
-                    (var%im(i,j+1,k)*var%im(i,j,k) >= 0.0)) ) then
+          else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0_pr) .and. &
+                    (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0_pr)) .and. &
+                   ((var%re(i+1,j,k)*var%re(i+1,j+1,k) < 0.0_pr) .and. &
+                    (var%im(i+1,j,k)*var%im(i+1,j+1,k) >= 0.0_pr)) .and. &
+                   ((var%im(i+1,j+1,k)*var%im(i,j+1,k) < 0.0_pr) .and. &
+                    (var%re(i+1,j+1,k)*var%re(i,j+1,k) >= 0.0_pr)) .and. &
+                   ((var%re(i,j+1,k)*var%re(i,j,k) < 0.0_pr) .and. &
+                    (var%im(i,j+1,k)*var%im(i,j,k) >= 0.0_pr)) ) then
             denom(1,i,j,k) = var%im(i,j,k)-var%im(i+1,j,k)
             zero(1) = -var%im(i+1,j,k)*x(i)/denom(1,i,j,k) + &
                        var%im(i,j,k)*x(i+1)/denom(1,i,j,k)
@@ -1087,17 +1059,17 @@ module io
       write (unit_no, *) "# i,j,k --> i+1,j,k --> i+1,j,k+1 --> i,j,k+1"
       do k=z_start,z_end
         if ((k==0) .or. (k==nz1)) cycle
-        do j=jsta,jend
+        do j=js,je
           if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
-            if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0) .and. &
-                 (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0)) .and. &
-                ((var%im(i+1,j,k)*var%im(i+1,j,k+1) < 0.0) .and. &
-                 (var%re(i+1,j,k)*var%re(i+1,j,k+1) >= 0.0)) .and. &
-                ((var%re(i+1,j,k+1)*var%re(i,j,k+1) < 0.0) .and. &
-                 (var%im(i+1,j,k+1)*var%im(i,j,k+1) >= 0.0)) .and. &
-                ((var%im(i,j,k+1)*var%im(i,j,k) < 0.0) .and. &
-                 (var%re(i,j,k+1)*var%re(i,j,k) >= 0.0)) ) then
+            if (((var%re(i,j,k)*var%re(i+1,j,k) < 0.0_pr) .and. &
+                 (var%im(i,j,k)*var%im(i+1,j,k) >= 0.0_pr)) .and. &
+                ((var%im(i+1,j,k)*var%im(i+1,j,k+1) < 0.0_pr) .and. &
+                 (var%re(i+1,j,k)*var%re(i+1,j,k+1) >= 0.0_pr)) .and. &
+                ((var%re(i+1,j,k+1)*var%re(i,j,k+1) < 0.0_pr) .and. &
+                 (var%im(i+1,j,k+1)*var%im(i,j,k+1) >= 0.0_pr)) .and. &
+                ((var%im(i,j,k+1)*var%im(i,j,k) < 0.0_pr) .and. &
+                 (var%re(i,j,k+1)*var%re(i,j,k) >= 0.0_pr)) ) then
               denom(1,i,j,k) = var%re(i,j,k)-var%re(i+1,j,k)
               zero(1) = -var%re(i+1,j,k)*x(i)/denom(1,i,j,k) + &
                          var%re(i,j,k)*x(i+1)/denom(1,i,j,k)
@@ -1116,14 +1088,14 @@ module io
               zp = xp*m(1)+z(k)-zero(1)*m(1)
               
               write (unit_no, '(3e17.9)') xp, y(j), zp
-            else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0) .and. &
-                      (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0)) .and. &
-                     ((var%re(i+1,j,k)*var%re(i+1,j,k+1) < 0.0) .and. &
-                      (var%im(i+1,j,k)*var%im(i+1,j,k+1) >= 0.0)) .and. &
-                     ((var%im(i+1,j,k+1)*var%im(i,j,k+1) < 0.0) .and. &
-                      (var%re(i+1,j,k+1)*var%re(i,j,k+1) >= 0.0)) .and. &
-                     ((var%re(i,j,k+1)*var%re(i,j,k) < 0.0) .and. &
-                      (var%im(i,j,k+1)*var%im(i,j,k) >= 0.0)) ) then
+            else if (((var%im(i,j,k)*var%im(i+1,j,k) < 0.0_pr) .and. &
+                      (var%re(i,j,k)*var%re(i+1,j,k) >= 0.0_pr)) .and. &
+                     ((var%re(i+1,j,k)*var%re(i+1,j,k+1) < 0.0_pr) .and. &
+                      (var%im(i+1,j,k)*var%im(i+1,j,k+1) >= 0.0_pr)) .and. &
+                     ((var%im(i+1,j,k+1)*var%im(i,j,k+1) < 0.0_pr) .and. &
+                      (var%re(i+1,j,k+1)*var%re(i,j,k+1) >= 0.0_pr)) .and. &
+                     ((var%re(i,j,k+1)*var%re(i,j,k) < 0.0_pr) .and. &
+                      (var%im(i,j,k+1)*var%im(i,j,k) >= 0.0_pr)) ) then
               denom(1,i,j,k) = var%im(i,j,k)-var%im(i+1,j,k)
               zero(1) = -var%im(i+1,j,k)*x(i)/denom(1,i,j,k) + &
                          var%im(i,j,k)*x(i+1)/denom(1,i,j,k)
@@ -1150,17 +1122,17 @@ module io
       write (unit_no, *) "# i,j,k --> i,j,k+1 --> i,j+1,k+1 --> i,j+1,k"
       do k=z_start,z_end
         if ((k==0) .or. (k==nz1)) cycle
-        do j=jsta,jend
+        do j=js,je
           if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
-            if (((var%re(i,j,k)*var%re(i,j,k+1) < 0.0) .and. &
-                 (var%im(i,j,k)*var%im(i,j,k+1) >= 0.0)) .and. &
-                ((var%im(i,j,k+1)*var%im(i,j+1,k+1) < 0.0) .and. &
-                 (var%re(i,j,k+1)*var%re(i,j+1,k+1) >= 0.0)) .and. &
-                ((var%re(i,j+1,k+1)*var%re(i,j+1,k) < 0.0) .and. &
-                 (var%im(i,j+1,k+1)*var%im(i,j+1,k) >= 0.0)) .and. &
-                ((var%im(i,j+1,k)*var%im(i,j,k) < 0.0) .and. &
-                 (var%re(i,j+1,k)*var%re(i,j,k) >= 0.0)) ) then
+            if (((var%re(i,j,k)*var%re(i,j,k+1) < 0.0_pr) .and. &
+                 (var%im(i,j,k)*var%im(i,j,k+1) >= 0.0_pr)) .and. &
+                ((var%im(i,j,k+1)*var%im(i,j+1,k+1) < 0.0_pr) .and. &
+                 (var%re(i,j,k+1)*var%re(i,j+1,k+1) >= 0.0_pr)) .and. &
+                ((var%re(i,j+1,k+1)*var%re(i,j+1,k) < 0.0_pr) .and. &
+                 (var%im(i,j+1,k+1)*var%im(i,j+1,k) >= 0.0_pr)) .and. &
+                ((var%im(i,j+1,k)*var%im(i,j,k) < 0.0_pr) .and. &
+                 (var%re(i,j+1,k)*var%re(i,j,k) >= 0.0_pr)) ) then
               denom(1,i,j,k) = var%re(i,j,k)-var%re(i,j,k+1)
               zero(1) = -var%re(i,j,k+1)*z(k)/denom(1,i,j,k) + &
                          var%re(i,j,k)*z(k+1)/denom(1,i,j,k)
@@ -1179,14 +1151,14 @@ module io
               yp = zp*m(1)+y(j)-zero(1)*m(1)
               
               write (unit_no, '(3e17.9)') x(i), yp, zp
-            else if (((var%im(i,j,k)*var%im(i,j,k+1) < 0.0) .and. &
-                      (var%re(i,j,k)*var%re(i,j,k+1) >= 0.0)) .and. &
-                     ((var%re(i,j,k+1)*var%re(i,j+1,k+1) < 0.0) .and. &
-                      (var%im(i,j,k+1)*var%im(i,j+1,k+1) >= 0.0)) .and. &
-                     ((var%im(i,j+1,k+1)*var%im(i,j+1,k) < 0.0) .and. &
-                      (var%re(i,j+1,k+1)*var%re(i,j+1,k) >= 0.0)) .and. &
-                     ((var%re(i,j+1,k)*var%re(i,j,k) < 0.0) .and. &
-                      (var%im(i,j+1,k)*var%im(i,j,k) >= 0.0)) ) then
+            else if (((var%im(i,j,k)*var%im(i,j,k+1) < 0.0_pr) .and. &
+                      (var%re(i,j,k)*var%re(i,j,k+1) >= 0.0_pr)) .and. &
+                     ((var%re(i,j,k+1)*var%re(i,j+1,k+1) < 0.0_pr) .and. &
+                      (var%im(i,j,k+1)*var%im(i,j+1,k+1) >= 0.0_pr)) .and. &
+                     ((var%im(i,j+1,k+1)*var%im(i,j+1,k) < 0.0_pr) .and. &
+                      (var%re(i,j+1,k+1)*var%re(i,j+1,k) >= 0.0_pr)) .and. &
+                     ((var%re(i,j+1,k)*var%re(i,j,k) < 0.0_pr) .and. &
+                      (var%im(i,j+1,k)*var%im(i,j,k) >= 0.0_pr)) ) then
               denom(1,i,j,k) = var%im(i,j,k)-var%im(i,j,k+1)
               zero(1) = -var%im(i,j,k+1)*z(k)/denom(1,i,j,k) + &
                          var%im(i,j,k)*z(k+1)/denom(1,i,j,k)
@@ -1225,37 +1197,37 @@ module io
     use variables, only : re_im
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     type (re_im) :: var
-    real :: zero
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: denom
+    real (pr) :: zero
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: denom
     integer :: i, j, k
     !integer, parameter :: z_start=nz/2, z_end=nz/2
     integer :: z_start, z_end
 
-    z_start=ksta
-    z_end=kend
+    z_start=ks
+    z_end=ke
 
-    allocate(var%re(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
-    allocate(var%im(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(var%re(0:nx1,js-2:je+2,ks-2:ke+2))
+    allocate(var%im(0:nx1,js-2:je+2,ks-2:ke+2))
 
     open (unit_no, status='unknown', &
                    file=proc_dir//'re_zeros'//itos(p)//'.dat')
 
-    var%re = real(in_var)
+    var%re = real(in_var, pr)
     var%im = aimag(in_var)
 
     write (unit_no, *) "# i,j,k --> i+1,j,k"
 
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if ((var%re(i,j,k) == 0.0) .or. &
-              (var%re(i,j,k)*var%re(i+1,j,k) < 0.0)) then
+          if ((var%re(i,j,k) == 0.0_pr) .or. &
+              (var%re(i,j,k)*var%re(i+1,j,k) < 0.0_pr)) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i+1,j,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%re(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%re(i,j,k)*x(i+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') zero, y(j), z(k)
@@ -1268,13 +1240,13 @@ module io
 
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if ((var%re(i,j,k) == 0.0) .or. &
-              (var%re(i,j,k)*var%re(i,j+1,k) < 0.0)) then
+          if ((var%re(i,j,k) == 0.0_pr) .or. &
+              (var%re(i,j,k)*var%re(i,j+1,k) < 0.0_pr)) then
             denom(i,j,k) = var%re(i,j,k)-var%re(i,j+1,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%re(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%re(i,j,k)*y(j+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') x(i), zero, z(k)
@@ -1288,13 +1260,13 @@ module io
 
       do k=z_start,z_end
         if ((k==0) .or. (k==nz1)) cycle
-        do j=jsta,jend
+        do j=js,je
           if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
-            if ((var%re(i,j,k) == 0.0) .and. &
-                (var%re(i,j,k)*var%re(i,j,k+1) < 0.0)) then
+            if ((var%re(i,j,k) == 0.0_pr) .and. &
+                (var%re(i,j,k)*var%re(i,j,k+1) < 0.0_pr)) then
               denom(i,j,k) = var%re(i,j,k)-var%re(i,j,k+1)
-              if (denom(i,j,k) == 0.0) cycle
+              if (denom(i,j,k) == 0.0_pr) cycle
               zero = -var%re(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%re(i,j,k)*z(k+1)/denom(i,j,k)
               write (unit_no, '(3e17.9)') x(i), y(j), zero
@@ -1317,13 +1289,13 @@ module io
     
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if ((var%im(i,j,k) == 0.0) .or. &
-              (var%im(i,j,k)*var%im(i+1,j,k) < 0.0)) then
+          if ((var%im(i,j,k) == 0.0_pr) .or. &
+              (var%im(i,j,k)*var%im(i+1,j,k) < 0.0_pr)) then
             denom(i,j,k) = var%im(i,j,k)-var%im(i+1,j,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%im(i+1,j,k)*x(i)/denom(i,j,k) + &
                     var%im(i,j,k)*x(i+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') zero, y(j), z(k)
@@ -1336,13 +1308,13 @@ module io
 
     do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-      do j=jsta,jend
+      do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
         do i=1,nx1-1
-          if ((var%im(i,j,k) == 0.0) .or. &
-              (var%im(i,j,k)*var%im(i,j+1,k) < 0.0)) then
+          if ((var%im(i,j,k) == 0.0_pr) .or. &
+              (var%im(i,j,k)*var%im(i,j+1,k) < 0.0_pr)) then
             denom(i,j,k) = var%im(i,j,k)-var%im(i,j+1,k)
-            if (denom(i,j,k) == 0.0) cycle
+            if (denom(i,j,k) == 0.0_pr) cycle
             zero = -var%im(i,j+1,k)*y(j)/denom(i,j,k) + &
                     var%im(i,j,k)*y(j+1)/denom(i,j,k)
             write (unit_no, '(3e17.9)') x(i), zero, z(k)
@@ -1356,13 +1328,13 @@ module io
 
       do k=z_start,z_end
       if ((k==0) .or. (k==nz1)) cycle
-        do j=jsta,jend
+        do j=js,je
         if ((j==0) .or. (j==ny1)) cycle
           do i=1,nx1-1
-            if ((var%im(i,j,k) == 0.0) .and. &
-                (var%im(i,j,k)*var%im(i,j,k+1) < 0.0)) then
+            if ((var%im(i,j,k) == 0.0_pr) .and. &
+                (var%im(i,j,k)*var%im(i,j,k+1) < 0.0_pr)) then
               denom(i,j,k) = var%im(i,j,k)-var%im(i,j,k+1)
-              if (denom(i,j,k) == 0.0) cycle
+              if (denom(i,j,k) == 0.0_pr) cycle
               zero = -var%im(i,j,k+1)*z(k)/denom(i,j,k) + &
                       var%im(i,j,k)*z(k+1)/denom(i,j,k)
               write (unit_no, '(3e17.9)') x(i), y(j), zero
@@ -1385,16 +1357,16 @@ module io
     use variables, only : linelength
     implicit none
 
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: in_var
     integer :: flag
-    real :: tmp, length
+    real (pr) :: tmp, length
 
     ! Get the line length on each individual process
     tmp = linelength(t, in_var)
 
     ! Sum the line length over all processes and send it to process 0
-    call MPI_REDUCE(tmp, length, 1, MPI_REAL, MPI_SUM, 0, &
-                    MPI_COMM_WORLD, ierr) 
+    call MPI_REDUCE(tmp, length, 1, gpe_mpi_real, MPI_SUM, 0, &
+      MPI_COMM_WORLD, ierr) 
 
     if (myrank == 0) then
       if (flag == 0) then
@@ -1421,27 +1393,25 @@ module io
     use ic, only : x, y, z, unit_no
     implicit none
     
-    complex, dimension(0:nx1,jsta-2:jend+2,ksta-2:kend+2), intent(in) :: old, &
-                                                                         old2
-    complex, dimension(0:nx1,jsta:jend,ksta:kend),         intent(in) :: new
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: lhs, rhs
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: old, old2
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: new
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: lhs, rhs
     integer :: zpos
     integer :: i, j, k
     
-    lhs = 0.5*(new-old2(:,jsta:jend,ksta:kend))/dt
+    lhs = 0.5_pr*(new-old2(:,js:je,ks:ke))/dt
     
-    rhs = 0.5*(eye+0.01) * ( laplacian(old) + &
-                           (1.0-abs(old(:,jsta:jend,ksta:kend))**2)*&
-                                    old(:,jsta:jend,ksta:kend) )
+    rhs = 0.5_pr*(eye+0.01_pr) * ( laplacian(old) + &
+      (1.0_pr-abs(old(:,js:je,ks:ke))**2)*old(:,js:je,ks:ke) )
 
     zpos = nz/2
 
-    do k=ksta,kend
+    do k=ks,ke
       if (k==zpos) then
         open (unit_no, status='unknown', file=proc_dir//'diag'//itos(p)//'.dat')
         do i=0,nx1
           write (unit_no, '(3e17.9)') (x(i), y(j), &
-                 abs(rhs(i,j,zpos)-lhs(i,j,zpos)), j=jsta,jend)
+            abs(rhs(i,j,zpos)-lhs(i,j,zpos)), j=js,je)
           write (unit_no, *)
         end do
         close (unit_no)
@@ -1460,26 +1430,26 @@ module io
     use ic, only : x, y, z, unit_no
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
     integer :: j, k
 
     ave = ave + abs(in_var)**2
     
     open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
-          form='unformatted')
+      form='unformatted')
 
     write (unit_no) t
     write (unit_no) nx, ny, nz
     write (unit_no) nyprocs, nzprocs
-    write (unit_no) jsta, jend, ksta, kend
-    write (unit_no) ave / real(snapshots)
+    write (unit_no) js, je, ks, ke
+    write (unit_no) ave / real(snapshots, pr)
     write (unit_no) x
     write (unit_no) y
     write (unit_no) z
 
     close (unit_no)
 
-    call get_minmax(ave / real(snapshots), 'ave')
+    call get_minmax(ave / real(snapshots, pr), 'ave')
 
     snapshots = snapshots+1
 
@@ -1492,7 +1462,7 @@ module io
     use ic, only : x, y, z, fft, unit_no
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: in_var, a
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: in_var, a
     integer :: i, j, dummy_int
 
     do j=1,nfilter
@@ -1510,7 +1480,7 @@ module io
         call MPI_BCAST(p, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
         open (unit_no, file=proc_dir//'dens'//itos(p)//'.dat', &
-                       form='unformatted')
+          form='unformatted')
 
         read (unit_no) t
         read (unit_no) dummy_int, dummy_int, dummy_int

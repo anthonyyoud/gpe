@@ -8,26 +8,29 @@ program gpe
   use error
   use ic
   use io
+  use mpi
   use parameters
   use solve
   use variables
   implicit none
 
-  integer    :: n=0, m=0, ps=0
-  real       :: norm=0.0, prev_norm=0.0
+  integer :: n=0, m=0, ps=0
+  real (pr) :: norm=0.0_pr, prev_norm=1.0_pr, relnorm=0.0_pr
   type (var) :: psi, test
-  logical    :: run_exist, state_exist
+  logical :: run_exist, state_exist
 
   ! Initialise the MPI process grid
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
   call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
 
+  ! Assign the replacement MPI constants which allow for real/double precision.
+  call mpi_constants_precision()
   ! Setup the lookup table for neighbouring processes
   call setup_itable()
   ! Calculate the start and end array indices on each process
-  call para_range(0, nz1, nzprocs, myrankz, ksta, kend)
-  call para_range(0, ny1, nyprocs, myranky, jsta, jend)
+  call para_range(0, nz1, nzprocs, myrankz, ks, ke)
+  call para_range(0, ny1, nyprocs, myranky, js, je)
   ! Calculate the array dimensions on each process
   call array_len()
   ! Get the neighbouring process rank
@@ -38,18 +41,18 @@ program gpe
   call get_dirs()
 
   ! Allocate array dimensions on each process
-  allocate(psi%old(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+  allocate(psi%old(0:nx1,js-2:je+2,ks-2:ke+2))
   if (diagnostic) then
-    allocate(psi%old2(0:nx1,jsta-2:jend+2,ksta-2:kend+2))
+    allocate(psi%old2(0:nx1,js-2:je+2,ks-2:ke+2))
   end if
-  allocate(psi%new(0:nx1,jsta:jend,ksta:kend))
-  allocate(test%new(0:nx1,jsta:jend,ksta:kend))
+  allocate(psi%new(0:nx1,js:je,ks:ke))
+  allocate(test%new(0:nx1,js:je,ks:ke))
   ! (work send and receive arrays)
-  allocate(works1(0:nx1,2,kksta:kkend))
-  allocate(works2(0:nx1,2,kksta:kkend))
-  allocate(workr1(0:nx1,2,kksta:kkend))
-  allocate(workr2(0:nx1,2,kksta:kkend))
-  allocate(ave(0:nx1,jsta:jend,ksta:kend))
+  allocate(works1(0:nx1,2,kks:kke))
+  allocate(works2(0:nx1,2,kks:kke))
+  allocate(workr1(0:nx1,2,kks:kke))
+  allocate(workr2(0:nx1,2,kks:kke))
+  allocate(ave(0:nx1,js:je,ks:ke))
 
   ! Check which time stepping scheme we're using
   if (.not. pp_filtered_surface) then
@@ -81,9 +84,9 @@ program gpe
   
   ! Set the time step
   if (real_time) then
-    dt = cmplx(tau, 0.0)
+    dt = cmplx(tau, 0.0_pr, pr)
   else
-    dt = cmplx(0.0, -tau)
+    dt = cmplx(0.0_pr, -tau, pr)
   end if
   
   ! Open runtime files
@@ -110,13 +113,13 @@ program gpe
   if (.not. pp_filtered_surface) then
   ! Get the initial conditions
   call ics(psi%new)
+  if (save_3d) then
+    call idl_surface(psi%new)
+  end if
   if (eqn_to_solve == 4 .and. .not. real_time) then
     call get_norm(psi%new, prev_norm)
     call renormalise(psi%new, prev_norm)
-    call save_norm(t, prev_norm)
-  end if
-  if (save_3d) then
-    call idl_surface(psi%new)
+    call save_norm(t, prev_norm, relnorm)
   end if
   call condensed_particles(t, psi%new)
   
@@ -133,9 +136,9 @@ program gpe
   ps = int(t/p_save)
   n = int(t/save_rate2)
   m = int(t/save_rate3)
-  ave = 0.0
+  ave = 0.0_pr
   
-  psi%old = 0.0
+  psi%old = 0.0_pr
  
   ! Begin real time loop
   do while (t+im_t <= end_time)
@@ -169,7 +172,7 @@ program gpe
     if (diagnostic) then
       psi%old2 = psi%old
     end if
-    psi%old(:,jsta:jend,ksta:kend) = psi%new
+    psi%old(:,js:je,ks:ke) = psi%new
 
     ! Send and receive the variable so that all processes have the boundary
     ! data from neighbouring processes.  Since the data needing to be sent in
@@ -243,8 +246,9 @@ program gpe
     ! Calculate the norm
     if (eqn_to_solve == 4) then
       call get_norm(psi%new, norm)
+      relnorm = abs((norm-prev_norm)/prev_norm)
       if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
-        call save_norm(t, norm)
+        call save_norm(t, norm, relnorm)
       end if
       if (.not. real_time) then
         call renormalise(psi%new, norm)
@@ -257,16 +261,17 @@ program gpe
     ! Calculate the relative difference of successive norms.  If the difference
     ! is small enough switch to real time
     if (eqn_to_solve == 4 .and. .not. real_time) then
-      if (abs(norm-prev_norm)/abs(prev_norm) < 1e-8) then
+      if (relnorm < 1e-12_pr) then
         real_time = .true.
-        im_t = 0.0
+        im_t = 0.0_pr
         ps = int(t/p_save)
         n = int(t/save_rate2)
         m = int(t/save_rate3)
         if (save_3d) then
           call idl_surface(psi%new)
         end if
-        dt = cmplx(abs(aimag(dt)), abs(real(dt)))
+        !psi%new = psi%new*vortex_line(vl1)
+        dt = cmplx(abs(aimag(dt)), abs(real(dt, pr)), pr)
         if (myrank == 0) then
           print*, 'Switching to real time'
           print*, 't =', im_t

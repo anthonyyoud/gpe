@@ -8,11 +8,11 @@ module ic
 
   private
   public :: get_grid, get_unit_no, ics, fft, get_kc_amp, wall, &
-            sphere, sphere2, vortex_line, Vtrap
+    sphere, sphere2, vortex_line, Vtrap
 
-  real, dimension(0:nx1), public :: x
-  real, dimension(0:ny1), public :: y
-  real, dimension(0:nz1), public :: z
+  real (pr), dimension(0:nx1), public :: x
+  real (pr), dimension(0:ny1), public :: y
+  real (pr), dimension(0:nz1), public :: z
 
   integer, protected, public :: unit_no
 
@@ -31,17 +31,17 @@ module ic
 
     ! x-coordinate
     do i=0,nx1
-      x(i) = xl + real(i)*dx
+      x(i) = xl + real(i, pr)*dx
     end do
 
     ! y-coordinate
     do j=0,ny1
-      y(j) = yl + real(j)*dy
+      y(j) = yl + real(j, pr)*dy
     end do
     
     ! z-coordinate
     do k=0,nz1
-      z(k) = zl + real(k)*dz
+      z(k) = zl + real(k, pr)*dz
     end do
 
     return
@@ -66,8 +66,8 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: tmp_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: tmp_var
     logical :: state_exist
 
     ! If this is a restarted run...
@@ -88,7 +88,8 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = 1.0 !vortex_ring(vr1) !* &
+      out_var = fermi()*vortex_line(vl1)
+      !out_var = cmplx(1.0_pr, 0.0_pr, pr) !vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
       !          vortex_ring(vr4) * &
@@ -147,13 +148,13 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: out_var1, out_var2
-    complex :: dt_prev
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: out_var1, out_var2
+    complex (pr) :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev, undef_int
-    real :: undef_real
+    real (pr) :: undef_real
 
-    out_var2 = 1.0
+    out_var2 = 1.0_pr
     
     open (unit_no, file=end_state_file, form='unformatted')
 
@@ -170,7 +171,7 @@ module ic
     
     if (saved_restart) then
       open (unit_no, file=proc_dir//'end_state_filtered.dat', &
-                     form='unformatted')
+        form='unformatted')
 
       ! Read in the filtered distributed data from the previous run
       read (unit_no) undef_int
@@ -186,17 +187,17 @@ module ic
 
     out_var = out_var1*out_var2
 
-    !if (real(dt_prev) == 0.0) then
-    !  dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+    !if (real(dt_prev, pr) == 0.0_pr) then
+    !  dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
     !end if
 
     if (real_time) then
-      if (real(dt_prev) == 0.0) then
-        dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+      if (real(dt_prev, pr) == 0.0_pr) then
+        dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
       end if
     else
-      if (aimag(dt_prev) == 0.0) then
-        dt_prev = cmplx(aimag(dt_prev), real(dt_prev))
+      if (aimag(dt_prev) == 0.0_pr) then
+        dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
       end if
     end if
 
@@ -222,10 +223,10 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: a
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
     integer, allocatable, dimension(:) :: seed
-    real :: phi, rand
+    real (pr) :: phi, rand
     integer :: i, j, k, ii2, jj2, kk2, n, irand
     
     if (myrank == 0) then
@@ -248,13 +249,13 @@ module ic
     seed = myrank + irand*(/ (i, i=0,n-1) /)
     call random_seed(put=seed)
 
-    do k=ksta,kend
+    do k=ks,ke
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=jsta,jend
+      do j=js,je
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
@@ -268,9 +269,9 @@ module ic
           end if
           if ((ii2 + jj2 + kk2) <= kc2) then
             call random_number(phi)
-            a(i,j,k) = comp_amp*exp(2.0*pi*eye*phi)
+            a(i,j,k) = comp_amp*exp(2.0_pr*pi*eye*phi)
           else
-            a(i,j,k) = 0.0
+            a(i,j,k) = 0.0_pr
           end if
         end do
       end do
@@ -288,44 +289,39 @@ module ic
     use parameters
     implicit none
     
-    real :: ev
+    real (pr) :: ev
     
-    ev = ((0.5*nx/pi)**2)*enerv
-    comp_amp = sqrt(((0.11095279993106999*nv**2.5)*(nx*ny*nz))/(ev**1.5))
-    kc2 = (1.666666666666666*ev)/nv
+    ev = ((0.5_pr*nx/pi)**2)*enerv
+    comp_amp = sqrt(((0.11095279993106999_pr*nv**2.5_pr)*(nx*ny*nz)) / &
+      (ev**1.5_pr))
+    kc2 = (1.666666666666666_pr*ev)/nv
 
     return
   end subroutine get_kc_amp
 
 ! ***************************************************************************  
 
-  !function fermi()
-  !  ! Thomas-Fermi initial condition
-  !  use parameters
-  !  implicit none
+  function fermi()
+    ! Thomas-Fermi initial condition
+    use parameters
+    implicit none
 
-  !  real, parameter                            :: c=450.0
-  !  real, dimension(0:nx1,jsta:jend,ksta:kend) :: fermi, r
-  !  real                                       :: mu
-  !  integer                                    :: i, j, k
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: fermi
+    real (pr) :: mu_tf, r_tf
 
-  !  mu = sqrt(c/pi)
+    mu_tf = (15.0_pr*((2.0_pr)**(-1.5_pr))*g*nn/(8.0_pr*pi))**(0.4_pr)
+    r_tf = sqrt(2.0_pr*mu_tf)
 
-  !  do k=ksta,kend
-  !    do j=jsta,jend
-  !      do i=0,nx1
-  !        r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
-  !        if (r(i,j,k)<=sqrt(2.0*mu)) then
-  !          fermi(i,j,k) = sqrt((2.0*mu - r(i,j,k)**2)/(2.0*c))
-  !        else
-  !          fermi(i,j,k) = 0.0
-  !        end if
-  !      end do
-  !    end do
-  !  end do
-  !  
-  !  return
-  !end function fermi
+    fermi = cmplx((mu_tf - Vtrap()) / g, 0.0_pr, pr)
+
+    where (real(fermi, pr) >= 0.0_pr)
+      fermi = sqrt(fermi)
+    elsewhere
+      fermi = 0.0_pr
+    endwhere
+
+    return
+  end function fermi
 
 ! ***************************************************************************  
 
@@ -334,13 +330,13 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend)             :: amp
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: r
-    real, parameter                                        :: c1 = -0.7
-    real, parameter                                        :: c2 = 1.15
-    integer                                                :: j, k
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: amp
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: r
+    real (pr), parameter :: c1 = -0.7_pr
+    real (pr), parameter :: c2 = 1.15_pr
+    integer :: j, k
 
-    amp = 1.0 - exp(c1*r**c2)
+    amp = 1.0_pr - exp(c1*r**c2)
 
     return
   end function amp
@@ -352,13 +348,14 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_line
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_line
     type (line_param), intent(in) :: vl
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: r, theta
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: r, theta
     integer :: j, k
 
     call get_r(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%dir, r)
-    call get_theta(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%sgn, vl%dir, theta)
+    call get_theta(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%sgn, &
+      vl%dir, theta)
 
     vortex_line = amp(r)*exp(eye*theta)
     
@@ -372,29 +369,29 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_ring
     type (ring_param), intent(in) :: vr
-    real, dimension(jsta:jend,ksta:kend) :: s, theta, dist
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2, xp
+    real (pr), dimension(js:je,ks:ke) :: s, theta, dist
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: rr1, rr2, d1, d2, xp
     integer :: i, j, k
 
     !call get_s(s, vr%y0, vr%z0)
     
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         theta(j,k) = atan2(z(k)-vr%z0, y(j)-vr%y0)
         s(j,k) = sqrt((y(j)-vr%y0)**2 + (z(k)-vr%z0)**2) - &
-          vr%r1*sin(real(vr%kk)*theta(j,k))
+          vr%r1*sin(real(vr%kk, pr)*theta(j,k))
       end do
     end do
 
     ! Mode-mm disturbance of amplitude amp to the ring
-    dist = vr%amp*cos(real(vr%mm)*theta)
+    dist = vr%amp*cos(real(vr%mm, pr)*theta)
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
-          xp(i,j,k) = x(i) - vr%r1*cos(real(vr%kk)*theta(j,k))
+          xp(i,j,k) = x(i) - vr%r1*cos(real(vr%kk, pr)*theta(j,k))
           d1(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
             (scal*(s(j,k)+vr%r0-dist(j,k)))**2 )
           d2(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
@@ -406,12 +403,12 @@ module ic
     call get_rr(d1,rr1)
     call get_rr(d2,rr2)
     
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
           vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) + &
             vr%dir*eye*(scal*(s(j,k)+vr%r0-dist(j,k)))) * &
-                               rr2(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) - &
+            rr2(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) - &
             vr%dir*eye*(scal*(s(j,k)-vr%r0-dist(j,k))))
         end do
       end do
@@ -427,20 +424,20 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_ring2
-    real,    intent(in)                           :: x0, y0, z0, r0, dir
-    real,    dimension(0:nx1,ksta:kend)           :: s
-    real,    dimension(0:nx1,jsta:jend,ksta:kend) :: rr1, rr2, d1, d2
-    integer                                       :: i, j, k
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_ring2
+    real (pr), intent(in) :: x0, y0, z0, r0, dir
+    real (pr), dimension(0:nx1,ks:ke) :: s
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: rr1, rr2, d1, d2
+    integer :: i, j, k
 
-    do k=ksta,kend
+    do k=ks,ke
       do i=0,nx1
         s(i,k) = sqrt((x(i)-x0)**2 + (z(k)-z0)**2)
       end do
     end do
     
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
           d1(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)+r0)**2 )
           d2(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)-r0)**2 )
@@ -448,13 +445,13 @@ module ic
       end do
     end do
     
-    rr1 = sqrt( ((0.3437+0.0286*d1**2)) / &
-                        (1.0+(0.3333*d1**2)+(0.0286*d1**4)) )
-    rr2 = sqrt( ((0.3437+0.0286*d2**2)) / &
-                        (1.0+(0.3333*d2**2)+(0.0286*d2**4)) )
+    rr1 = sqrt( ((0.3437_pr+0.0286_pr*d1**2)) / &
+      (1.0_pr+(0.3333_pr*d1**2)+(0.0286_pr*d1**4)) )
+    rr2 = sqrt( ((0.3437_pr+0.0286_pr*d2**2)) / &
+      (1.0_pr+(0.3333_pr*d2**2)+(0.0286_pr*d2**4)) )
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
           vortex_ring2(i,j,k) = rr1(i,j,k)*((y(j)-y0)+dir*eye*(s(i,k)+r0)) * &
                                 rr2(i,j,k)*((y(j)-y0)-dir*eye*(s(i,k)-r0))
@@ -472,38 +469,38 @@ module ic
     use parameters
     implicit none
 
-    complex,      dimension(0:nx1,jsta:jend,ksta:kend) :: pade_pulse_ring
-    real,         intent(in)                           :: x0, y0, z0, r0
-    character(*), intent(in)                           :: pulse_or_ring
-    real,         dimension(0:nx1,jsta:jend,ksta:kend) :: uu, vv, denom
-    real,         dimension(jsta:jend,ksta:kend)       :: s, s2
-    real,         dimension(0:nx1)                     :: x2
-    real,         dimension(9)                         :: a
-    real,         parameter                            :: pow = 7.0/4.0
-    real                                               :: one_2u, U, m
-    integer                                            :: i, j, k
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: pade_pulse_ring
+    real (pr), intent(in) :: x0, y0, z0, r0
+    character(*), intent(in) :: pulse_or_ring
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: uu, vv, denom
+    real (pr), dimension(js:je,ks:ke) :: s, s2
+    real (pr), dimension(0:nx1) :: x2
+    real (pr), dimension(9) :: a
+    real (pr), parameter :: pow = 7.0_pr/4.0_pr
+    real (pr) :: one_2u, U, m
+    integer :: i, j, k
 
     call get_s(s, y0, z0)
     call get_consts(pulse_or_ring, a, U, m)
     
-    one_2u = 1.0-2.0*U**2
+    one_2u = 1.0_pr-2.0_pr*U**2
     x2 = (x-x0)**2
     s2 = (s-r0)**2
     
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
-          denom(i,j,k) = (1.0 + a(8)*x2(i) + a(7)*s2(j,k) + &
-                          a(9)*(x2(i)+one_2u*s2(j,k))**2)**pow
+          denom(i,j,k) = (1.0_pr + a(8)*x2(i) + a(7)*s2(j,k) + &
+            a(9)*(x2(i)+one_2u*s2(j,k))**2)**pow
           
-          uu(i,j,k) = 1.0 + ( a(1) + a(3)*x2(i) + a(2)*s2(j,k) + &
-                              m*(a(9)**pow)*U*(2.0*x2(i) - &
-                              one_2u*s2(j,k)) ) * (x2(i)+one_2u*s2(j,k)) / &
-                              denom(i,j,k)
+          uu(i,j,k) = 1.0_pr + ( a(1) + a(3)*x2(i) + a(2)*s2(j,k) + &
+            m*(a(9)**pow)*U*(2.0_pr*x2(i) - &
+            one_2u*s2(j,k)) ) * (x2(i)+one_2u*s2(j,k)) / &
+            denom(i,j,k)
 
           vv(i,j,k) = (x(i)-x0) * ( a(4) + a(6)*x2(i) + a(5)*s2(j,k) - &
-                                    m*(a(9)**pow)*(x2(i) + &
-                                    one_2u*s2(j,k))**2 ) / denom(i,j,k)
+            m*(a(9)**pow)*(x2(i) + &
+            one_2u*s2(j,k))**2 ) / denom(i,j,k)
         end do
       end do
     end do
@@ -516,23 +513,21 @@ module ic
       ! Get constants required to set up the vortex ring or pulse
       implicit none
 
-      character(*),               intent(in)  :: flag
-      real,         dimension(9), intent(out) :: consts
-      real,                       intent(out) :: vel, mom
+      character(*), intent(in)  :: flag
+      real (pr), dimension(9), intent(out) :: consts
+      real (pr), intent(out) :: vel, mom
 
       select case (flag)
         case ('ring')
-          consts = (/-1.1,0.0170524,0.0289452,&
-                    -0.953,-0.0049767,-0.0594346,&
-                    0.04,0.21,0.00612/)
-          vel = 0.6
-          mom = 8.97
+          consts = (/-1.1_pr, 0.0170524_pr, 0.0289452_pr, -0.953_pr, &
+            -0.0049767_pr, -0.0594346_pr, 0.04_pr, 0.21_pr, 0.00612_pr/)
+          vel = 0.6_pr
+          mom = 8.97_pr
         case ('pulse')
-          consts = (/-0.79792,0.00388059,0.00882276,&
-                     -0.7981,-0.012783,-0.0574092,&
-                     0.0399,0.199,0.0058/)
-          vel = 0.63
-          mom = 8.37
+          consts = (/-0.79792_pr, 0.00388059_pr, 0.00882276_pr, -0.7981_pr, &
+            -0.012783_pr, -0.0574092_pr, 0.0399_pr, 0.199_pr, 0.0058_pr/)
+          vel = 0.63_pr
+          mom = 8.37_pr
       end select
 
       return
@@ -547,41 +542,41 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: vortex_pair
-    real,    dimension(0:nx1,jsta:jend)           :: uu, vv, denom
-    real,    dimension(0:nx1)                     :: x2, x4
-    real,    dimension(0:ny1)                     :: y2, y4
-    real,    parameter                            :: a0 = -1.14026
-    real,    parameter                            :: a1 = -0.150112
-    real,    parameter                            :: a2 = -0.0294564
-    real,    parameter                            :: b0 = -0.830953
-    real,    parameter                            :: b1 = -0.108296
-    real,    parameter                            :: b2 = -0.073641
-    real,    parameter                            :: c0 = 0.35022
-    real,    parameter                            :: c1 = 0.03032
-    real,    parameter                            :: c2 = 0.15905
-    real,    parameter                            :: c3 = 0.04123
-    real,    parameter                            :: c4 = 0.01402
-    integer                                       :: i, j, k
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_pair
+    real (pr), dimension(0:nx1,js:je) :: uu, vv, denom
+    real (pr), dimension(0:nx1) :: x2, x4
+    real (pr), dimension(0:ny1) :: y2, y4
+    real (pr), parameter :: a0 = -1.14026_pr
+    real (pr), parameter :: a1 = -0.150112_pr
+    real (pr), parameter :: a2 = -0.0294564_pr
+    real (pr), parameter :: b0 = -0.830953_pr
+    real (pr), parameter :: b1 = -0.108296_pr
+    real (pr), parameter :: b2 = -0.073641_pr
+    real (pr), parameter :: c0 = 0.35022_pr
+    real (pr), parameter :: c1 = 0.03032_pr
+    real (pr), parameter :: c2 = 0.15905_pr
+    real (pr), parameter :: c3 = 0.04123_pr
+    real (pr), parameter :: c4 = 0.01402_pr
+    integer :: i, j, k
 
     x2 = x**2
     x4 = x**4
     y2 = y**2
     y4 = y**4
     
-    do j=jsta,jend
+    do j=js,je
       do i=0,nx1
-        denom(i,j) = 1.0 + c0*x2(i) + c1*x4(i) + c2*y2(j) + &
-                           c3*x2(i)*y2(j) + c4*y(j)**4
+        denom(i,j) = 1.0_pr + c0*x2(i) + c1*x4(i) + c2*y2(j) + &
+          c3*x2(i)*y2(j) + c4*y(j)**4
         
-        uu(i,j) = 1.0 + (a0 + a1*x2(i) + a2*y2(j)) / denom(i,j)
+        uu(i,j) = 1.0_pr + (a0 + a1*x2(i) + a2*y2(j)) / denom(i,j)
 
         vv(i,j) = x(i) * (b0 + b1*x2(i) + b2*y2(j)) / denom(i,j)
       end do
     end do
     
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         vortex_pair(:,j,k) = uu(:,j) + eye*vv(:,j)
       end do
     end do
@@ -595,18 +590,19 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere
-    real, parameter :: rad = 10.0
-    real, parameter :: eps1 = 2.0
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: sphere
+    real (pr), parameter :: rad = 10.0_pr
+    real (pr), parameter :: eps1 = 2.0_pr
     integer :: i, j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
-          sphere(i,j,k) = 0.5*(1.0+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad-eps1))
-          !sphere(i,j,k) = max(0.5*(1.0+&
+          sphere(i,j,k) = 0.5_pr*(1.0_pr+tanh(sqrt(x(i)**2+y(j)**2+z(k)**2) - &
+            rad-eps1))
+          !sphere(i,j,k) = max(0.5_pr*(1.0_pr+&
           !                         tanh(sqrt(x(i)**2+y(j)**2+z(k)**2)-rad)-&
-          !                         eps1),0.0)
+          !                         eps1),0.0_pr)
         end do
       end do
     end do
@@ -620,13 +616,13 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: sphere2
-    real, parameter :: width = 10.0
-    real, parameter :: amp = 100.0
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: sphere2
+    real (pr), parameter :: width = 10.0_pr
+    real (pr), parameter :: amp = 100.0_pr
     integer :: i, j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
           sphere2(i,j,k) = amp * exp(-(x(i)**2 + y(j)**2 + z(k)**2) / width)
         end do
@@ -642,19 +638,19 @@ module ic
     use parameters
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend) :: wall
-    real, parameter :: pos = -30.0
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: wall
+    real (pr), parameter :: pos = -30.0_pr
     integer :: i, j, k
 
-    !do k=ksta,kend
-    !  wall(:,:,k) = 0.5*(1.0+tanh(z(k)-pos))
+    !do k=ks,ke
+    !  wall(:,:,k) = 0.5_pr*(1.0_pr+tanh(z(k)-pos))
     !end do
     
-    do k=ksta,kend
+    do k=ks,ke
       if (z(k) <= pos) then
-        wall(:,:,k) = 0.0
+        wall(:,:,k) = 0.0_pr
       else
-        wall(:,:,k) = 1.0
+        wall(:,:,k) = 1.0_pr
       end if
     end do
 
@@ -667,12 +663,12 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend) :: Vtrap
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: Vtrap
     integer :: i, j, k
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         do i=0,nx1
-          Vtrap(i,j,k) = 0.5*(x(i)**2 + y(j)**2 + z(k)**2)
+          Vtrap(i,j,k) = 0.5_pr*(x(i)**2 + y(j)**2 + z(k)**2)
         end do
       end do
     end do
@@ -687,25 +683,25 @@ module ic
     use parameters
     implicit none
 
-    real, intent(in)  :: x0, y0, z0, a1, a2, ll
-    character, intent(in)  :: dir
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: r
+    real (pr), intent(in) :: x0, y0, z0, a1, a2, ll
+    character, intent(in) :: dir
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: r
     integer :: i, j, k
-    real :: safe1, safe2
+    real (pr) :: safe1, safe2
 
-    safe1 = 0.0
-    safe2 = 0.0
+    safe1 = 0.0_pr
+    safe2 = 0.0_pr
 
     ! Guard against disturbance wavelength being zero, when amplitude non-zero.
     if (abs(ll) < epsilon(ll)) then
       if (abs(a1) < epsilon(a1)) then
-        safe1 = 1.0
+        safe1 = 1.0_pr
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
       end if
       if (abs(a2) < epsilon(a2)) then
-        safe2 = 1.0
+        safe2 = 1.0_pr
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
@@ -714,32 +710,32 @@ module ic
 
     select case (dir)
       case ('x')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(y(j)-y0-a1*sin(2.0*pi*x(i)/(ll+safe1)))**2 + &
-                     scal*(z(k)-z0-a2*cos(2.0*pi*x(i)/(ll+safe2)))**2)
+                sqrt(scal*(y(j)-y0-a1*sin(2.0_pr*pi*x(i)/(ll+safe1)))**2 + &
+                     scal*(z(k)-z0-a2*cos(2.0_pr*pi*x(i)/(ll+safe2)))**2)
             end do
           end do
         end do
       case ('y')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(z(k)-z0-a1*sin(2.0*pi*y(j)/(ll+safe1)))**2 + &
-                     scal*(x(i)-x0-a2*cos(2.0*pi*y(j)/(ll+safe2)))**2)
+                sqrt(scal*(z(k)-z0-a1*sin(2.0_pr*pi*y(j)/(ll+safe1)))**2 + &
+                     scal*(x(i)-x0-a2*cos(2.0_pr*pi*y(j)/(ll+safe2)))**2)
             end do
           end do
         end do
       case ('z')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(x(i)-x0-a1*sin(2.0*pi*z(k)/(ll+safe1)))**2 + &
-                     scal*(y(j)-y0-a2*cos(2.0*pi*z(k)/(ll+safe2)))**2)
+                sqrt(scal*(x(i)-x0-a1*sin(2.0_pr*pi*z(k)/(ll+safe1)))**2 + &
+                     scal*(y(j)-y0-a2*cos(2.0_pr*pi*z(k)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -755,12 +751,12 @@ module ic
     use parameters
     implicit none
 
-    real,                                 intent(in)  :: y0, z0
-    real, dimension(jsta:jend,ksta:kend), intent(out) :: s
-    integer                                           :: j, k
+    real (pr), intent(in)  :: y0, z0
+    real (pr), dimension(js:je,ks:ke), intent(out) :: s
+    integer :: j, k
 
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         s(j,k) = sqrt((y(j)-y0)**2 + (z(k)-z0)**2)
       end do
     end do
@@ -776,25 +772,25 @@ module ic
     use parameters
     implicit none
 
-    real, intent(in) :: x0, y0, z0, a1, a2, ll, sgn
+    real (pr), intent(in) :: x0, y0, z0, a1, a2, ll, sgn
     character, intent(in) :: dir
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: theta
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: theta
     integer :: i, j, k
-    real :: safe1, safe2
+    real (pr) :: safe1, safe2
 
-    safe1 = 0.0
-    safe2 = 0.0
+    safe1 = 0.0_pr
+    safe2 = 0.0_pr
 
     ! Guard against disturbance wavelength being zero, when amplitude non-zero.
     if (abs(ll) < epsilon(ll)) then
       if (abs(a1) < epsilon(a1)) then
-        safe1 = 1.0
+        safe1 = 1.0_pr
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
       end if
       if (abs(a2) < epsilon(a2)) then
-        safe2 = 1.0
+        safe2 = 1.0_pr
       else
         call emergency_stop('ERROR: vortex line disturbance wavelength is &
           &zero, but amplitude is non-zero.')
@@ -803,32 +799,32 @@ module ic
 
     select case (dir)
       case ('x')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(z(k)-z0-a2*cos(2.0*pi*x(i)/(ll+safe2))), & 
-                scal*(y(j)-y0-a1*sin(2.0*pi*x(i)/(ll+safe1))))
+                atan2(scal*(z(k)-z0-a2*cos(2.0_pr*pi*x(i)/(ll+safe2))), & 
+                scal*(y(j)-y0-a1*sin(2.0_pr*pi*x(i)/(ll+safe1))))
             end do
           end do
         end do
       case ('y')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(x(i)-x0-a2*cos(2.0*pi*y(j)/(ll+safe2))), &
-                scal*(z(k)-z0-a1*sin(2.0*pi*y(j)/(ll+safe1))))
+                atan2(scal*(x(i)-x0-a2*cos(2.0_pr*pi*y(j)/(ll+safe2))), &
+                scal*(z(k)-z0-a1*sin(2.0_pr*pi*y(j)/(ll+safe1))))
             end do
           end do
         end do
       case ('z')
-        do k=ksta,kend
-          do j=jsta,jend
+        do k=ks,ke
+          do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(y(j)-y0-a2*cos(2.0*pi*z(k)/(ll+safe2))), &
-                scal*(x(i)-x0-a1*sin(2.0*pi*z(k)/(ll+safe1))))
+                atan2(scal*(y(j)-y0-a2*cos(2.0_pr*pi*z(k)/(ll+safe2))), &
+                scal*(x(i)-x0-a1*sin(2.0_pr*pi*z(k)/(ll+safe1))))
             end do
           end do
         end do
@@ -844,12 +840,12 @@ module ic
     use parameters
     implicit none
 
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(in)  :: r
-    real, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: rr
-    integer                                                 :: i, j, k
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(in)  :: r
+    real (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: rr
+    integer :: i, j, k
     
-    rr = sqrt( ((0.3437+0.0286*r**2)) / &
-                (1.0+(0.3333*r**2)+(0.0286*r**4)) )
+    rr = sqrt( ((0.3437_pr+0.0286_pr*r**2)) / &
+      (1.0_pr+(0.3333_pr*r**2)+(0.0286_pr*r**4)) )
 
     return
   end subroutine get_rr
@@ -863,46 +859,45 @@ module ic
     use constants
     implicit none
 
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(in) :: in_var
-    complex, dimension(0:nx1,jsta:jend,ksta:kend), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
     character(*), intent(in) :: dir
     logical, intent(in) :: particles
-    complex, dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
-    complex, allocatable, dimension(:)    :: local_data, work
+    complex (pr), dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
+    complex (pr), allocatable, dimension(:) :: local_data, work
     integer :: i, j, k
     integer*8 :: plan, iplan
     integer :: loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
 
     ! Set up a temporary array so that the data can be eventually redistributed
     ! as required by fftw
-    tmp_var = 0.0
-    do k=ksta,kend
-      do j=jsta,jend
+    tmp_var = 0.0_pr
+    do k=ks,ke
+      do j=js,je
         tmp_var(:,j,k) = in_var(:,j,k)
       end do
     end do 
     
     ! Make sure all processes have the temporary variable
-    call MPI_ALLREDUCE(tmp_var, tmp, nx*ny*nz, & 
-                       MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp_var, tmp, nx*ny*nz, gpe_mpi_complex, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
                        
     select case (dir)
       case ('forward')
         ! Create the plan for a forward transform
         call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
-                                        FFTW_FORWARD, FFTW_ESTIMATE)
+          FFTW_FORWARD, FFTW_ESTIMATE)
       case ('backward')
         ! Create the plan for a backward transform
         call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
-                                        FFTW_BACKWARD, FFTW_ESTIMATE)
+          FFTW_BACKWARD, FFTW_ESTIMATE)
       case default
         call emergency_stop('ERROR: Not a valid direction for FFT!')
     end select
 
     ! Get the sizes of the arrays local to each process
     call fftwnd_f77_mpi_local_sizes(plan, loc_nz, loc_z_sta, &
-                                          loc_ny, loc_y_sta, &
-                                          tot_loc)
+      loc_ny, loc_y_sta, tot_loc)
 
     ! Allocate the array sizes
     allocate(local_data(0:tot_loc-1))
@@ -922,7 +917,7 @@ module ic
     
     ! Set up another temporary array to (eventually) get the transformed data
     ! back into the original distribution scheme
-    tmp = 0.0
+    tmp = 0.0_pr
     do k=0,loc_ny-1
       do j=0,nz1
         do i=0,nx1
@@ -932,32 +927,19 @@ module ic
     end do
       
     ! Make sure all processes have the temporary variable
-    call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, &
-                       MPI_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+    call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, gpe_mpi_complex, MPI_SUM, &
+      MPI_COMM_WORLD, ierr)
 
     ! Renormalise
-    tmp_var = tmp_var / sqrt(real(nx*ny*nz))
+    tmp_var = tmp_var / sqrt(real(nx*ny*nz, pr))
 
     ! Distribute the transformed data
-    do k=ksta,kend
-      do j=jsta,jend
+    do k=ks,ke
+      do j=js,je
         out_var(:,j,k) = tmp_var(:,j,k)
       end do
     end do
 
-    !if (dir == 'backward') then
-    !  open (60, file=proc_dir//'fft0000000.dat', form='unformatted')
-    !  write (60) nx, ny, nz
-    !  write (60) nyprocs, nzprocs
-    !  write (60) jsta, jend, ksta, kend
-    !  write (60) abs(out_var)**2
-    !  write (60) x
-    !  write (60) y
-    !  write (60) z
-    !  close (60)
-    !end if
-        
-    
     ! Deallocate the allocated arrays
     deallocate(local_data)
     deallocate(work)
