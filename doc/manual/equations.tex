@@ -1,0 +1,48 @@
+% $Id: equations.tex 604 2010-06-09 11:24:10Z najy2 $
+%------------------------------------------------------------------------------
+
+\begin{chapter}{\label{cha:equations}Governing equations, boundary conditions
+  and non-dimensionalisation}
+
+  The single-particle complex wavefunction $\psi(\vec{r}, t)$ for $N$ bosons of
+  mass $m$ obeys the 3 dimensional, time dependent Gross--Pitaevskii (GP)
+  equation \citep{Gross61,Pitaevskii61}
+  %
+  \begin{equation}
+    \eye \hbar \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2m} \nabla^{2} \psi +
+    \Vtrap \psi + g \left|\psi\right|^{2} \psi - \mu \psi,
+  \end{equation}
+  %
+  where $\hbar$ is Planck's constant, $\Vtrap$ is an external potential, $g$ is
+  the strength of the interactions between the bosons, and $\mu$ is the
+  chemical potential.
+
+  It describes the evolution of the ground state of a quantum system of weakly
+  interacting bosons, in the limit of zero temperature, and when the number of
+  bosons $N$ is large.
+
+  \begin{equation}
+    \kappa = \frac{h}{m} = \frac{2\pi\hbar}{m}
+    \label{eqn:one}
+  \end{equation}
+
+  \noindent Then
+  %
+  \begin{equation}
+    \kappa^{*} = \frac{\hbar/(2\mu)}{a^{2}}\kappa = \frac{\hbar}{2\mu
+      a^{2}}\kappa
+    \label{eqn:two}
+  \end{equation}
+  %
+  Then substituting \eqref{eqn:two} into \eqref{eqn:one} gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      \frac{2\mu a^{2}}{\hbar}\kappa^{*} &= \frac{2\pi\hbar}{m} \\
+      \implies \kappa^{*} &= \frac{2\pi\hbar}{m} \frac{\hbar}{2\mu a^{2}} \\
+      &= \frac{2\pi\hbar^{2}}{2m\mu a^{2}}
+    \end{aligned}
+  \end{equation*}
+  %
+  Then using $a^{2} = \hbar^{2}/(2m\mu)$ gives $\kappa^{*} = 2\pi$.
+\end{chapter}

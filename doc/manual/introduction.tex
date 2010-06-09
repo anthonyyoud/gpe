@@ -2,4 +2,80 @@
 %------------------------------------------------------------------------------
 
 \begin{chapter}{\label{cha:introduction}Introduction}
+  The GPE code is a modular 3D Gross-Pitaevskii equation solver, written in
+  Fortran 90 and parallelised using the Message Passing Interface (MPI).
+  
+  The code can solve a range of problems for both homogeneous and
+  non-homogeneous (trapped) condensates, including vortex dynamics (lines,
+  rings, rarefaction pulses), and non-equilibrium dynamics (condensate
+  formation).
+
+  Time stepping is performed explicitly using one of the following methods:
+  %
+  \begin{itemize}
+    \item first-order Euler (E1);
+    \item second-order Runge--Kutta (RK2);
+    \item fourth-order Runge--Kutta (RK4);
+    \item fourth/fifth-order adaptive Runge--Kutta--Fehlberg (RK45).
+  \end{itemize}
+  %
+  The RK45 scheme uses the algorithm proposed in Numerical Recipes
+  \citep[section 16.2, page 708,][]{NR92}.
+  
+  The spatial discretisation is performed with either second- or fourth-order
+  accurate centred finite differences, and the boundary conditions can be
+  either periodic or reflective.
+
+  The ``kind'' of floating point variables is parametrised, so real or
+  double-precision arithmetic can be specified without relying on compiler
+  switches.
+
+  \section{\label{sec:prelim}Preliminaries and required software}
+  Since the code uses MPI for the parallelism, an MPI parallel environment must
+  be available (currently, this is also true even when running on one
+  processor).  The code has been tested with the MPICH and OpenMPI
+  implementations of MPI, but other implementations which adhere to the MPI
+  standard should also be useable.
+
+  The code uses some Fortran 2003 features including allocatable arrays within
+  user-defined types, the \verb"protected" keyword, and stream I/O, so a
+  compiler which allows some Fortran 2003 constructs is required.  Compilers
+  known to work include sunf95 (Sun Studio 12), ifort (Intel Fortran Compiler),
+  and gfortran (GNU Fortran Compiler).
+
+  The code also requires the FFTw library (http://www.fftw.org) for some
+  routines.  This \textbf{must} be major version 2 of the library (any minor
+  version will be sufficient --- the latest is version 2.1.3), since the FFT is
+  performed in parallel, and FFTw version 3 does not yet support (distributed)
+  parallel transforms.
+
+  To view the output of the code, any graphics program capable of reading
+  space-separated columnar text files will be able to produce time-series plots
+  (\eg gnuplot, http://www.gnuplot.info/).  Routines written in IDL
+  (Interactive Data Language, http://www.ittvis.com/ProductServices/IDL.aspx)
+  for producing 2D contour and 3D isosurface plots are included with the code.
+  The data for these plots are saved in binary format, so more work will be
+  needed if a different graphics program is to be used.  Volume renderings
+  using VAPOR (http://www.vapor.ucar.edu/) are also possible.
+
+  \subsection{Summary of required hardware and software}
+  The following outlines the required hardware and software in order to run the
+  code.  Other hardware and software may work, but has not been tested.
+  %
+  \begin{itemize}
+    \item A Unix-like operating system, running on x86 or x86\_64 hardware.
+    \item A standard development environment including make.
+    \item A Fortran 90 compiler, supporting Fortran 2003 constructs (see
+      above).
+    \item An implementation of MPI, \eg OpenMPI or MPICH.
+    \item Version 2.x.y of the FFTw library.
+    \item gnuplot and/or IDL for visualisation; VAPOR optional.
+  \end{itemize}
+
+  \section{Organisation of this manual}
+  The rest of this manual is organised as follows:
+  %
+  \begin{itemize}
+    \item Chapter~\ref{cha:equations} ---
+  \end{itemize}
 \end{chapter}
