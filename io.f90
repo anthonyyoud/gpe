@@ -11,7 +11,7 @@ module io
     save_velocity_pdf, save_vel_corr, save_surface, idl_surface, end_state, &
     get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
     save_momentum, save_norm, get_dirs, diag, condensed_particles, &
-    average, pp_save_filter
+    average, pp_save_filter, save_run
   
   contains
 
@@ -1456,6 +1456,8 @@ module io
     return
   end subroutine average
 
+! ***************************************************************************  
+
   subroutine pp_save_filter()
     ! Save a series of filtered isosurfaces after a run has been completed
     use parameters
@@ -1506,5 +1508,38 @@ module io
 
     return
   end subroutine pp_save_filter
+
+! ***************************************************************************  
+
+  subroutine save_run(in_var)
+    ! Save 3D isosurfaces if the file SAVE exists in the run directory.
+    use parameters
+    implicit none
+
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
+    logical :: save_exist
+    integer :: save3d
+
+    save3d = 0
+
+    if (myrank == 0) then
+      inquire (file='SAVE', exist=save_exist)
+      if (save_exist) then
+        save3d = 1
+      end if
+    end if
+
+    call MPI_BCAST(save3d, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+    
+    if (save3d == 1) then
+      call idl_surface(in_var)
+      if (myrank == 0) then
+        open (95, file='SAVE')
+        close (95, status='delete')
+      end if
+    end if
+
+    return
+  end subroutine save_run
   
 end module io

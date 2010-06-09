@@ -60,6 +60,8 @@ program gpe
       select case (scheme)
         case ('euler')
           print*, 'Explicit Euler time stepping'
+        case ('rk2')
+          print*, 'Explicit second order Runge-Kutta time stepping'
         case ('rk4')
           print*, 'Explicit fourth order Runge-Kutta time stepping'
         case ('rk_adaptive')
@@ -118,7 +120,7 @@ program gpe
   end if
   if (eqn_to_solve == 4 .and. .not. real_time) then
     call get_norm(psi%new, prev_norm)
-    call renormalise(psi%new, prev_norm)
+    if (renorm) call renormalise(psi%new, prev_norm)
     call save_norm(t, prev_norm, relnorm)
   end if
   call condensed_particles(t, psi%new)
@@ -237,26 +239,24 @@ program gpe
     ! Call the solver subroutine to solve the equation
     call solver(psi%old, psi%new)
 
+    ! Check to see whether the file SAVE exists in the run directory, and save
+    ! 3D isosurfaces if it does.
+    call save_run(psi%new)
+
     if (t+im_t >= save_rate2*n) then
       if (diagnostic) then
         call diag(psi%old2, psi%old, psi%new)
       end if
     end if
     
-    ! Calculate the norm
+    ! Calculate the norm and renormalise if necessary.
     if (eqn_to_solve == 4) then
       call get_norm(psi%new, norm)
       relnorm = abs((norm-prev_norm)/prev_norm)
       if (modulo(t+im_t, abs(dt)*save_rate) < abs(dt)) then
         call save_norm(t, norm, relnorm)
       end if
-      if (.not. real_time) then
-        call renormalise(psi%new, norm)
-      end if
     end if
-
-    ! Make sure all processes know what the norm is
-    !call MPI_BCAST(norm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
     ! Calculate the relative difference of successive norms.  If the difference
     ! is small enough switch to real time
@@ -270,7 +270,6 @@ program gpe
         if (save_3d) then
           call idl_surface(psi%new)
         end if
-        !psi%new = psi%new*vortex_line(vl1)
         dt = cmplx(abs(aimag(dt)), abs(real(dt, pr)), pr)
         if (myrank == 0) then
           print*, 'Switching to real time'
@@ -278,6 +277,8 @@ program gpe
           print*, 'p =', p
         end if
       end if
+      if (renorm) call renormalise(psi%new, norm)
+      psi%new = alter_psi(psi%new)
     end if
     
     ! Update the norm
@@ -285,7 +286,6 @@ program gpe
 
     ! Update the time index
     p = p+1
-
   end do
   
   ! Time loop finished so cleanly end the run

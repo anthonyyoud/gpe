@@ -84,7 +84,7 @@ DIGITS=2
 EXE=gpe
 LOGFILE=log.txt
 
-echo Going to run on $NPROCS processes.
+echo Going to run on $NPROCS processes
 
 if [ $POST -eq 1 ]; then
   # If post-processing just do the run.
@@ -109,7 +109,7 @@ do
 done
 
 if [ ! -z $PREDIR ]; then
-  echo Going to do a restart from $PREDIR.
+  echo Going to do a restart from $PREDIR
   for i in `seq -f "%0${DIGITS}g" 0 $(($NPROCS-1))`
   do
     PROCDIR=proc$i

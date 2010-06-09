@@ -24,6 +24,9 @@ module solve
       case ('euler')
         ! Explicit Euler time stepping
         call euler(var_in, var_out)
+      case ('rk2')
+        ! Explicit second order Runge-Kutta time stepping
+        call rk2(var_in, var_out)
       case ('rk4')
         ! Explicit fourth order Runge-Kutta time stepping
         call rk4(var_in, var_out)
@@ -58,6 +61,37 @@ module solve
 
     return
   end subroutine euler
+
+! ***************************************************************************  
+
+  subroutine rk2(old, new)
+    ! Explicit second order Runge-Kutta time stepping
+    use parameters
+    use variables
+    implicit none
+
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2), intent(in) :: old
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: new
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: kk1
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: kk2
+    complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: tmp
+    integer :: j, k
+
+    call get_rhs(old,kk1(:,js:je,ks:ke))
+    tmp(:,js:je,ks:ke) = old(:,js:je,ks:ke) + 0.5_pr*dt*kk1(:,js:je,ks:ke)
+    call send_recv_z(tmp)
+    call pack_y(tmp)
+    call send_recv_y()
+    call unpack_y(tmp)
+    call get_rhs(tmp, kk2(:,js:je,ks:ke))
+
+    new(:,js:je,ks:ke) = old(:,js:je,ks:ke) + dt*kk2(:,js:je,ks:ke)
+
+    t = t+real(dt, pr)
+    im_t = im_t+abs(aimag(dt))
+
+    return
+  end subroutine rk2
   
 ! ***************************************************************************  
 

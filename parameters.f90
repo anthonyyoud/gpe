@@ -22,28 +22,31 @@ module parameters
   integer,      parameter :: nx            = 120
   integer,      parameter :: ny            = 120
   integer,      parameter :: nz            = 120
-  real (pr),    parameter :: tau           = 0.0001_pr
-  real (pr),    parameter :: end_time      = 500.0_pr
-  real (pr),    parameter :: xr            = 20.0_pr
-  real (pr),    parameter :: yr            = 20.0_pr
-  real (pr),    parameter :: zr            = 20.0_pr
+  real (pr),    parameter :: tau           = 0.0005_pr
+  real (pr),    parameter :: end_time      = 100.0_pr
+  real (pr),    parameter :: xr            = 6.0_pr
+  real (pr),    parameter :: yr            = 6.0_pr
+  real (pr),    parameter :: zr            = 6.0_pr
   real (pr),    parameter :: Urhs          = 0.0_pr !0.35_pr
   real (pr),    parameter :: diss_amp      = 0.0_pr !0.005_pr
   real (pr),    parameter :: scal          = 1.0_pr !0.64315009229562_pr
   real (pr),    parameter :: nv            = 0.75_pr
   real (pr),    parameter :: enerv         = 0.75_pr
-  real (pr),    parameter :: g             = 3.0_pr
-  real (pr),    parameter :: mu            = 0.0_pr
-  real (pr),    parameter :: nn            = 1e5_pr
+  real (pr),    parameter :: g             = 5.0_pr
+  real (pr),    parameter :: mu            = 8.0_pr !83.28581966_pr
+  real (pr),    parameter :: nn            = 1.0_pr !1e5_pr
+  real (pr),    parameter :: omx           = 1.0_pr !0.460937984_pr
+  real (pr),    parameter :: omy           = 1.0_pr !0.460937984_pr
+  real (pr),    parameter :: omz           = 1.0_pr !0.460937984_pr
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve  = 4
   ! bcs = 1 for periodic, 2 for reflective
   integer,      parameter :: bcs           = 2
   ! order = 2 for 2nd order derivatives, 4 for 4th order derivatives
-  integer,      parameter :: order         = 4
+  integer,      parameter :: order         = 2
   integer,      parameter :: nbins         = 256
   integer,      parameter :: save_rate     = 10
-  real (pr),    parameter :: save_rate2    = 0.5_pr
+  real (pr),    parameter :: save_rate2    = 1.0_pr
   real (pr),    parameter :: save_rate3    = 10.0_pr
   real (pr),    parameter :: p_save        = 10.0_pr
   logical,      parameter :: save_contour  = .false.
@@ -57,9 +60,10 @@ module parameters
   logical,      parameter :: save_zeros    = .false.
   logical,      parameter :: restart       = .false.
   logical,      parameter :: saved_restart = .false.
+  logical,      parameter :: renorm        = .false.
   logical                 :: real_time     = .false.
   logical                 :: diagnostic    = .false.
-  character(*), parameter :: scheme        = 'rk4' !_adaptive'
+  character(*), parameter :: scheme        = 'rk2' !_adaptive'
 
   ! Parameters for adaptive time stepping
   real (pr), parameter :: eps              = 1e-6_pr
@@ -79,11 +83,12 @@ module parameters
     real (pr)    :: ll   ! wavelength of the above disturbance
     real (pr)    :: sgn  ! sign of the argument of the line
     character(1) :: dir  ! direction in which the line should extend
+    logical      :: imprint_phase ! imprint phase only (no vortex core)
   end type line_param
 
   type (line_param), parameter :: &
-    vl1 = line_param(-5.0_pr, 0.0_pr, 0.0_pr, &
-      0.0_pr, 0.0_pr, 32.0_pr, 1.0_pr, 'z')
+    vl1 = line_param(-1.5_pr, 0.0_pr, 0.0_pr, &
+      0.0_pr, 0.0_pr, 0.0_pr, 1.0_pr, 'z', .true.)
   !  
   ! *************************************************************************
 

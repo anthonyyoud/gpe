@@ -88,7 +88,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = fermi()*vortex_line(vl1)
+      out_var = abs(fermi()) *vortex_line(vl1)
       !out_var = cmplx(1.0_pr, 0.0_pr, pr) !vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
@@ -193,11 +193,11 @@ module ic
 
     if (real_time) then
       if (real(dt_prev, pr) == 0.0_pr) then
-        dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
+        dt_prev = cmplx(-aimag(dt_prev), real(dt_prev, pr), pr)
       end if
     else
       if (aimag(dt_prev) == 0.0_pr) then
-        dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
+        dt_prev = cmplx(aimag(dt_prev), -real(dt_prev, pr), pr)
       end if
     end if
 
@@ -306,15 +306,26 @@ module ic
     use parameters
     implicit none
 
-    real (pr), dimension(0:nx1,js:je,ks:ke) :: fermi
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: fermi, r
     real (pr) :: mu_tf, r_tf
+    integer :: i, j, k
 
-    mu_tf = (15.0_pr*((2.0_pr)**(-1.5_pr))*g*nn/(8.0_pr*pi))**(0.4_pr)
+    !mu_tf = (15.0_pr*((2.0_pr)**(-1.5_pr))*g*nn/(8.0_pr*pi))**(0.4_pr)
+    mu_tf = mu
     r_tf = sqrt(2.0_pr*mu_tf)
+
+    do k=ks,ke
+      do j=js,je
+        do i=0,nx1
+          r(i,j,k) = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
+        end do
+      end do
+    end do
 
     fermi = cmplx((mu_tf - Vtrap()) / g, 0.0_pr, pr)
 
-    where (real(fermi, pr) >= 0.0_pr)
+    !where (real(fermi, pr) >= 0.0_pr)
+    where (r <= r_tf)
       fermi = sqrt(fermi)
     elsewhere
       fermi = 0.0_pr
@@ -353,11 +364,15 @@ module ic
     real (pr), dimension(0:nx1,js:je,ks:ke) :: r, theta
     integer :: j, k
 
-    call get_r(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%dir, r)
     call get_theta(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%sgn, &
       vl%dir, theta)
 
-    vortex_line = amp(r)*exp(eye*theta)
+    if (vl%imprint_phase) then
+      vortex_line = exp(eye*theta)
+    else
+      call get_r(vl%x0, vl%y0, vl%z0, vl%amp1, vl%amp2, vl%ll, vl%dir, r)
+      vortex_line = amp(r)*exp(eye*theta)
+    end if
     
     return
   end function vortex_line
@@ -668,7 +683,8 @@ module ic
     do k=ks,ke
       do j=js,je
         do i=0,nx1
-          Vtrap(i,j,k) = 0.5_pr*(x(i)**2 + y(j)**2 + z(k)**2)
+          Vtrap(i,j,k) = 0.5_pr*((omx**2)*x(i)**2 + (omy**2)*y(j)**2 + &
+            (omz**2)*z(k)**2)
         end do
       end do
     end do
