@@ -1,0 +1,291 @@
+% $Id: manual.sty 589 2010-04-26 12:12:14Z najy2 $
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Redefine the margins - basically just a4wide.sty with different measurements.
+% If the font size is 10pt then the text is centred on the page with equal left
+% and right margins; if the font size is 11pt then the text is shifted to the
+% right so that the left hand margin is wider.  This is to take into account
+% the binding of the thesis.  I've set the margins in accordance with
+% University guidelines.  12pt has been left with the default a4wide.sty
+% settings.
+\RequirePackage{a4}
+
+\ifcase \@ptsize
+    % mods for 10 pt
+    \oddsidemargin  0.15 in     %   Left margin on odd-numbered pages.
+    \evensidemargin 0.35 in     %   Left margin on even-numbered pages.
+    \marginparwidth 1 in        %   Width of marginal notes.
+    \oddsidemargin 0.25 in      %   Note that \oddsidemargin = \evensidemargin
+    \evensidemargin 0.25 in
+    \marginparwidth 0.75 in
+    \textwidth 5.875 in        	% Width of text line.
+\or % mods for 11 pt
+    \oddsidemargin 0.1 in      	%   Left margin on odd-numbered pages.
+    \evensidemargin 0.15 in    	%   Left margin on even-numbered pages.
+    \marginparwidth 1 in       	%   Width of marginal notes.
+    \oddsidemargin 0.6 in      	%   Note that \oddsidemargin = \evensidemargin
+    \evensidemargin 0.125 in
+    \marginparwidth 0.75 in
+    \textwidth 5.700 in 	% Width of text line.
+\or % mods for 12 pt
+    \oddsidemargin -10 pt      	%   Left margin on odd-numbered pages.
+    \evensidemargin 10 pt      	%   Left margin on even-numbered pages.
+    \marginparwidth 1 in       	%   Width of marginal notes.
+    \oddsidemargin 0 in      	%   Note that \oddsidemargin = \evensidemargin
+    \evensidemargin 0 in
+    \marginparwidth 0.75 in
+    \textwidth 6.375 true in 	% Width of text line.
+\fi
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% A titlepage - Adapted from a titlepage designed by Ashley Willis.  To use
+% this titlepage in your thesis all you need is a line which says
+% \phdtitle{title}{name}{image}{date}.  Any other changes can be made below.
+\newcommand{\phdtitle}[4]{%
+ \begin{titlepage}
+   \begin{tabular}{c}
+     \vspace{10mm}
+   \end{tabular}
+   \begin{center}
+     \LARGE{\sc{#1}}\\
+     \vspace{1.5cm}
+     \Large{\sc{\hspace{2mm}#2}}
+     \vspace{2cm}\\
+     \begin{tabular}{c}
+       \hspace{2mm}
+       \scalebox{0.75}{\includegraphics{#3}}
+     \end{tabular}
+     \mbox{}
+     \vspace{0.6cm}\\
+     \emph{\small
+       School of Mathematics \& Statistics\\
+       Newcastle University\\
+       Newcastle upon Tyne\\
+       United Kingdom\\
+     }
+     \vspace{1cm}\Large{#4}\\         
+   \end{center}
+ \end{titlepage}
+}
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% A new acknowledgements environment.  As far as I am aware LaTeX does not
+% provide an acknowledgement environment; so here's one!  Just use
+% \begin{acknowledgements}...\end{acknowledgements} as usual.
+\makeatletter
+\newenvironment{acknowledgements}{
+  \titlepage\null\vfil
+  \@beginparpenalty\@lowpenalty
+  \begin{center}%
+    \bfseries Acknowledgements \@endparpenalty\@M
+  \end{center}%
+  }{
+  \par\vfil\null\endtitlepage
+}
+\makeatother
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% A dedication environment.  Use \begin{dedication}...\end{dedication}.  This
+% will set aside a full page with italic text centred horizontally and
+% vertically.
+\makeatletter
+\newenvironment{dedication}{
+  \titlepage\null\vfil
+  \begin{center}%
+    \itshape
+    }{
+  \end{center}%
+\par\vfil\null\endtitlepage
+}
+\makeatother
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Provides dot-dashed lines.  There doesn't appear to be an easy way of making
+% dotted or dashed lines in LaTeX, so here are some pre-defined linestyles.
+\def\dashedrule#1#2#3#4#5{{%
+	% #1 is length of first dash
+	% #2 is length of gap between two consecutive first dashes
+	% #3 is length of second dash
+	% #4 is length of gap between two consecutive second dashes
+	% #5 is number of dashes
+	\dimen1=#2 \divide\dimen1 by 2
+	\dimen2=#4 \divide\dimen2 by 2
+	\def\@ruledash{%
+		\rule{\dimen1}{0pt}%
+		\rule[0.5ex]{#1}{0.4pt}%
+		% line is 0.5ex above the baseline
+		% and 0.4pt thick
+		\rule{\dimen1}{0pt}%
+		\rule{\dimen2}{0pt}%
+		\rule[0.5ex]{#3}{0.4pt}%
+		\rule{\dimen2}{0pt}}%
+	\count1=0
+	\loop%
+	\ifnum\count1<#5%
+	\advance\count1 by 1%
+	\@ruledash%
+\repeat}}
+
+% These are the definitions.  You must say \protect\longdashes,
+% \protect\shortdashes etc. in your document to get a short line of the
+% specified style.  You can define more here if you want.  The length of a line
+% segment is (#1+#2+#3+#4)*#5
+\def\longdashes{\dashedrule{0.8em}{0.2em}{0.0em}{0.0em}{3}}
+\def\mediumdashes{\dashedrule{0.3em}{0.2em}{0.0em}{0.0em}{6}}
+\def\shortdashes{\dashedrule{0.1em}{0.1em}{0.0em}{0.0em}{15}}
+\def\sparsedashes{\dashedrule{0.5em}{0.5em}{0.0em}{0.0em}{3}}
+\def\solidline{\dashedrule{3em}{0.0em}{0.0em}{0.0em}{1}}
+\def\dotdashline{\dashedrule{0.5em}{0.1em}{0.1em}{0.3em}{3}}
+%------------------------------------------------------------------------------
+
+% Any external packages that you require can be inserted here.
+\usepackage[round]{natbib}              % BiBTeX style
+\usepackage{fancyhdr}                   % Fancy headers
+\usepackage[centertags]{amsmath}        % AMS Stuff
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{newlfont}                   % Special fonts
+\usepackage{psfrag}                     % PSFrag (LaTeX style labels)
+\usepackage{dcolumn}                    % Line up at decimal point in a table
+\usepackage{fancyvrb}                   % Better verbatim environment
+\usepackage{graphicx}                   % Graphics stuff
+\usepackage{pictexwd}                   % Line drawings
+\usepackage{color}                      % Colours
+\usepackage{makeidx}                    % Enable making an index
+\usepackage[small]{caption}             % Captions
+\usepackage[it]{subfigure}              % Subfigures
+\usepackage{enumerate}                  % Enumerated lists
+\usepackage{mathrsfs}                   % Serif fonts
+\usepackage{longtable}                  % Stretch tables
+\usepackage{lscape}                     % Landscape mode
+\usepackage{afterpage}                  % Clear a page
+\usepackage[figuresright]{rotating}     % Rotate a figure
+\usepackage{setspace}                   % Spacing tools
+
+%----------------------------------------------------------------------------
+% Fancy headers.  See the fancyhdr documentation of a full explanation of what
+% these are.  R=Right hand side of page, L=Left hand side of page
+\pagestyle{fancy}
+\fancyhead[R]{\slshape\nouppercase\leftmark}
+\fancyhead[L]{}
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Make all upper-case Greek letters slanted.  Just comment these if you prefer
+% upright Greek letters.
+\DeclareMathSymbol{\Gamma}{\mathalpha}{letters}{"00}
+\DeclareMathSymbol{\Delta}{\mathalpha}{letters}{"01}
+\DeclareMathSymbol{\Theta}{\mathalpha}{letters}{"02}
+\DeclareMathSymbol{\Lambda}{\mathalpha}{letters}{"03}
+\DeclareMathSymbol{\Xi}{\mathalpha}{letters}{"04}
+\DeclareMathSymbol{\Pi}{\mathalpha}{letters}{"05}
+\DeclareMathSymbol{\Sigma}{\mathalpha}{letters}{"06}
+\DeclareMathSymbol{\Upsilon}{\mathalpha}{letters}{"07}
+\DeclareMathSymbol{\Phi}{\mathalpha}{letters}{"08}
+\DeclareMathSymbol{\Psi}{\mathalpha}{letters}{"09}
+\DeclareMathSymbol{\Omega}{\mathalpha}{letters}{"0A}
+%------------------------------------------------------------------------------
+
+\font\sfs = cmssi10 % sans-serif slanted
+\font\sfb = cmssi10 % sans-serif bold maths
+\font\sls = cmssi10 % sans-serif bold maths, italic
+
+%------------------------------------------------------------------------------
+% Various miscellaneous new commands.
+\newcommand{\mat}[1]{\mbox{\sls #1}}
+\newcommand{\etal}{\mbox{\textit{et al.\ }}}
+\newcommand{\secpag}[1]{\S\ref{#1} p\pageref{#1}}
+\newcommand{\pa}{\partial}
+\newcommand{\total}{\mathrm{d}}
+\newcommand{\bs}{\boldsymbol}
+\newcommand{\red}{\textcolor{red}}
+\newcommand{\bluebox}{\fcolorbox{blue}{white}}
+\newcommand{\colorboxed}[3]{\textcolor{#1}{\boxed{\textcolor{#2}{#3}}}}
+\newcommand{\ddstar}{\mathcal{D}\mathcal{D_*}}
+\newcommand{\dstard}{\mathcal{D_*}\mathcal{D}}
+\newcommand{\Retd}{\Rey_{\mathrm{td}}}
+\newcommand{\Rebar}{\overline{\Rey}}
+\newcommand{\Remod}{\Rey_{\mathrm{mod}}}
+\newcommand{\Remodc}{\Rey_{\mathrm{mod,c}}}
+\newcommand{\Ombar}{\overline{\Omega}}
+\newcommand{\uprime}{\bs{u^{\prime}}}
+\newcommand{\pprime}{p^{\prime}}
+\newcommand{\utilde}{\bs{\tilde{u}}}
+\newcommand{\ptilde}{\tilde{p}}
+\newcommand{\omth}{\omega_{\theta}}
+\newcommand{\bth}{b_{\theta}}
+\newcommand{\Bth}{B_{\theta}}
+\newcommand{\jth}{j_{\theta}}
+\newcommand{\Jth}{J_{\theta}}
+\newcommand{\uth}{u_{\theta}}
+\newcommand{\poscite}[1]{\citeauthor{#1}'s~\citeyearpar{#1}}
+\newcommand{\posscite}[1]{\citeauthor{#1}'~\citeyearpar{#1}}
+\providecommand{\bnabla}{\boldsymbol{\nabla}}
+\providecommand\bcdot{\boldsymbol{\cdot}}
+\newcommand\GaPQ{\ensuremath{G_a(P,Q)}}
+\newcommand\GsPQ{\ensuremath{G_s(P,Q)}}
+\newcommand\tti{\ensuremath{\rightarrow\infty}}
+\newcommand\kgd{\ensuremath{k\gamma d}}
+\newcommand\shalf{\ensuremath{{\scriptstyle\frac{1}{2}}}}
+\newcommand\sh{\ensuremath{^{\shalf}}}
+\newcommand\smh{\ensuremath{^{-\shalf}}}
+\newcommand\squart{\ensuremath{{\textstyle\frac{1}{4}}}}
+\newcommand\thalf{\ensuremath{{\textstyle\frac{1}{2}}}}
+\newcommand\Gat{\ensuremath{\widetilde{G_a}}}
+\newcommand\ttz{\ensuremath{\rightarrow 0}}
+\newcommand\ndq{\ensuremath{\frac{\mbox{$\partial$}}{\mbox{$\partial$} n_q}}}
+\newcommand\sumjm{\ensuremath{\sum_{j=1}^{M}}}
+\newcommand\pvi{\ensuremath{\int_0^{\infty}%
+  \mskip \ifCUPmtlplainloaded -30mu\else -33mu\fi -\quad}}
+
+\newcommand\etc{etc.\ }
+\newcommand\eg{e.g.\ }
+\newcommand\ie{i.e.\ }
+
+%------------------------------------------------------------------------------
+% Theorems, corollaries, etc.
+% Here, theorems, lemmas, corollaries, and propositions are numbered within
+% chapters; proofs, definitions, examples, and remarks are not numbered.  Just
+% alter the commands below if you would prefer different numberings or no
+% numbering at all.
+
+% Numbered.
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}{Lemma}[chapter]
+\newtheorem{corollary}{Corollary}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+
+% Not numbered.
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\theoremstyle{definition}
+\newtheorem*{example}{Example}
+\theoremstyle{definition}
+\newtheorem*{remark}{Remark}
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% For multiletter symbols.
+\newcommand\Real{\mbox{Re}} % Real
+\newcommand\Imag{\mbox{Im}} % Imaginary
+\newcommand{\Rey}{\mbox{\ensuremath{\mathit{Re}}}}  % Reynolds number
+\newcommand{\Ha}{\mbox{\ensuremath{\mathit{Ha}}}}   % Hartmann number
+\newcommand{\Ta}{\mbox{\ensuremath{\mathit{Ta}}}}   % Taylor number
+\newcommand{\Pran}{\mbox{\ensuremath{\mathit{Pr}}}} % Prandtl number
+\newcommand{\Pen}{\mbox{\ensuremath{\mathit{Pe}}}}  % Peclet number
+\newcommand\Ai{\mbox{Ai}} % Airy function
+\newcommand\Bi{\mbox{Bi}} % Airy function
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Array strut to make delimiters come out right size both ends
+\newsavebox{\astrutbox}
+\sbox{\astrutbox}{\rule[-5pt]{0pt}{20pt}}
+\newcommand{\astrut}{\usebox{\astrutbox}}
+%------------------------------------------------------------------------------

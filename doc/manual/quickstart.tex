@@ -1,0 +1,278 @@
+% $Id: quickstart.tex 365 2010-03-15 21:43:16Z ayoud $
+%------------------------------------------------------------------------------
+
+\begin{chapter}{\label{cha:quickstart} Quick start guide}
+  \section{Introduction}
+  %
+  This is a quick start guide to help you compile, run and view the results of
+  the GPE code.
+
+  In the source code directory there is a \verb"README" file explaining in more
+  detail various technical aspects of what software is required to use the
+  code, what parameters can be set, the files related to the code, and other
+  useful information.  It is probably worth having a read through it to try to
+  familiarise you with the code.  Here I will just outline the basics of going
+  through a run cycle.
+
+  \section{Compilation}
+  %
+  Before doing anything, change to the code directory
+  %
+  \begin{Verbatim}
+    cd ~/a1234567/programs/gpe
+  \end{Verbatim}
+  %
+  or wherever you have put it, replacing \verb"a1234567" with your own login
+  ID.
+
+  There are two files you are most likely going to need to edit ---
+  \verb"parameters.f90" and \verb"ic.f90".  As the names suggest, the
+  former sets all the parameters for a particular run, and the latter sets the
+  initial condition.  All the parameters are explained in the \verb"README"
+  file.
+
+  Open both files in an editor or viewer and have a quick scan through, but
+  don't make any changes just yet.  The only subroutine you'll need in
+  \verb"ic.f90" is \verb"subroutine ics()" at about line $63$.
+
+  Now you need to create a directory where any runs will take place.  This
+  should not be in your home area (the directory you are in when you log in),
+  but should instead be in a dedicated area on disk known as \verb"/data".
+  Type
+  %
+  \begin{Verbatim}
+    mkdir /data/a1234567
+  \end{Verbatim}
+  %
+  Now within this directory you can create any number of your own directories,
+  where your runs can take place.  Usually, it is a good idea to have a
+  directory structure which is quite descriptive of the runs you are doing, so,
+  for example, maybe you are doing runs where the initial conditions are
+  different, or for a particular initial condition the parameters are varying.
+
+  In this case you might create directories such as \verb"ring", or
+  \verb"lines", with subdirectories defining radii or separations, etc.
+  Ultimately, it is up to you, but try to keep things organised, otherwise it's
+  difficult to keep track of what you've done!
+
+  With that in mind create a directory in which to do a test run (I'll call it
+  \verb"run_dir" from now on.
+
+  Now compile the code with
+  %
+  \begin{Verbatim}
+    ./setup run_dir
+  \end{Verbatim}
+  %
+  This will compile the code, and copy (or move) certain files to the run
+  directory.
+
+  Now change to the run directory
+  %
+  \begin{Verbatim}
+    cd run_dir
+  \end{Verbatim}
+  %
+  and type \verb"ls" to see its contents.
+
+  In here you will find three files initially:
+  %
+  \begin{itemize}
+    \item \verb"parameters.f90": the parameters file is copied from the source
+      directory so that you know what parameters are related to the run;
+    \item \verb"gpe": the executable which you will run;
+    \item \verb"run.sh": a run script which sets up the run directory and runs
+      the code.
+  \end{itemize}
+  %
+  \section{Running the code}
+  %
+  To run the code simply type
+  %
+  \begin{Verbatim}
+    ./run.sh 2
+  \end{Verbatim}
+  %
+  where \verb"2" specifies that the code will run on two processors.  The
+  machine \verb"starlink" only has two processors, so you should never set this
+  parameter larger than $2$.  (It should match \verb"nyprocs*nzprocs" in
+  \verb"parameters.f90").
+
+  The run I've chosen as the default should take about five minutes to run,
+  when nobody else is using the machine.  It simply propagates a vortex ring.
+
+  \section{During the run}
+  %
+  When the job is running there is an empty file called \verb"RUNNING" in the
+  run directory; when the job is finished this file is deleted.  You can also
+  delete this file at any time to immediately stop the run cleanly.
+
+  Any output that the job would normally print to the screen is instead
+  redirected to the file \verb"log.txt".  It is a good idea to periodically
+  check this file to make sure that no unexpected run-time errors have
+  occurred.
+
+  There are various output files containing various data, most of which are
+  explained in the \verb"README" file.
+
+  The numbered \verb"proc" directories contain data local to each process on
+  which the job ran.  This is where the isosurface data is stored.
+
+  \section{Graphics}
+  %
+  During and after a run it is possible to plot various $1$D graphs, $2$D
+  contour plots and $3$D isosurfaces.  For the $1$D time-series graphs, gnuplot
+  is the best program to use.  Simply type \verb"gnuplot" to start it.  The
+  command syntax is exactly the same as the Windows version if you have ever
+  used that.  So, for example, to plot the line length of vortices in the
+  condensate you could do
+  %
+  \begin{Verbatim}
+    p "linelength.dat" u 1:2 w lp
+  \end{Verbatim}
+  %
+  which will plot column two versus column one in the file, and where the
+  \verb"plot", \verb"using", \verb"with", and \verb"linespoints" keywords have
+  been abbreviated to the shortest non-ambiguous form, which is possible with
+  any gnuplot command.
+
+  Check the \verb"README" file for other files to plot.
+
+  \subsection{Contour plots}
+  %
+  From the run directory start the graphics program IDL (Interactive Data
+  Language) by typing \verb"idl" at the command prompt.  Providing everything
+  is set up correctly you should be able to type
+  %
+  \begin{Verbatim}
+    anim,0,0,/cntr
+  \end{Verbatim}
+  %
+  which will show a contour plot of the initial condition as a slice through
+  the $(x,y)$-plane at $z=0$.  Unfortunately, it is in black and white at the
+  minute; it is supposed to be in colour, so this is something I need to fix!
+
+  Now try a plot at a later time replacing the zeroes in the previous command
+  with $430$.  You should see that the two black patches have moved further to
+  the right.
+
+  The word \verb"anim" represents an IDL program, which takes two non-optional
+  arguments.  The first is the index corresponding to the first file you want
+  to plot, and the second is the index corresponding to the last file you want
+  to plot.  \emph{Important: For output to the screen these numbers should
+  always be the same.}
+
+  The numbers refer to the files within the process directories.  If you look
+  in \verb"proc00", for example, you will see a number of files named
+  \verb"dens???????.dat".  The arguments to \verb"anim" are the numbers within
+  the filenames excluding the leading zeroes.
+
+  So \verb"anim,0,0" plots \verb"dens0000000.dat"; \verb"anim,331,331" plots
+  \verb"dens0000331.dat", \etc
+
+  The \verb"/cntr" option is a switch which turns on contour output, rather
+  than the default which is an isosurface (see below).
+
+  To quite IDL type \verb"exit".
+
+  \subsection{Isosurface plots}
+  %
+  Start IDL again, and do exactly as before, but this time leave off the
+  \verb"/cntr" switch.  You should see a white box with nothing in it, and a
+  control panel with various buttons on it.  Click \verb"bbox" and
+  \verb"content" and then press \verb"Redraw".  You should now see an
+  isosurface of the vortex ring.  Left-click and hold in the white window and
+  you can move the view around; right-click zooms in and out, and middle-click
+  moves the centre viewpoint.  Zooming and moving the view might be a little
+  slow, so move the mouse slowly, and avoid large jerky movements.
+
+  The coloured bar in the control panel is a histogram of the density, and
+  clicking in here will redraw the isosurface at the new density level, which
+  is shown toward the right-hand side of the control panel.
+
+  Pressing \verb"auto" will automatically redraw the isosurface when other
+  boxes are checked, for example, the axes, or whether the surface is solid,
+  wireframe, or a series of points.  If the display is too slow, selecting
+  \verb"points" or \verb"wireframe" instead of \verb"solid" will speed it up.
+
+  \subsection{Animations}
+  %
+  By saving a series of snapshots it is possible to then combine them into an
+  animation.
+
+  From the run directory run the script \verb"rename.sh".  This will create a
+  directory \verb"links", which contains renamed symbolic links (shortcuts)
+  pointing to the isosurface files within each process directory.  This is to
+  make sure that the files are numbered sequentially in steps of one.
+
+  \subsubsection{Contour animations}
+  %
+  Change to the links directory and create another directory called
+  \verb"images", then start IDL again.
+
+  Now type
+  %
+  \begin{Verbatim}
+    anim,0,9,/cntr,/c_anim
+  \end{Verbatim}
+  %
+  This will loop over all data files and save \verb"dens???????.png" files in
+  the \verb"images" directory.
+
+  \emph{If you miss off the /c\_anim switch here, you will get all the
+  plots shown to the screen.  When you are plotting $100$ or more files, this
+  is very bad and will run the machine out of memory!}
+
+  Now change to the \verb"images" directory and run
+  %
+  \begin{Verbatim}
+    makemovie -i png -p dens
+  \end{Verbatim}
+  %
+  which will create an AVI animation out of the PNG files, with $10$ frames,
+  saving the output as \verb"output.avi".
+
+  Play the animation with
+  %
+  \begin{Verbatim}
+    mplayer output.avi
+  \end{Verbatim}
+  %
+  Strangely, this is now in colour!  The animation is very short, but it gives
+  you an idea of what you can do.
+
+  \subsubsection{Isosurface animations}
+  %
+  Rename the \verb"images" directory to something else, for example,
+  %
+  \begin{Verbatim}
+    mv images contour
+  \end{Verbatim}
+  %
+  Now recreate an empty \verb"images" directory.  Start IDL and this time type
+  %
+  \begin{Verbatim}
+    anim,0,9,/png
+  \end{Verbatim}
+  %
+  As before this will save PNG files in the \verb"images" directory, which you
+  can then convert and play with \verb"mencoder" and \verb"mplayer".
+
+  \emph{If you miss off the /png switch, all the output will go to the screen.
+  Avoid!}
+
+  \section{Other information}
+  %
+  It is possible for the code to restart itself in the event of a computer
+  crash, if the \verb"RUNNING" file exists in the run directory (if it doesn't
+  you can just create a new empty file).  If you ever need to do this, just let
+  me know.
+
+  It is also possible to do a manual restart of the code after a run has
+  cleanly ended.  The usual reason for wanting to do is to extend the length of
+  the run, without having to start from the beginning again.  I will show you
+  how to do this as and when you need to.
+
+  If there is anything that is unclear, or you want to do something that the
+  code doesn't do, then just let me know.
+\end{chapter}
