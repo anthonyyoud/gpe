@@ -1,0 +1,47 @@
+% $Id$
+%------------------------------------------------------------------------------
+
+\begin{chapter}{\label{cha:nondim}Derivations of non-dimensionalised equations
+and variables}
+  \section{Units}
+  The following table displays the units for various quantities which are used
+  to non-dimensionalise the GPE.
+  %
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline
+      Quantity & Unit \\
+      \hline
+      $a$, $\aoh$ & $\cm$ \\
+      $\hbar$     & $\joule\sec$ \\
+      $m$         & $\joule\sec^{2}\cm^{-2}$ \\
+      $\mu$       & $\joule$ \\
+      $g$         & $\joule\cm^{3}$ \\
+      $\psi$      & $\cm^{-\frac{3}{2}}$ \\
+      $\omega$    & $\sec^{-1}$ \\
+      $\Vtrap$    & $\joule$ \\
+      \hline
+    \end{tabular}
+    \caption{Units for quantities used to non-dimensionalise the GPE.}
+  \end{table}
+  %
+
+  \begin{equation}
+    \kappa^{*} = \frac{\hbar/(2\mu)}{a^{2}}\kappa = \frac{\hbar}{2\mu
+      a^{2}}\kappa
+    \label{eqn:two}
+  \end{equation}
+  %
+  Then substituting into gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      \frac{2\mu a^{2}}{\hbar}\kappa^{*} &= \frac{2\pi\hbar}{m} \\
+      \implies \kappa^{*} &= \frac{2\pi\hbar}{m} \frac{\hbar}{2\mu a^{2}} \\
+      &= \frac{2\pi\hbar^{2}}{2m\mu a^{2}}
+    \end{aligned}
+  \end{equation*}
+  %
+  Then using $a^{2} = \hbar^{2}/(2m\mu)$ gives $\kappa^{*} = 2\pi$.
+\end{chapter}

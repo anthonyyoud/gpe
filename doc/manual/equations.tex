@@ -1,48 +1,153 @@
 % $Id: equations.tex 604 2010-06-09 11:24:10Z najy2 $
 %------------------------------------------------------------------------------
 
-\begin{chapter}{\label{cha:equations}Governing equations, boundary conditions
-  and non-dimensionalisation}
+\begin{chapter}{\label{cha:equations}Governing equations and
+  non-dimensionalisation}
 
   The single-particle complex wavefunction $\psi(\vec{r}, t)$ for $N$ bosons of
-  mass $m$ obeys the 3 dimensional, time dependent Gross--Pitaevskii (GP)
+  mass $m$, obeys the 3 dimensional, time dependent Gross--Pitaevskii (GP)
   equation \citep{Gross61,Pitaevskii61}
   %
   \begin{equation}
     \eye \hbar \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2m} \nabla^{2} \psi +
-    \Vtrap \psi + g \left|\psi\right|^{2} \psi - \mu \psi,
+    \Vtrap \psi + g \abs{\psi}^{2} \psi - \mu \psi,
+    \label{eqn:gpe}
   \end{equation}
   %
-  where $\hbar$ is Planck's constant, $\Vtrap$ is an external potential, $g$ is
-  the strength of the interactions between the bosons, and $\mu$ is the
-  chemical potential.
-
-  It describes the evolution of the ground state of a quantum system of weakly
-  interacting bosons, in the limit of zero temperature, and when the number of
-  bosons $N$ is large.
-
-  \begin{equation}
-    \kappa = \frac{h}{m} = \frac{2\pi\hbar}{m}
-    \label{eqn:one}
-  \end{equation}
-
-  \noindent Then
+  where $\hbar = h/(2\pi)$ is the reduced Planck constant , $\Vtrap$ is an
+  external potential, $g$ is the strength of the interactions between the
+  bosons, and $\mu$ is the chemical potential.  The wavefunction is normalised
+  by the condition that
   %
-  \begin{equation}
-    \kappa^{*} = \frac{\hbar/(2\mu)}{a^{2}}\kappa = \frac{\hbar}{2\mu
-      a^{2}}\kappa
-    \label{eqn:two}
-  \end{equation}
+  \begin{equation*}
+    \int_{V}{\abs{\psi}^{2}}\total V = N.
+  \end{equation*}
   %
-  Then substituting \eqref{eqn:two} into \eqref{eqn:one} gives
+  The GPE describes the evolution of the ground state of a quantum system of
+  weakly interacting bosons, in the limit of zero temperature, and when the
+  number of bosons $N$ is large.
+
+  \section{Non-dimensionalised GPE}
+  The code solves a non-dimensionalised form of equation~\eqref{eqn:gpe}.
+  There are two possibilities for this non-dimensionalisation, depending on
+  whether the external trapping potential is present.  Here, we show the two
+  cases.
+
+  \subsection{Natural units}
+  When the external trapping potential is absent, natural units are used to
+  non-dimensionalise the GPE.  In this case the scalings are
   %
   \begin{equation*}
     \begin{aligned}
-      \frac{2\mu a^{2}}{\hbar}\kappa^{*} &= \frac{2\pi\hbar}{m} \\
-      \implies \kappa^{*} &= \frac{2\pi\hbar}{m} \frac{\hbar}{2\mu a^{2}} \\
-      &= \frac{2\pi\hbar^{2}}{2m\mu a^{2}}
+      t       &\to \frac{\hbar}{2\mu}t \\
+      \vec{r} &\to a\vec{r} \\
+      \psi    &\to \psi_{\infty} \psi,
     \end{aligned}
   \end{equation*}
   %
-  Then using $a^{2} = \hbar^{2}/(2m\mu)$ gives $\kappa^{*} = 2\pi$.
+  where $a = \hbar/(\sqrt{2m\mu})$ is the healing length and $\psi_{\infty} =
+  \sqrt{\mu/g}$ is the bulk value of $\psi$.
+
+  These scalings lead to the dimensionless form of the GPE
+  %
+  \begin{equation*}
+    -2\eye\frac{\pa \psi}{\pa t} = \nabla^{2}\psi + \left(1 -
+    \abs{\psi}^{2}\right)\psi.
+  \end{equation*}
+  %
+  See appendix~\ref{cha:nondim} for a full derivation.
+
+  \subsection{Harmonic oscillator units}
+  When the external trapping potential is present, harmonic oscillator units
+  are used to non-dimensionalise the GPE.  The scalings are
+  %
+  \begin{equation*}
+    \begin{aligned}
+      t       &\to \frac{t}{\ombar} \\
+      \vec{r} &\to \aoh\vec{r} \\
+      \psi    &\to \aoh^{-\frac{3}{2}} \psi \\
+      g       &\to \aoh^{3}\hbar\ombar g \\
+      \mu     &\to \hbar\ombar\mu \\
+      \Vtrap  &\to \hbar\ombar\Vtrap,
+    \end{aligned}
+  \end{equation*}
+  %
+  where $\ombar = \left( \omega_{x}\omega_{y}\omega_{z}
+  \right)^{1/3}$, $\omega_{i}$ is the trap frequency along axis $i$ for $i =
+  x$, $y$, $z$, and $\aoh = \sqrt{\hbar/(m\ombar)}$ is the
+  harmonic oscillator length.
+
+  These scalings lead to the alternative dimensionless form of the GPE
+  %
+  \begin{equation*}
+    \eye \frac{\pa \psi}{\pa t} = -\frac{1}{2}\nabla^{2}\psi + \Vtrap\psi +
+    g\abs{\psi}^{2}\psi - \mu\psi.
+  \end{equation*}
+  %
+  \section{Dimensionless forms of other quantities}
+  It is useful to know the dimensionless forms of other relevant variables and
+  quantities.  These are described in this section.  Full derivations of each
+  of the non-dimensionalisations is given in appendix~\ref{cha:nondim}.
+
+  \subsection{Thomas--Fermi approximation}
+  The dimensional Thomas--Fermi approximation is given by
+  %
+  \begin{equation*}
+    \psi = \sqrt{\frac{\mu-\Vtrap}{g}}
+  \end{equation*}
+  %
+  Since this approximation is only relevant for trapped condensates, we use
+  harmonic oscillator units to non-dimensionalise.  This leads to an identical
+  dimensionless expression, where each dimensionless variable is replaced by
+  its dimensionless counterpart.
+
+  \subsubsection{Condensate extent}
+  The extent $R_{i}$, $i = x$, $y$, $z$, of the condensate in the Thomas--Fermi
+  limit is given by
+  %
+  \begin{equation*}
+    R_{i}^{2} = \frac{2\mu}{m\omega_{i}^{2}}, \quad i = x, y, z.
+  \end{equation*}
+  %
+  Non-dimensionalising using harmonic oscillator units yields
+  \begin{equation*}
+    R_{i}^{2} = \frac{2\mu}{\omega_{i}^{2}}, \quad i = x, y, z.
+  \end{equation*}
+
+  \subsubsection{Number of atoms}
+  The number of atoms within the condensate, under the Thomas--Fermi
+  approximation is given by
+  %
+  \begin{equation*}
+    N = \frac{8\pi}{15} \left( \frac{2\mu}{m\ombar^2} \right)^{\frac{3}{2}}
+    \frac{\mu}{g}.
+  \end{equation*}
+  %
+  Again, non-dimensionalising using harmonic oscillator units, leads to
+  %
+  \begin{equation*}
+    N = \frac{16\sqrt{2}\pi}{15} \frac{\mu^{\frac{5}{2}}}{g}.
+  \end{equation*}
+
+  \subsection{Circulation}
+  The dimensional circulation $\kappa$, around a vortex is defined to be
+  %
+  \begin{equation*}
+    \kappa = \oint_{C}{\vec{u}\bcdot\total\vec{l}}.
+  \end{equation*}
+  %
+  Then, using the fact that $\vec{u} = (\hbar/m)\bnabla\phi$, where $\phi$ is
+  the phase, and also noting that the circulation is quantised, such that the
+  phase differs by $2\pi n$ around the vortex, where $n$ is the winding number,
+  we obtain
+  %
+  \begin{equation*}
+    \kappa = \frac{\hbar}{m} \oint_{C}{\bnabla\phi\bcdot\total\vec{l}} =
+    \frac{2\pi\hbar}{m}n.
+  \end{equation*}
+  %
+  Using natural units with the scaling $\kappa \to (2\mu a^{2}/\hbar)\kappa$,
+  or harmonic oscillator units with the scaling $\kappa \to
+  \aoh^{2}\ombar\kappa$, leads to a dimensionless circulation of
+  $\kappa = 2\pi n$.
 \end{chapter}

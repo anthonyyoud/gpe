@@ -35,7 +35,8 @@ LATEX		= latex
 
 # Add list of files here to allow make to only build what is necessary.  Your
 # master document should be listed first.
-SOURCES		= $(OBJECT).tex introduction.tex equations.tex quickstart.tex
+SOURCES		= $(OBJECT).tex introduction.tex equations.tex quickstart.tex \
+						nondim.tex
 
 #---- IMPLICIT RULES ----------------------------------------------------------
 .SUFFIXES: .tex .dvi .ps .pdf .ps.gz .bbl
