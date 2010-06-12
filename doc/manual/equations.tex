@@ -1,4 +1,4 @@
-% $Id: equations.tex 604 2010-06-09 11:24:10Z najy2 $
+% $Id$
 %------------------------------------------------------------------------------
 
 \begin{chapter}{\label{cha:equations}Governing equations and
@@ -26,6 +26,25 @@
   The GPE describes the evolution of the ground state of a quantum system of
   weakly interacting bosons, in the limit of zero temperature, and when the
   number of bosons $N$ is large.
+
+  \section{Imaginary time}
+  In making the transformation $t \to -\eye t$, equation~\eqref{eqn:gpe}
+  becomes
+  %
+  \begin{equation*}
+    -\hbar \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2m} \nabla^{2} \psi +
+    \Vtrap \psi + g \abs{\psi}^{2} \psi - \mu \psi,
+  \end{equation*}
+  %
+  which can be thought of as a modified diffusion equation.  For certain
+  initial conditions, it is sometimes necessary to run the code in imaginary
+  time, because the initial conditions are not exact solutions of the GPE.  By
+  propagating in imaginary time, these solutions tend to the ground state,
+  which is an exact solution of the GPE.  The code can then be propagated in
+  real time.
+
+  To propagate in imaginary time set \verb"real_time" equal to \verb".true.";
+  otherwise set \verb"real_time" equal to \verb".false.".
 
   \section{Non-dimensionalised GPE}
   The code solves a non-dimensionalised form of equation~\eqref{eqn:gpe}.
@@ -150,4 +169,102 @@
   or harmonic oscillator units with the scaling $\kappa \to
   \aoh^{2}\ombar\kappa$, leads to a dimensionless circulation of
   $\kappa = 2\pi n$.
+
+  \section{Initial conditions}
+  The code implements three basic initial conditions, any combination of which
+  can theoretically be multiplied together.  This section outlines the
+  mathematical description of the initial conditions; for a description of the
+  numerical implementation see section SOMETHING OR OTHER.
+
+  \subsection{Vortex line}
+  A vortex line is given by
+  %
+  \begin{equation*}
+    \psi_{0} = f(r) \exp{(\eye \theta)},
+  \end{equation*}
+  %
+  in polar coordinates $(r, \theta)$, where $f(r)$ is some function which
+  models the vortex core, and $\theta$ is the phase.  In the code we use the
+  vortex core model proposed by \citet{BR01}, so that
+  %
+  \begin{equation*}
+    f(r) = \left[ 1 - \exp{\left( -0.7r^{1.15}\right)} \right] \exp{(\eye
+    \theta)}.
+  \end{equation*}
+  %
+  The vortex line initial condition can also support planar or helical
+  disturbances along its length.  For a vortex line oriented along the
+  $z$-direction, this is achieved by imposing a sinusoidal
+  disturbance of the form
+  %
+  \begin{equation*}
+    \sin{\left( \frac{2\pi z}{l} \right)},
+  \end{equation*}
+  %
+  in the $x$-direction, and the same disturbance shifted by $\pi/2$ in the
+  $y$-direction.  These disturbances can be set independently; doing so will
+  result in a planar disturbance, while setting both will result in a helical
+  disturbance.
+
+  Cyclically permuting $x$, $y$, and $z$ results in a vortex line along another
+  direction, and the initial position and circulation of the line can also be
+  defined.
+
+  \subsection{Vortex ring}
+  A vortex ring in the $yz$-plane travelling in the $x$-direction takes the
+  form \citep{Berloff04}
+  %
+  \begin{equation*}
+    \psi_{0} = \Psi(x, s+R_{0}) \Psi^{*}(x, s-R_{0}),
+  \end{equation*}
+  %
+  where $\Psi(x,s)$ is given by
+  %
+  \begin{equation*}
+    \Psi(x,s) = f\left( \sqrt{x^{2}+s^{2}} \right) \exp{(\eye \theta)},
+  \end{equation*}
+  %
+  $f(r)$ (which again models the vortex core) is given by
+  %
+  \begin{equation*}
+    f(r)^{2} = \frac{r^{2}\left( a_{1} + a_{2}r^{2} \right)}{1 + b_{1}r^{2} +
+    b_{2}r^{4}},
+  \end{equation*}
+  %
+  where $a_{i}$ and $b_{i}$ are constants, $s = \sqrt{y^{2} + z^{2}}$, and
+  $R_{0}$ is the radius of the ring.
+
+  The vortex ring initial condition also supports planar and helical
+  disturbances in a manner similar to that of the vortex line.  With the setup
+  above, applying a perturbation in the $x$- and $s$-directions results in a
+  helical disturbance; applying a perturbation only in the $s$-direction
+  results in a planar disturbance.
+
+  The direction of motion of the vortex ring in the $x$-direction can be
+  defined, but note that it is not yet possible to set up rings moving in the
+  $y$- or $z$-directions.
+
+  \subsection{Random phase}
+  The GPE can model the formation of a condensate, starting from a
+  non-equilibrium initial condition.  The random phase initial condition
+  describes a weakly interacting Bose gas, where the particles remain in a
+  strongly non-equilibrium state.  Evolving this state leads to the formation
+  of a quasi-condensate, consisting of a tangle of quantised vortices.  This
+  tangle decays as the system reaches thermal equilibrium, with a certain
+  number of particles in the zero-momentum (genuine condensate) state.  See
+  \citet{BS02} and \citet{CJPPR05} for more details on the random phase
+  approximation.
+
+  To model this, the initial condition is set to
+  %
+  \begin{equation*}
+    \psi_{0} = \sum_{\vec{k}} a_{\vec{k}} \exp{(\eye\vec{k}\bcdot\vec{r})},
+  \end{equation*}
+  %
+  where the $\vec{k}$s are the wavenumbers in momentum space, and the phases of
+  the complex amplitudes $a_{\vec{k}}$ are distributed randomly.
+
+  The mass and kinetic energy density must be set prior to performing a random
+  phase simulation.  These are \verb"nv" and \verb"enerv" respectively.
+
 \end{chapter}

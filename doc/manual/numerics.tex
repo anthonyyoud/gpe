@@ -1,0 +1,247 @@
+% $Id$
+%------------------------------------------------------------------------------
+
+\begin{chapter}{\label{cha:numerics}Numerical formulation}
+
+  This chapter outlines the numerical formulation which is used to solve the
+  GPE.  Time stepping is performed explicitly using a choice of schemes, and
+  spatial discretisation is performed with either second- or fourth-order
+  centred finite differences.
+
+  \section{Time stepping}
+  As briefly mentioned in the Introduction, a choice of time stepping schemes
+  is possible.  Each of these is explained in this section.
+
+  \subsection{Euler's method}
+  For a general partial differential equation of the form
+  %
+  \begin{equation*}
+    \frac{\pa \psi}{\pa t} = f(\psi, \vec{r}, t),
+  \end{equation*}
+  %
+  where $f$ is some function representing the right hand side of the equation,
+  Euler's method is
+  %
+  \begin{equation*}
+    \psi^{p+1} = \psi^{p} + \dt f^{p} + \mathcal{O}(\dt^{2}),
+  \end{equation*}
+  %
+  where $\dt$ is the time step, $\psi^{p} = \psi\left( x, y, z, t^{p}\right)$,
+  $t^{p} = p\dt$, and $f^{p} = f\left( \psi^{p} \right)$.
+
+  This scheme is only first order accurate in $\dt$, and is not recommended for
+  use, other than for very rough testing.  It can be selected in the code by
+  setting the parameter \verb"scheme" equal to \verb"euler".  See chapter
+  SOMETHING OR OTHER for a full description of the parameters which can be set.
+
+  \subsection{Second-order Runge--Kutta method}
+  The second-order Runge--Kutta method (also known as the midpoint method) is
+  second order accurate in time and takes the form
+  %
+  \begin{equation*}
+    \psi^{p+1} = \psi^{p} + \dt k_{2} + \mathcal{O}(\dt^{3}),
+  \end{equation*}
+  %
+  where
+  \begin{equation*}
+    \begin{aligned}
+      k_{1} &= f\left( t^{p}, \psi^{p} \right), \\
+      k_{2} &= f\left( t^{p+\frac{1}{2}}, \psi^{p} + \frac{1}{2}\dt k_{1}
+      \right).
+    \end{aligned}
+  \end{equation*}
+  %
+  This scheme can be selected by setting \verb"scheme" equal to \verb"rk2".
+
+  \subsection{Fourth-order Runge--Kutta method}
+  The fourth-order Runge--Kutta method is second order accurate in time and
+  takes the form
+  %
+  \begin{equation*}
+    \psi^{p+1} = \psi^{p} + \dt \left( \frac{k_{1}}{6} + \frac{k_{2}}{3} +
+    \frac{k_{3}}{3} + \frac{k_{4}}{6} \right) + \mathcal{O}(\dt^{5}),
+  \end{equation*}
+  %
+  where
+  \begin{equation*}
+    \begin{aligned}
+      k_{1} &= f\left( t^{p}, \psi^{p} \right), \\
+      k_{2} &= f\left( t^{p+\frac{1}{2}}, \psi^{p} + \frac{1}{2}\dt k_{1}
+      \right), \\
+      k_{3} &= f\left( t^{p+\frac{1}{2}}, \psi^{p} + \frac{1}{2}\dt k_{2}
+      \right), \\
+      k_{4} &= f\left( t^{p+1}, \psi^{p} + \dt k_{3} \right).
+    \end{aligned}
+  \end{equation*}
+  %
+  This scheme can be selected by setting \verb"scheme" equal to \verb"rk4".
+
+  \subsection{Runge--Kutta--Fehlberg method}
+  The Runge--Kutta--Fehlberg method is a hybrid fourth/fifth order adaptive
+  time stepping scheme.  In the code the fifth-order formula is
+  %
+  \begin{equation*}
+    \begin{aligned}
+      k_{1} &= \dt f\left( t^{p}, \psi^{p} \right), \\
+      k_{2} &= \dt f\left( t^{p} + a_{2}\dt, \psi^{p} + b_{21} k_{1}
+        \right), \\
+      k_{3} &= \dt f\left( t^{p} + a_{3}\dt, \psi^{p} + b_{31} k_{1} + b_{32}
+        k_{2} \right), \\
+      k_{4} &= \dt f\left( t^{p} + a_{4}\dt, \psi^{p} + b_{41} k_{1} + b_{42}
+        k_{2} + b_{43} k_{3} \right), \\
+      k_{5} &= \dt f\left( t^{p} + a_{5}\dt, \psi^{p} + b_{51} k_{1} + b_{52}
+        k_{2} + b_{53} k_{3} + b_{54} k_{4} \right), \\
+      k_{6} &= \dt f\left( t^{p} + a_{6}\dt, \psi^{p} + b_{61} k_{1} + b_{62}
+        k_{2} + b_{63} k_{3} + b_{64} k_{4} + b_{65} k_{5} \right), \\
+      \psi^{p+1} &= \psi^{p} + c_{1} k_{1} + c_{2} k_{2} + c_{3} k_{3} + c_{4}
+        k_{4} + c_{5} k_{5} + c_{6} k_{6} + \mathcal{O}(\dt^{6}).
+    \end{aligned}
+  \end{equation*}
+  %
+  The embedded fourth-order formula is given by
+  %
+  \begin{equation*}
+    \psi_{*}^{p+1} = \psi^{p} + c_{1}^{*} k_{1} + c_{2}^{*} k_{2} + c_{3}^{*}
+    k_{3} + c_{4}^{*} k_{4} + c_{5}^{*} k_{5} + c_{6}^{*} k_{6} +
+    \mathcal{O}(\dt^{5}),
+  \end{equation*}
+  %
+  so that an error estimate can be obtained with
+  %
+  \begin{equation*}
+    \Delta \equiv \psi^{p+1} - \psi_{*}^{p+1} = \sum_{i=1}^{6}{\left( c_{i} -
+    c_{i}^{*} \right) k_{i}}.
+  \end{equation*}
+  %
+  The values of the constants are those given by \citet{CK90}, and are
+  reproduced here in table~\ref{tab:cash_karp}.
+  %
+  \begin{table}
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{|c|c|ccccc|c|c|}
+      \hline
+      $i$ & $a_{i}$ & \multicolumn{5}{c|}{$b_{ij}$} & $c_{i}$ & $c_{i}^{*}$ \\
+      \hline
+      $1$ & & & & & & & $\frac{37}{378}$ & $\frac{2825}{27648}$ \\
+      $2$ & $\frac{1}{5}$ & $\frac{1}{5}$ & & & & & $0$ & $0$ \\
+      $3$ & $\frac{3}{10}$ & $\frac{3}{40}$ & $\frac{9}{40}$ & & & & $\frac{250}{621}$ & $\frac{18575}{48384}$ \\
+      $4$ & $\frac{3}{5}$ & $\frac{3}{10}$ & $-\frac{9}{10}$ & $\frac{6}{5}$ & & & $\frac{125}{594}$ & $\frac{13525}{55296}$ \\
+      $5$ & $1$ & $-\frac{11}{54}$ & $\frac{5}{2}$ & $-\frac{70}{27}$ & $\frac{35}{27}$ & & $0$ & $\frac{277}{14336}$ \\
+      $6$ & $\frac{7}{8}$ & $\frac{1631}{55296}$ & $\frac{175}{512}$ & $\frac{575}{13824}$ & $\frac{44275}{110592}$ & $\frac{253}{4096}$ & $\frac{512}{1771}$ & $\frac{1}{4}$ \\
+      \hline
+      \multicolumn{2}{|c}{$j=$} & $1$ & $2$ & $3$ & $4$ & \multicolumn{1}{c}{5} & \multicolumn{2}{c|}{} \\
+      \hline
+    \end{tabular}
+    \caption{\label{tab:cash_karp}The Cash--Karp constants for the
+      Runge--Kutta--Fehlberg scheme.}
+  \end{table}
+  %
+  Full details of the algorithm can be found in Numerical Recipes \citep[\S
+  16.2, p.708,][]{NR92}.
+
+  This scheme can be selected by setting \verb"scheme" equal to \verb"rk45".
+
+  \section{Spatial discretisation}
+  Centred finite differences are used to spatially discretise the GPE; these
+  can be either second- or fourth-order.
+
+  For a general partial differential equation of the form
+  %
+  \begin{equation*}
+    \frac{\pa \psi}{\pa t} = f(\psi, \vec{r}, t),
+  \end{equation*}
+  %
+  where $f$ is some function representing the right hand side of the equation,
+  the spatial discretisation takes the form
+  %
+  \begin{equation*}
+    \frac{\pa \psi_{ijk}}{\pa t} = f_{ijk},
+  \end{equation*}
+  %
+  where $\psi_{ijk} = \psi\left( x_{i}, y_{j}, z_{k}, t \right)$, $x_{i} =
+  i\dx$, $y_{j} = j\dy$, $z_{k} = k\dz$, and $f_{ijk} = f\left( \psi_{ijk}
+  \right)$.
+
+  \subsection{Second-order finite differences}
+  The second-order finite-difference approximation to the first derivative with
+  respect to $x$ is given by
+  %
+  \begin{equation*}
+    \frac{\pa \psi}{\pa x} \approx \frac{\psi_{i+1} - \psi_{i-1}}{2\dx},
+  \end{equation*}
+  %
+  where we have dropped the $j$ and $k$ indices for clarity.
+
+  Similarly, the second-order approximation to the second derivative is
+  %
+  \begin{equation*}
+    \frac{\pa^{2} \psi}{\pa x^{2}} \approx \frac{\psi_{i+1} - 2\psi_{i} +
+    \psi_{i-1}}{\dx^{2}}.
+  \end{equation*}
+  %
+  Second-order finite differences can be chosen by setting \verb"order" equal
+  to \verb"2".
+
+  \subsection{Fourth-order finite differences}
+  The fourth-order finite-difference approximation to the first derivative with
+  respect to $x$ is given by
+  %
+  \begin{equation*}
+    \frac{\pa \psi}{\pa x} \approx \frac{-\psi_{i+2} +8\psi_{i+1} - 8\psi_{i-1}
+    + \psi_{i-2}}{12\dx},
+  \end{equation*}
+  %
+  Similarly, the fourth-order approximation to the second derivative is
+  %
+  \begin{equation*}
+    \frac{\pa^{2} \psi}{\pa x^{2}} \approx \frac{-\psi_{i+2} + 16\psi_{i+1} -
+    30\psi_{i} + 16\psi_{i-1} - \psi_{i-2}}{12\dx^{2}}.
+  \end{equation*}
+  %
+  Fourth-order finite differences can be chosen by setting \verb"order" equal
+  to \verb"4".
+
+  \section{Boundary conditions}
+  The code implements both periodic and reflective boundary conditions.  Since
+  both of these conditions are behavioural, rather than numerical, no boundary
+  conditions are explicitly set on $\psi$ itself.  Note that it is not possible
+  to mix boundary conditions yet.
+
+  \subsection{Periodic boundary conditions}
+  Suppose the $x$-coordinate runs from $x_{0}$ to $x_{n}$.  Then clearly the
+  values of $\psi$ at $x_{-1}$ and $x_{n+1}$ are needed to compute a first
+  derivative, for example.
+
+  Periodic boundary conditions are implemented such that
+  %
+  \begin{equation*}
+    \begin{aligned}
+      x_{-1}  &= x_{n}, \\
+      x_{n+1} &= x_{0}.
+    \end{aligned}
+  \end{equation*}
+  %
+  These conditions are also applied in the $y$- and $z$-directions, and can be
+  naturally extended for higher order approximations.
+
+  To use periodic boundary conditions set \verb"bcs" equal to \verb"1".
+
+  \subsection{Reflective boundary conditions}
+  The physical meaning of reflective boundary conditions is that structures
+  within the computational box see images of themselves across the box
+  boundaries.  This would cause a vortex ring to annihilate on approaching a
+  boundary, for example, as it sees an image of itself approaching the boundary
+  from the opposite direction (outside the computational box).
+
+  These boundary conditions are implemented such that
+  %
+  \begin{equation*}
+    \begin{aligned}
+      x_{-1}  &= x_{1}, \\
+      x_{n+1} &= x_{n-1}.
+    \end{aligned}
+  \end{equation*}
+  %
+  To use reflective boundary conditions set \verb"bcs" equal to \verb"2".
+\end{chapter}
