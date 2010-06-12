@@ -64,7 +64,7 @@ program gpe
           print*, 'Explicit second order Runge-Kutta time stepping'
         case ('rk4')
           print*, 'Explicit fourth order Runge-Kutta time stepping'
-        case ('rk_adaptive')
+        case ('rk45')
           print*, 'Explicit fifth order &
                   &Runge-Kutta-Fehlberg adaptive time stepping'
         case default
@@ -262,6 +262,7 @@ program gpe
     ! is small enough switch to real time
     if (eqn_to_solve == 4 .and. .not. real_time) then
       if (relnorm < 1e-12_pr) then
+        if (stop_imag) exit  ! End run if stop after imaginary time requested.
         real_time = .true.
         im_t = 0.0_pr
         ps = int(t/p_save)

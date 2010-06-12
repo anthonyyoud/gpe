@@ -88,7 +88,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = abs(fermi()) *vortex_line(vl1)
+      out_var = abs(fermi()) !*vortex_line(vl1)
       !out_var = cmplx(1.0_pr, 0.0_pr, pr) !vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
@@ -202,7 +202,7 @@ module ic
     end if
 
     select case (scheme)
-      case ('rk_adaptive')
+      case ('rk45')
         ! Get the previous time step for adaptive Runge-Kutta
         dt = dt_prev
       case default

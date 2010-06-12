@@ -1146,8 +1146,8 @@ module variables
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: alter_psi
     complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
 
-    alter_psi = abs(in_var) * vortex_line(vl1)
-    !alter_psi = in_var
+    !alter_psi = abs(in_var) * vortex_line(vl1)
+    alter_psi = in_var
 
     return
   end function alter_psi

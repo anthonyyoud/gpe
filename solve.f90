@@ -30,7 +30,7 @@ module solve
       case ('rk4')
         ! Explicit fourth order Runge-Kutta time stepping
         call rk4(var_in, var_out)
-      case ('rk_adaptive')
+      case ('rk45')
         ! Explicit fifth order Runge-Kutta-Fehlberg adaptive time stepping
         call rkqs(var_in, var_out)
       case default
