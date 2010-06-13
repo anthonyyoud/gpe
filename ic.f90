@@ -88,7 +88,7 @@ module ic
       !out_var = tmp_var*vortex_line(vl1)
     else
       ! Not a restart so define an initial condition
-      out_var = abs(fermi()) !*vortex_line(vl1)
+      out_var = fermi() !*vortex_line(vl1)
       !out_var = cmplx(1.0_pr, 0.0_pr, pr) !vortex_ring(vr1) !* &
       !          vortex_ring(vr2) * &
       !          vortex_ring(vr3) * &
@@ -307,12 +307,13 @@ module ic
     implicit none
 
     real (pr), dimension(0:nx1,js:je,ks:ke) :: fermi, r
-    real (pr) :: mu_tf, r_tf
+    real (pr) :: mu_tf
+    !real (pr), dimension(3) :: r_tf
     integer :: i, j, k
 
     !mu_tf = (15.0_pr*((2.0_pr)**(-1.5_pr))*g*nn/(8.0_pr*pi))**(0.4_pr)
     mu_tf = mu
-    r_tf = sqrt(2.0_pr*mu_tf)
+    !r_tf = sqrt(2.0_pr*mu_tf/omega)
 
     do k=ks,ke
       do j=js,je
@@ -324,8 +325,8 @@ module ic
 
     fermi = cmplx((mu_tf - Vtrap()) / g, 0.0_pr, pr)
 
-    !where (real(fermi, pr) >= 0.0_pr)
-    where (r <= r_tf)
+    where (real(fermi, pr) >= 0.0_pr)
+    !where (r <= r_tf(1))
       fermi = sqrt(fermi)
     elsewhere
       fermi = 0.0_pr
@@ -683,8 +684,8 @@ module ic
     do k=ks,ke
       do j=js,je
         do i=0,nx1
-          Vtrap(i,j,k) = 0.5_pr*((omx**2)*x(i)**2 + (omy**2)*y(j)**2 + &
-            (omz**2)*z(k)**2)
+          Vtrap(i,j,k) = 0.5_pr*((omega(1)**2)*x(i)**2 + &
+            (omega(2)**2)*y(j)**2 + (omega(3)**2)*z(k)**2)
         end do
       end do
     end do

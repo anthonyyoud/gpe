@@ -18,7 +18,7 @@ module parameters
   real (pr),    parameter :: fscale         = 1.0_pr
 
   integer,      parameter :: nyprocs       = 2
-  integer,      parameter :: nzprocs       = 4
+  integer,      parameter :: nzprocs       = 2
   integer,      parameter :: nx            = 120
   integer,      parameter :: ny            = 120
   integer,      parameter :: nz            = 120
@@ -35,9 +35,7 @@ module parameters
   real (pr),    parameter :: g             = 5.0_pr
   real (pr),    parameter :: mu            = 8.0_pr !83.28581966_pr
   real (pr),    parameter :: nn            = 1.0_pr !1e5_pr
-  real (pr),    parameter :: omx           = 0.0_pr !0.460937984_pr
-  real (pr),    parameter :: omy           = 0.0_pr !0.460937984_pr
-  real (pr),    parameter :: omz           = 0.0_pr !0.460937984_pr
+  real (pr), dimension(3),  parameter :: omega = (/1.0_pr, 1.0_pr, 2.0_pr/)
   ! see bottom of solve.f90 for possible values
   integer,      parameter :: eqn_to_solve  = 4
   ! bcs = 1 for periodic, 2 for reflective
@@ -58,11 +56,11 @@ module parameters
   logical,      parameter :: save_vcf      = .false.
   logical,      parameter :: save_ll       = .false.
   logical,      parameter :: save_zeros    = .false.
-  logical,      parameter :: restart       = .true.
+  logical,      parameter :: restart       = .false.
   logical,      parameter :: saved_restart = .false.
   logical,      parameter :: renorm        = .false.
   logical,      parameter :: stop_imag     = .true.
-  logical                 :: real_time     = .true.
+  logical                 :: real_time     = .false.
   logical                 :: diagnostic    = .false.
   character(*), parameter :: scheme        = 'rk2'
 
