@@ -1,0 +1,22 @@
+! $Id$
+! vim: set filetype=fortran:
+!----------------------------------------------------------------------------
+! This file includes the definition of the initial condition.  It is included
+! verbatim in ic.f90 in subroutine ics().  The initial condition must be in the
+! form init_cond = some_function.  Any changes to this file will require a
+! recompilation of the code.
+!----------------------------------------------------------------------------
+! Thomas-Fermi
+  init_cond = fermi()
+
+! Vortex line
+  !init_cond = vortex_line(vl1)
+
+! Vortex ring
+  !init_cond = vortex_ring(vr1)
+
+! Vortex_ring * vortex_line
+  !init_cond = vortex_ring(vr1) * vortex_line(vl1)
+
+! Random phase approximation
+  !init_cond = random_phase()

@@ -29,6 +29,16 @@ module ic
 
     integer :: i, j, k
 
+    xl = -xr
+    yl = -yr
+    zl = -zr
+    dx = (xr-xl)/nx1
+    dy = (yr-yl)/ny1
+    dz = (zr-zl)/nz1
+    dx2 = dx**2
+    dy2 = dy**2
+    dz2 = dz**2
+
     ! x-coordinate
     do i=0,nx1
       x(i) = xl + real(i, pr)*dx
@@ -60,14 +70,13 @@ module ic
 
 ! ***************************************************************************  
 
-  subroutine ics(out_var)
+  subroutine ics(init_cond)
     ! Set up the initial conditions
     use error, only : emergency_stop
     use parameters
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: tmp_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: init_cond
     logical :: state_exist
 
     ! If this is a restarted run...
@@ -83,59 +92,10 @@ module ic
         print*, 'Getting restart conditions'
       end if
       ! Get saved data since this is a restart
-      call state_restart(tmp_var)
-      out_var = tmp_var !*vortex_ring(vr1%x0, vr1%y0, vr1%z0, vr1%r0, vr1%dir)
-      !out_var = tmp_var*vortex_line(vl1)
+      init_cond = state_restart()
     else
-      ! Not a restart so define an initial condition
-      out_var = fermi() !*vortex_line(vl1)
-      !out_var = cmplx(1.0_pr, 0.0_pr, pr) !vortex_ring(vr1) !* &
-      !          vortex_ring(vr2) * &
-      !          vortex_ring(vr3) * &
-      !          vortex_ring(vr4) * &
-      !          vortex_ring(vr5)
-      !out_var = vortex_line(vl1) !* &
-      !          vortex_line(vl2) !* &
-      !          vortex_line(vl3) * &
-      !          vortex_line(vl4) * &
-      !          vortex_line(vl5) * &
-      !          vortex_line(vl6) * &
-      !          vortex_line(vl7) * &
-      !          vortex_line(vl8) * &
-      !          vortex_line(vl9) !* &
-      !          vortex_line(vl10) !* &
-      !          vortex_line(vl11) * &
-      !          vortex_line(vl12) * &
-      !          vortex_line(vl13) * &
-      !          vortex_line(vl14) !* &
-      !          vortex_line(vl15) * &
-      !          vortex_line(vl16) * &
-      !          vortex_line(vl17) * &
-      !          vortex_line(vl18) !* &
-      !          vortex_line(vl19) * &
-      !          vortex_line(vl20) * &
-      !          vortex_line(vl21) * &
-      !          vortex_line(vl22) * &
-      !          vortex_line(vl23) * &
-      !          vortex_line(vl24) * &
-      !          vortex_line(vl25) * &
-      !          vortex_line(vl26) * &
-      !          vortex_line(vl27) * &
-      !          vortex_line(vl28) * &
-      !          vortex_line(vl29) * &
-      !          vortex_line(vl30) * &
-      !          vortex_line(vl31) * &
-      !          vortex_line(vl32) * &
-      !          vortex_line(vl33) * &
-      !          vortex_line(vl34) * &
-      !          vortex_line(vl35) * &
-      !          vortex_line(vl36) * &
-      !          vortex_line(vl37) * &
-      !          vortex_line(vl38)
-      !out_var = sphere() !* vortex_ring(vr1)
-      !out_var = wall() !* vortex_ring(vr1)
-      !call random_phase(tmp_var)
-      !out_var = tmp_var !* vortex_ring(vr1)
+      ! Not a restart so set an initial condition, which is defined in ic.in.
+      include 'ic.in'
     end if
   
     return
@@ -143,12 +103,12 @@ module ic
   
 ! ***************************************************************************  
 
-  subroutine state_restart(out_var)
+  function state_restart()
     ! Get restart data
     use parameters
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: state_restart
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: out_var1, out_var2
     complex (pr) :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev, undef_int
@@ -163,7 +123,7 @@ module ic
     read (unit_no) ny_prev
     read (unit_no) nz_prev
     read (unit_no) p
-    read (unit_no) t
+    read (unit_no) t, im_t
     read (unit_no) dt_prev
     read (unit_no) out_var1
 
@@ -185,11 +145,7 @@ module ic
       close (unit_no)
     end if
 
-    out_var = out_var1*out_var2
-
-    !if (real(dt_prev, pr) == 0.0_pr) then
-    !  dt_prev = cmplx(aimag(dt_prev), real(dt_prev, pr), pr)
-    !end if
+    state_restart = out_var1*out_var2
 
     if (real_time) then
       if (real(dt_prev, pr) == 0.0_pr) then
@@ -214,16 +170,16 @@ module ic
     end select
 
     return
-  end subroutine state_restart
+  end function state_restart
 
 ! ***************************************************************************  
 
-  subroutine random_phase(out_var)
+  function random_phase()
     ! Strongly nonequilibrium initial condition
     use parameters
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: random_phase
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
     integer, allocatable, dimension(:) :: seed
     real (pr) :: phi, rand
@@ -277,10 +233,10 @@ module ic
       end do
     end do
 
-    call fft(a, out_var, 'forward', .false.)
+    call fft(a, random_phase, 'forward', .false.)
   
     return
-  end subroutine random_phase
+  end function random_phase
 
 ! ***************************************************************************  
 
@@ -680,7 +636,10 @@ module ic
     implicit none
 
     real (pr), dimension(0:nx1,js:je,ks:ke) :: Vtrap
+    real (pr), dimension(3) :: omega
     integer :: i, j, k
+
+    omega = (/omx, omy, omz/)
     do k=ks,ke
       do j=js,je
         do i=0,nx1

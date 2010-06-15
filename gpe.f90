@@ -24,6 +24,10 @@ program gpe
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
   call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
 
+  ! Get unit numbers so that files can be opened on each process
+  call get_unit_no()
+  ! Read the run-time parameters from run.in.
+  call read_run_params()
   ! Assign the replacement MPI constants which allow for real/double precision.
   call mpi_constants_precision()
   ! Setup the lookup table for neighbouring processes
@@ -35,8 +39,6 @@ program gpe
   call array_len()
   ! Get the neighbouring process rank
   call neighbours()
-  ! Get unit numbers so that files can be opened on each process
-  call get_unit_no()
   ! Get directory names for each process
   call get_dirs()
 

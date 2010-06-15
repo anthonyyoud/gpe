@@ -35,48 +35,53 @@ installed and linked to as described below under the makefile heading.
 
 PROGRAM FILES
 -------------
-constants.f90                   - constants defined for fftw.
+constants.f90  - constants defined for fftw.
 
-derivs.f90			- Routines to calculate derivatives.
+derivs.f90		 - Routines to calculate derivatives.
 
-error.f90                       - Routines for error handling.
+error.f90      - Routines for error handling.
 
-gpe.f90 			- Main program file.
+gpe.f90 			 - Main program file.
 
-ic.f90	        		- Routines to set up initial conditions.
+ic.f90	       - Routines to set up initial conditions.
 
-io.f90				- Routines to do with input/output.
+ic.in          - User-defined initial condition.
 
-parameters.f90			- Parameters to set (see below).
+io.f90				 - Routines to do with input/output.
 
-solve.f90			- Routines to solve the equation.
+parameters.f90 - Parameters and global variables.
 
-variables.f90			- User-defined types and other general routines
-                                  to do with variables.
+parameters.in  - Parameters to set which require code recompilation (see below).
+
+run.in         - Parameters to set which do not require code recompilation.
+
+solve.f90			 - Routines to solve the equation.
+
+variables.f90	 - User-defined types and other general routines to do with
+                 variables.
 
 OTHER FILES
 -----------
-Makefile			- Makefile for easy compilation.
+Makefile			 - Makefile for easy compilation.
 
-README				- This file.
+README				 - This file.
 
-run_script*.sh			- Scripts for distributing data to the nodes
-                                  of a cluster.  Will need to be customised.
+run_script*.sh - Scripts for distributing data to the nodes of a cluster.
+                 Will need to be customised.
 
-setup				- Setup script which runs the Makefile to
-                                  compile and set up the code ready to run in
-                                  separate directory.
+setup				   - Setup script which runs the Makefile to compile and set up the
+                 code ready to run in separate directory.
 
-MAIN PARAMETERS
----------------
-pp_filtered_surface (logical) - Set to false and ignore following three lines.
-nlines (integer)
-nfilter (integer)
-fscale (real)
+PARAMETERS TO SET (parameters.in)
+---------------------------------
+NOTE: Any changes to this file will require a code recompilation.
 
-nyprocs (integer).  The number of processes in the y-direction.
+pr (integer) - The precision of real variables is parametrised.  Choose the
+               desired line for either real or double precision.
 
-nzprocs (integer).  The number of processes in the z-direction.
+nyprocs (integer) - The number of processes in the y-direction.
+
+nzprocs (integer) - The number of processes in the z-direction.
 
 There are no restrictions on the above two parameters other than that they be
 >= 1.  In general, it is recommended that nzprocs>=nyprocs for best performance
@@ -90,6 +95,13 @@ ny (integer) - Number of grid points in the y-direction.
 
 nz (integer) - Number of grid points in the z-direction.
 
+Two types are also defined in parameters.in in order to set up a vortex line or
+vortex ring.  See the comments in the file itself for how to set these up.
+
+PARAMETERS TO SET (run.in)
+--------------------------
+NOTE: Any changes to this file will not require a code recompilation.
+
 tau (real) - The initial timestep to try.  Valid for both imaginary and real
              time.  See real_time (logical) below.
 
@@ -102,8 +114,48 @@ yr (real) - As above but for the y-coordinate.
 
 zr (real) - As above but for the z-coordinate.
 
-Urhs (real) - Set non-zero to solve the equation in a moving
-              reference frame.
+scheme (character) - The time stepping scheme to use.  This must be set to one
+                     of:
+                       euler       - for explicit second-order Euler time
+                                     stepping
+                       rk2         - for explicit second-order Runge-Kutta time
+                                     stepping
+                       rk4         - for explicit fourth-order Runge-Kutta time
+                                     stepping
+                       rk45        - for explicit adaptive fourth-order
+                                     Runge-Kutta-Fehlberg time stepping.
+
+eqn_to_solve (integer) - The form of the GPE to solve.  See subroutine
+                         get_rhs() in solve.f90 to see the options.
+
+bcs (integer) - The boundary conditions to use.  Set to 1 for periodic BCs; set
+                to 2 for reflective BCs.
+
+order (integer) - The order of the derivatives to use.  Set to 2 for
+                  second-order; set to 4 for fourth-order.
+
+restart (logical) - Is this run going to be a restart of a previous run?  If
+                    so, then the file end_state.dat in each process directory
+                    should be copied to the restart directory named
+                    end_state00.dat, end_state01.dat, end_state02.dat, etc.
+                    The script run.sh will do this automatically.
+
+saved_restart (logical) - Set true if using filtered data from a previous run
+                          to multiply with the initial condition of a new run.
+
+renorm (logical) - Set true if the wavefunction should be renormalised at
+                   every time step in imaginary time.
+
+imprint_vl (logical) - Set true if the wavefunction should be multiplied by a
+                       vortex line at each time step in imaginary time.
+
+stop_imag (logical) - Set true if the run should stop at the end of imaginary
+                      time, i.e. when the norms of successive time steps are
+                      deemed to be sufficiently small.
+
+real_time (logical) - Should the run be started in real time or not?
+
+Urhs (real) - Set non-zero to solve the equation in a moving reference frame.
 
 diss_amp (real) - Set non-zero to include dissipation of this amplitude at the
                   boundaries.
@@ -115,14 +167,18 @@ nv (real) - For random phase approximation, the total mass per unit volume.
 enerv (real) - For random phase approximation, the total kinetic energy per
                unit volume.
 
-eqn_to_solve (integer) - The form of the GPE to solve.  See subroutine
-                         get_rhs() in solve.f90 to see the options.
+g (real) - Interaction parameter for trapped condensate.
 
-bcs (integer) - The boundary conditions to use.  Set to 1 for periodic BCs; set
-                to 2 for reflective BCs.
+mu (real) - Chemical potential for trapped condensate.
 
-order (integer) - The order of the derivatives to use.  Set to 2 for
-                  second-order; set to 4 for fourth-order.
+nn (real) - Number of atoms in a trapped condensate.  Should currently be left
+            to 1.0, and instead tune mu and g to specify nn.
+
+omx (real) - Frequency of trap in x-direction.
+
+omy (real) - Frequency of trap in y-direction.
+
+omz (real) - Frequency of trap in z-direction.
 
 save_rate (integer) - The rate at which time-series data should be saved
                       (roughly corresponding to the number of time steps).
@@ -151,96 +207,83 @@ save_spectrum (logical) - Should various spectra be saved (mainly for random
 
 save_pdf (logical) - Should PDFs of the velocity components be saved?
 
+save_vcf (logical) - Should the velocity correlation function be saved?
+
 save_ll (logical) - Should the vortex line length be saved?
 
 save_zeros (logical) - Should the points of zero density be saved (not
                        reliable!)?
 
-restart (logical) - Is this run going to be a restart of a previous run?  If
-                    so, then the file end_state.dat in each process directory
-                    should be copied to the restart directory named
-                    end_state00.dat, end_state01.dat, end_state02.dat, etc.
-
-saved_restart (logical) - Set true if using filtered data from a previous run
-                          to multiply with the initial condition of a new run.
-
-real_time (logical) - Should the run be started in real time or not?
-
-diagnostic (logical) - Calculate diagnostics?
-
-scheme (character) - The time stepping scheme to use.  This must be set to one
-                     of:
-                       euler       - for explicit second-order Euler time
-                                     stepping
-                       rk4         - for explicit fourth-order Runge-Kutta time
-                                     stepping
-                       rk_adaptive - for explicit adaptive fourth-order
-                                     Runge-Kutta-Fehlberg time stepping.
-
-eps (real) -  The factor by which the fourth-order RK scheme must be close to
-              the fifth-order RKF scheme.  This determines whether a time step
-              has been successful and hence whether to increase or decrease the
-              time step for the next step.
-
-safety (real)
-dt_decrease (real) - See the Numerical Recipes algorithm for these three.
-dt_increase (real)
-
-Two types are also defined in the parameters file in order to set up a vortex
-line or vortex ring.  Comments for how to set these up are in parameters.f90.
-
 Other parameters not mentioned here can be left as they are.
 
+INITIAL CONDITION (ic.in)
+-------------------------
+Due to the multitude of possible initial conditions it would not be feasible to
+provide a simple switch to choose the initial condition.  Instead, the initial
+condition should be defined in this file, in the form init_cond =
+some_function.  See the file itself for examples.  The file is included
+directly in ic.f90, so should be written with correct Fortran syntax.
+
 run_script*.sh
--------------
+--------------
 Example bash scripts which give examples of how a job might be submitted to a
 batch queue system (such as Torque, SGE or Condor) or how data might be
 distributed across the nodes of a cluster.
+
+run.sh
+------
+For shared memory multiple-CPU machines, this script will set up and run the
+code from a run directory.  Run it with no arguments to see the help.
 
 Makefile
 --------
 Settings here will need to be changed, depending on the architecture on which
 the code is run.
 
-OBJECT    - The name of the executable produced on compilation.
+OBJECT - The name of the executable produced on compilation.
 
-OBJECTS   - The object files that should be linked.
+OBJS - The object files that should be linked.
 
-FC        - The Fortran compiler to be used.  Could be the MPI wrapper
-            compiler mpif90, but the underlying Fortran compiler must be
-            able to compile the code (e.g. sunf95, ifort, gfortran).
+FC - The Fortran compiler to be used.  Could be the MPI wrapper compiler
+     mpif90, but the underlying Fortran compiler must be able to compile the
+     code (e.g. sunf95, ifort, gfortran).
 
-FFLAGS    - Compiler flags.  See the compiler's manual.  Sunf95 works well with
-            -fast.  If nonsense results are produced -fsimple=0 might be
-            required.
+FFLAGS - Compiler flags.  See the compiler's manual.  Sunf95 works well with
+         -fast.  If nonsense results are produced -fsimple=0 might be required.
 
-LDFLAGS   - Any extra flags required by the linker.  If mpif90 is not the
-            compiler, then all the MPI libraries will need to be linked.
-            The FFTW libraries need to be linked here too.
+LDFFTW - FFTw libraries to link.  Compiling with make precision=single will
+         link the single precision libraries.
 
-INCLUDE   - Include path (i.e. for MPI header files).
+LDFLAGS - Any extra flags required by the linker.  If mpif90 is not the
+          compiler, then all the MPI libraries will need to be linked.
+
+INCLUDE - Include path (i.e. for MPI header files).
 
 TO RUN
 ------
-Set the parameters in parameters.f90.  Initial conditions need to be set in
-ic.f90.  Then run
+Set the parameters and initial condition by editing parameters.in, ic.in, and
+run.in.  Then run
 
   ./setup <directory>
 
-which compiles the code, copies parameters.f90 (and possibly a run_script.sh
-file) and moves OBJECT to <directory>.
+which compiles the code, copies parameters.in, ic.in, run.in, run.sh (and
+possibly a run_script.sh file) and moves OBJECT to <directory>.
 
-Then change to <directory> and use mpiexec to run the code, e.g.
+Then change to <directory> and use run.sh to run the code, e.g.
 
-  nohup mpiexec -n nprocs ./gpe > stdout &
+  ./run.sh nprocs
 
-where nprocs is the number of processes and nohup ensures logging out of the
-machine does not hang the job.
+where nprocs is the number of processes.  Logging out of the machine will not
+hang the job.
 
 If restarting from a previous run then be sure to set restart=.true. in
-parameters.f90.  Copy the file 'end_state.dat' from the process directories
-of the preceding run to the restart directory and rename them end_state00.dat,
-end_state01.dat, etc.
+run.in.  Make sure run.in and parameters.in are copied to the restart
+directory.
+
+Copy the file 'end_state.dat' from the process directories of the preceding run
+to the restart directory and rename them end_state00.dat, end_state01.dat, etc.
+If using run.sh, then this last step is done automatically provided the -r
+option is given.
 
 Errors are output if either:
 1) end_state??.dat exists but restart=.false. or
@@ -309,4 +352,8 @@ proc**          - Numbered directories corresponding to each process involved
                   u*******.dat.  These are the processes on which the 2D plane
                   occurred.
 
-10/11/2009
+                  The 3D isosurface data can be requested at any time by
+                  creating an empty file named SAVE in the run directory.  Once
+                  the data are saved, this empty file is removed.
+
+AJY 15/06/2010

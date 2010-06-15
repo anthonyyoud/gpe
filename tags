@@ -1,0 +1,268 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+FFTW_BACKWARD	constants.f90	/^  integer, parameter :: FFTW_BACKWARD /;"	v	module:constants
+FFTW_COMPLEX_TO_REAL	constants.f90	/^  integer, parameter :: FFTW_COMPLEX_TO_REAL /;"	v	module:constants
+FFTW_ESTIMATE	constants.f90	/^  integer, parameter :: FFTW_ESTIMATE /;"	v	module:constants
+FFTW_FORWARD	constants.f90	/^  integer, parameter :: FFTW_FORWARD /;"	v	module:constants
+FFTW_IN_PLACE	constants.f90	/^  integer, parameter :: FFTW_IN_PLACE /;"	v	module:constants
+FFTW_MEASURE	constants.f90	/^  integer, parameter :: FFTW_MEASURE /;"	v	module:constants
+FFTW_NORMAL_ORDER	constants.f90	/^  integer, parameter :: FFTW_NORMAL_ORDER /;"	v	module:constants
+FFTW_OUT_OF_PLACE	constants.f90	/^  integer, parameter :: FFTW_OUT_OF_PLACE /;"	v	module:constants
+FFTW_REAL_TO_COMPLEX	constants.f90	/^  integer, parameter :: FFTW_REAL_TO_COMPLEX /;"	v	module:constants
+FFTW_SCRAMBLED_INPUT	constants.f90	/^  integer, parameter :: FFTW_SCRAMBLED_INPUT /;"	v	module:constants
+FFTW_SCRAMBLED_OUTPUT	constants.f90	/^  integer, parameter :: FFTW_SCRAMBLED_OUTPUT /;"	v	module:constants
+FFTW_THREADSAFE	constants.f90	/^  integer, parameter :: FFTW_THREADSAFE /;"	v	module:constants
+FFTW_TRANSPOSED_ORDER	constants.f90	/^  integer, parameter :: FFTW_TRANSPOSED_ORDER /;"	v	module:constants
+FFTW_USE_WISDOM	constants.f90	/^  integer, parameter :: FFTW_USE_WISDOM /;"	v	module:constants
+Urhs	parameters.f90	/^  real (pr) :: Urhs$/;"	v	module:parameters
+Vtrap	ic.f90	/^  function Vtrap(/;"	f	module:ic
+amp	ic.f90	/^  function amp(/;"	f	module:ic
+array_len	variables.f90	/^  subroutine array_len(/;"	s	module:variables
+ave	parameters.f90	/^  real (pr), allocatable, dimension(:,:,:) :: ave$/;"	v	module:parameters
+average	io.f90	/^  subroutine average(/;"	s	module:io
+bcs	parameters.f90	/^  integer :: bcs$/;"	v	module:parameters
+c1	variables.f90	/^  real (pr), parameter, private :: c1 /;"	v	module:variables
+c2	variables.f90	/^  real (pr), parameter, private :: c1 = 3.0_pr\/8.0_pr, &$/;"	v	module:variables
+c3	variables.f90	/^                                   c2 = 7.0_pr\/6.0_pr, &$/;"	v	module:variables
+close_files	io.f90	/^  subroutine close_files(/;"	s	module:io
+comp_amp	parameters.f90	/^  real (pr) :: comp_amp /;"	v	module:parameters
+condensed_particles	io.f90	/^  subroutine condensed_particles(/;"	s	module:io
+constants	constants.f90	/^module constants$/;"	m
+deriv	variables.f90	/^  type, public :: deriv$/;"	t	module:variables
+deriv_x	derivs.f90	/^  subroutine deriv_x(/;"	s	module:derivs
+deriv_xx	derivs.f90	/^  subroutine deriv_xx(/;"	s	module:derivs
+deriv_y	derivs.f90	/^  subroutine deriv_y(/;"	s	module:derivs
+deriv_yy	derivs.f90	/^  subroutine deriv_yy(/;"	s	module:derivs
+deriv_z	derivs.f90	/^  subroutine deriv_z(/;"	s	module:derivs
+deriv_zz	derivs.f90	/^  subroutine deriv_zz(/;"	s	module:derivs
+derivs	derivs.f90	/^module derivs$/;"	m
+diag	io.f90	/^  subroutine diag(/;"	s	module:io
+diagnostic	parameters.f90	/^  logical :: diagnostic$/;"	v	module:parameters
+diss_amp	parameters.f90	/^  real (pr) :: diss_amp$/;"	v	module:parameters
+dt	parameters.f90	/^  complex (pr) :: dt$/;"	v	module:parameters
+dt_decrease	parameters.f90	/^  real (pr), parameter :: dt_decrease /;"	v	module:parameters
+dt_increase	parameters.f90	/^  real (pr), parameter :: dt_increase /;"	v	module:parameters
+dx	parameters.f90	/^  real (pr) :: dx$/;"	v	module:parameters
+dx2	parameters.f90	/^  real (pr) :: dx2$/;"	v	module:parameters
+dy	parameters.f90	/^  real (pr) :: dy$/;"	v	module:parameters
+dy2	parameters.f90	/^  real (pr) :: dy2$/;"	v	module:parameters
+dz	parameters.f90	/^  real (pr) :: dz$/;"	v	module:parameters
+dz2	parameters.f90	/^  real (pr) :: dz2$/;"	v	module:parameters
+emergency_stop	error.f90	/^  subroutine emergency_stop(/;"	s	module:error
+end_proc	parameters.f90	/^  integer :: end_proc /;"	v	module:parameters
+end_state	io.f90	/^  subroutine end_state(/;"	s	module:io
+end_state_file	parameters.f90	/^  character(15) :: end_state_file /;"	v	module:parameters
+end_time	parameters.f90	/^  real (pr) :: end_time$/;"	v	module:parameters
+energy	variables.f90	/^  subroutine energy(/;"	s	module:variables
+enerv	parameters.f90	/^  real (pr) :: enerv$/;"	v	module:parameters
+eps	parameters.f90	/^  real (pr), parameter :: eps /;"	v	module:parameters
+eqn_params	parameters.f90	/^  namelist \/eqn_params\//;"	n	module:parameters
+eqn_to_solve	parameters.f90	/^  integer :: eqn_to_solve$/;"	v	module:parameters
+errcon	parameters.f90	/^  real (pr)            :: errcon$/;"	v	module:parameters
+error	error.f90	/^module error$/;"	m
+euler	solve.f90	/^  subroutine euler(/;"	s	module:solve
+eye	parameters.f90	/^  complex (pr), parameter :: eye /;"	v	module:parameters
+fermi	ic.f90	/^  function fermi(/;"	f	module:ic
+fft	ic.f90	/^  subroutine fft(/;"	s	module:ic
+filt_end_state_file	parameters.f90	/^  character(24) :: filt_end_state_file /;"	v	module:parameters
+filtered_surface	io.f90	/^  subroutine filtered_surface(/;"	s	module:io
+fourth_index	derivs.f90	/^  subroutine fourth_index(/;"	s	module:derivs
+fscale	parameters.f90	/^  real (pr) :: fscale$/;"	v	module:parameters
+g	parameters.f90	/^  real (pr) :: g$/;"	v	module:parameters
+gaussian_pdf	io.f90	/^    function gaussian_pdf(/;"	f	subroutine:save_velocity_pdf
+get_consts	ic.f90	/^    subroutine get_consts(/;"	s	function:pade_pulse_ring
+get_density	variables.f90	/^  subroutine get_density(/;"	s	module:variables
+get_dirs	io.f90	/^  subroutine get_dirs(/;"	s	module:io
+get_extra_zeros	io.f90	/^  subroutine get_extra_zeros(/;"	s	module:io
+get_grid	ic.f90	/^  subroutine get_grid(/;"	s	module:ic
+get_kc_amp	ic.f90	/^  subroutine get_kc_amp(/;"	s	module:ic
+get_minmax	io.f90	/^  subroutine get_minmax(/;"	s	module:io
+get_norm	variables.f90	/^  subroutine get_norm(/;"	s	module:variables
+get_pdf	variables.f90	/^  subroutine get_pdf(/;"	s	module:variables
+get_pdf_velocity	variables.f90	/^  subroutine get_pdf_velocity(/;"	s	module:variables
+get_phase	variables.f90	/^  subroutine get_phase(/;"	s	module:variables
+get_r	ic.f90	/^  subroutine get_r(/;"	s	module:ic
+get_re_im_zeros	io.f90	/^  subroutine get_re_im_zeros(/;"	s	module:io
+get_rhs	solve.f90	/^  subroutine get_rhs(/;"	s	module:solve
+get_rr	ic.f90	/^  subroutine get_rr(/;"	s	module:ic
+get_s	ic.f90	/^  subroutine get_s(/;"	s	module:ic
+get_theta	ic.f90	/^  subroutine get_theta(/;"	s	module:ic
+get_unit_no	ic.f90	/^  subroutine get_unit_no(/;"	s	module:ic
+get_vcf	variables.f90	/^  subroutine get_vcf(/;"	s	module:variables
+get_zeros	io.f90	/^  subroutine get_zeros(/;"	s	module:io
+gpe	gpe.f90	/^program gpe$/;"	p
+gpe_mpi_2complex	parameters.f90	/^  integer :: gpe_mpi_2complex$/;"	v	module:parameters
+gpe_mpi_2real	parameters.f90	/^  integer :: gpe_mpi_2real$/;"	v	module:parameters
+gpe_mpi_complex	parameters.f90	/^  integer :: gpe_mpi_complex$/;"	v	module:parameters
+gpe_mpi_real	parameters.f90	/^  integer :: gpe_mpi_real$/;"	v	module:parameters
+grad	variables.f90	/^  function grad(/;"	f	module:variables
+ic	ic.f90	/^module ic$/;"	m
+ics	ic.f90	/^  subroutine ics(/;"	s	module:ic
+idl_surface	io.f90	/^  subroutine idl_surface(/;"	s	module:io
+ierr	parameters.f90	/^  integer :: ierr$/;"	v	module:parameters
+im	variables.f90	/^    real (pr), allocatable, dime/;"	k	type:re_im
+im_t	parameters.f90	/^  real (pr) :: im_t /;"	v	module:parameters
+imprint_vl	parameters.f90	/^  logical  :: imprint_vl$/;"	v	module:parameters
+imprint_vortex_line	variables.f90	/^  function imprint_vortex_line(/;"	f	module:variables
+integrate_x	variables.f90	/^  subroutine integrate_x(/;"	s	module:variables
+integrate_y	variables.f90	/^  subroutine integrate_y(/;"	s	module:variables
+integrate_z	variables.f90	/^  subroutine integrate_z(/;"	s	module:variables
+io	io.f90	/^module io$/;"	m
+io_params	parameters.f90	/^  namelist \/io_params\//;"	n	module:parameters
+istatus	parameters.f90	/^  integer, dimension(MPI_STATUS_SIZE) :: istatus$/;"	v	module:parameters
+itable	variables.f90	/^  integer, dimension(-1:nyprocs, -1:nzprocs), private :: itable$/;"	v	module:variables
+itos	io.f90	/^  function itos(/;"	f	module:io
+jdisp	parameters.f90	/^  integer, dimension(0:nzprocs-1) :: jdisp,/;"	v	module:parameters
+je	parameters.f90	/^  integer :: js, je,/;"	v	module:parameters
+jjlen	parameters.f90	/^  integer, dimension(0:nyprocs-1) :: kdisp, jjlen$/;"	v	module:parameters
+jlen	parameters.f90	/^  integer :: js, je, jlen,/;"	v	module:parameters
+js	parameters.f90	/^  integer :: js,/;"	v	module:parameters
+kc2	parameters.f90	/^  real (pr) :: kc2 /;"	v	module:parameters
+kdisp	parameters.f90	/^  integer, dimension(0:nyprocs-1) :: kdisp,/;"	v	module:parameters
+ke	parameters.f90	/^  integer :: ks, kks, ke,/;"	v	module:parameters
+kke	parameters.f90	/^  integer :: ks, kks, ke, kke,/;"	v	module:parameters
+kklen	parameters.f90	/^  integer, dimension(0:nzprocs-1) :: jdisp, kklen$/;"	v	module:parameters
+kks	parameters.f90	/^  integer :: ks, kks,/;"	v	module:parameters
+klen	parameters.f90	/^  integer :: ks, kks, ke, kke, klen,/;"	v	module:parameters
+ks	parameters.f90	/^  integer :: ks,/;"	v	module:parameters
+laplacian	variables.f90	/^  function laplacian(/;"	f	module:variables
+linelength	variables.f90	/^  function linelength(/;"	f	module:variables
+m	gpe.f90	/^  integer :: n=0, m=/;"	v	program:gpe
+mass	variables.f90	/^  subroutine mass(/;"	s	module:variables
+maxvar	parameters.f90	/^  real (pr), dimension(4) :: maxvar /;"	v	module:parameters
+mean	variables.f90	/^  function mean(/;"	f	module:variables
+minvar	parameters.f90	/^  real (pr), dimension(4) :: minvar /;"	v	module:parameters
+misc_params	parameters.f90	/^  namelist \/misc_params\//;"	n	module:parameters
+momentum	variables.f90	/^  subroutine momentum(/;"	s	module:variables
+mpi	mpi.f90	/^module mpi$/;"	m
+mpi_constants_precision	mpi.f90	/^  subroutine mpi_constants_precision(/;"	s	module:mpi
+mu	parameters.f90	/^  real (pr) :: mu$/;"	v	module:parameters
+myrank	parameters.f90	/^  integer :: myrank,/;"	v	module:parameters
+myranky	parameters.f90	/^  integer :: myrank, myranky,/;"	v	module:parameters
+myrankz	parameters.f90	/^  integer :: myrank, myranky, myrankz$/;"	v	module:parameters
+n	gpe.f90	/^  int/;"	v	program:gpe
+nbins	parameters.f90	/^  integer :: nbins$/;"	v	module:parameters
+neighbours	variables.f90	/^  subroutine neighbours(/;"	s	module:variables
+new	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: new$/;"	k	type:var
+nfilter	parameters.f90	/^  integer :: nfilter$/;"	v	module:parameters
+nlines	parameters.f90	/^  integer :: nlines$/;"	v	module:parameters
+nml_error	io.f90	/^    subroutine nml_error(/;"	s	subroutine:read_run_params
+nn	parameters.f90	/^  real (pr) :: nn$/;"	v	module:parameters
+norm	gpe.f90	/^  real (pr) :: norm=/;"	v	program:gpe
+nprocs	parameters.f90	/^  integer :: nprocs$/;"	v	module:parameters
+nv	parameters.f90	/^  real (pr) :: nv$/;"	v	module:parameters
+nx1	parameters.f90	/^  integer, parameter :: nx1 /;"	v	module:parameters
+ny1	parameters.f90	/^  integer, parameter :: ny1 /;"	v	module:parameters
+nz1	parameters.f90	/^  integer, parameter :: nz1 /;"	v	module:parameters
+old	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: old$/;"	k	type:var
+old2	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: old2$/;"	k	type:var
+omx	parameters.f90	/^  real (pr) :: omx,/;"	v	module:parameters
+omy	parameters.f90	/^  real (pr) :: omx, omy,/;"	v	module:parameters
+omz	parameters.f90	/^  real (pr) :: omx, omy, omz$/;"	v	module:parameters
+open_files	io.f90	/^  subroutine open_files(/;"	s	module:io
+order	parameters.f90	/^  integer :: order$/;"	v	module:parameters
+p	parameters.f90	/^  integer :: p$/;"	v	module:parameters
+p_save	parameters.f90	/^  real (pr) :: p_save$/;"	v	module:parameters
+pack_y	variables.f90	/^  subroutine pack_y(/;"	s	module:variables
+pade_pulse_ring	ic.f90	/^  function pade_pulse_ring(/;"	f	module:ic
+para_range	variables.f90	/^  subroutine para_range(/;"	s	module:variables
+parameters	parameters.f90	/^module parameters$/;"	m
+pi	parameters.f90	/^  real (pr), parameter :: pi /;"	v	module:parameters
+pp_filtered_surface	parameters.f90	/^  logical :: pp_filtered_surface$/;"	v	module:parameters
+pp_save_filter	io.f90	/^  subroutine pp_save_filter(/;"	s	module:io
+prev_norm	gpe.f90	/^  real (pr) :: norm=0.0_pr, prev_norm=/;"	v	program:gpe
+proc_dir	parameters.f90	/^  character(7) :: proc_dir /;"	v	module:parameters
+ps	gpe.f90	/^  integer :: n=0, m=0, ps=/;"	v	program:gpe
+psi	gpe.f90	/^  type (var) :: psi,/;"	v	program:gpe
+random_phase	ic.f90	/^  function random_phase(/;"	f	module:ic
+re	variables.f90	/^    rea/;"	k	type:re_im
+re_im	variables.f90	/^  type, public :: re_im$/;"	t	module:variables
+read_run_params	io.f90	/^  subroutine read_run_params(/;"	s	module:io
+real_time	parameters.f90	/^  logical :: real_time$/;"	v	module:parameters
+relnorm	gpe.f90	/^  real (pr) :: norm=0.0_pr, prev_norm=1.0_pr, relnorm=/;"	v	program:gpe
+renorm	parameters.f90	/^  logical  :: renorm$/;"	v	module:parameters
+renormalise	variables.f90	/^  subroutine renormalise(/;"	s	module:variables
+restart	parameters.f90	/^  logical  :: restart$/;"	v	module:parameters
+rk2	solve.f90	/^  subroutine rk2(/;"	s	module:solve
+rk4	solve.f90	/^  subroutine rk4(/;"	s	module:solve
+rkck	solve.f90	/^  subroutine rkck(/;"	s	module:solve
+rkqs	solve.f90	/^  subroutine rkqs(/;"	s	module:solve
+run_exist	gpe.f90	/^  logical :: run_exist,/;"	v	program:gpe
+run_params	parameters.f90	/^  namelist \/run_params\//;"	n	module:parameters
+safety	parameters.f90	/^  real (pr), parameter :: safety /;"	v	module:parameters
+save_3d	parameters.f90	/^  logical  :: save_3d$/;"	v	module:parameters
+save_average	parameters.f90	/^  logical  :: save_average$/;"	v	module:parameters
+save_contour	parameters.f90	/^  logical  :: save_contour$/;"	v	module:parameters
+save_energy	io.f90	/^  subroutine save_energy(/;"	s	module:io
+save_filter	parameters.f90	/^  logical  :: save_filter$/;"	v	module:parameters
+save_linelength	io.f90	/^  subroutine save_linelength(/;"	s	module:io
+save_ll	parameters.f90	/^  logical  :: save_ll$/;"	v	module:parameters
+save_momentum	io.f90	/^  subroutine save_momentum(/;"	s	module:io
+save_norm	io.f90	/^  subroutine save_norm(/;"	s	module:io
+save_pdf	parameters.f90	/^  logical  :: save_pdf$/;"	v	module:parameters
+save_rate	parameters.f90	/^  integer :: save_rate$/;"	v	module:parameters
+save_rate2	parameters.f90	/^  real (pr) :: save_rate2$/;"	v	module:parameters
+save_rate3	parameters.f90	/^  real (pr) :: save_rate3$/;"	v	module:parameters
+save_run	io.f90	/^  subroutine save_run(/;"	s	module:io
+save_spectrum	parameters.f90	/^  logical  :: save_spectrum$/;"	v	module:parameters
+save_surface	io.f90	/^  subroutine save_surface(/;"	s	module:io
+save_time	io.f90	/^  subroutine save_time(/;"	s	module:io
+save_vcf	parameters.f90	/^  logical  :: save_vcf$/;"	v	module:parameters
+save_vel_corr	io.f90	/^  subroutine save_vel_corr(/;"	s	module:io
+save_velocity_pdf	io.f90	/^  subroutine save_velocity_pdf(/;"	s	module:io
+save_zeros	parameters.f90	/^  logical  :: save_zeros$/;"	v	module:parameters
+saved_restart	parameters.f90	/^  logical  :: saved_restart$/;"	v	module:parameters
+scal	parameters.f90	/^  real (pr) :: scal$/;"	v	module:parameters
+scheme	parameters.f90	/^  character(5) :: scheme$/;"	v	module:parameters
+second_index	derivs.f90	/^  subroutine second_index(/;"	s	module:derivs
+send_recv_y	variables.f90	/^  subroutine send_recv_y(/;"	s	module:variables
+send_recv_z	variables.f90	/^  subroutine send_recv_z(/;"	s	module:variables
+setup_itable	variables.f90	/^  subroutine setup_itable(/;"	s	module:variables
+snapshots	parameters.f90	/^  integer :: snapshots /;"	v	module:parameters
+solve	solve.f90	/^module solve$/;"	m
+solver	solve.f90	/^  subroutine solver(/;"	s	module:solve
+spectrum	io.f90	/^  subroutine spectrum(/;"	s	module:io
+sphere	ic.f90	/^  function sphere(/;"	f	module:ic
+sphere2	ic.f90	/^  function sphere2(/;"	f	module:ic
+state_exist	gpe.f90	/^  logical :: run_exist, state_exist$/;"	v	program:gpe
+state_restart	ic.f90	/^  function state_restart(/;"	f	module:ic
+stdev	variables.f90	/^  function stdev(/;"	f	module:variables
+stop_imag	parameters.f90	/^  logical  :: stop_imag$/;"	v	module:parameters
+t	parameters.f90	/^  real (pr) :: t /;"	v	module:parameters
+tau	parameters.f90	/^  real (pr) :: tau$/;"	v	module:parameters
+test	gpe.f90	/^  type (var) :: psi, test$/;"	v	program:gpe
+unpack_y	variables.f90	/^  subroutine unpack_y(/;"	s	module:variables
+var	variables.f90	/^  type, public :: var$/;"	t	module:variables
+variables	variables.f90	/^module variables$/;"	m
+vortex_line	ic.f90	/^  function vortex_line(/;"	f	module:ic
+vortex_pair	ic.f90	/^  function vortex_pair(/;"	f	module:ic
+vortex_ring	ic.f90	/^  function vortex_ring(/;"	f	module:ic
+vortex_ring2	ic.f90	/^  function vortex_ring2(/;"	f	module:ic
+wall	ic.f90	/^  function wall(/;"	f	module:ic
+workr1	parameters.f90	/^  complex (pr), allocatable, dimension(:,:,:) :: works1, works2, workr1,/;"	v	module:parameters
+workr2	parameters.f90	/^  complex (pr), allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2$/;"	v	module:parameters
+works1	parameters.f90	/^  complex (pr), allocatable, dimension(:,:,:) :: works1,/;"	v	module:parameters
+works2	parameters.f90	/^  complex (pr), allocatable, dimension(:,:,:) :: works1, works2,/;"	v	module:parameters
+x	ic.f90	/^  real (pr), dimension(0:nx1/;"	v	module:ic
+x	variables.f90	/^    complex /;"	k	type:deriv
+xl	parameters.f90	/^  real (pr) :: xl$/;"	v	module:parameters
+xr	parameters.f90	/^  real (pr) :: xr$/;"	v	module:parameters
+xx	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: xx$/;"	k	type:deriv
+y	ic.f90	/^  real (pr), dimension(0:ny1/;"	v	module:ic
+y	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: y$/;"	k	type:deriv
+yl	parameters.f90	/^  real (pr) :: yl$/;"	v	module:parameters
+ynext	parameters.f90	/^  integer :: js, je, jlen, yprev, ynext$/;"	v	module:parameters
+yprev	parameters.f90	/^  integer :: js, je, jlen, yprev,/;"	v	module:parameters
+yr	parameters.f90	/^  real (pr) :: yr$/;"	v	module:parameters
+yy	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: yy$/;"	k	type:deriv
+z	ic.f90	/^  real (pr), dimension(0:nz1/;"	v	module:ic
+z	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: z$/;"	k	type:deriv
+zl	parameters.f90	/^  real (pr) :: zl$/;"	v	module:parameters
+znext	parameters.f90	/^  integer :: ks, kks, ke, kke, klen, zprev, znext$/;"	v	module:parameters
+zprev	parameters.f90	/^  integer :: ks, kks, ke, kke, klen, zprev,/;"	v	module:parameters
+zr	parameters.f90	/^  real (pr) :: zr$/;"	v	module:parameters
+zz	variables.f90	/^    complex (pr), allocatable, dimension(:,:,:) :: zz$/;"	k	type:deriv

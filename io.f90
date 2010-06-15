@@ -11,7 +11,7 @@ module io
     save_velocity_pdf, save_vel_corr, save_surface, idl_surface, end_state, &
     get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
     save_momentum, save_norm, get_dirs, diag, condensed_particles, &
-    average, pp_save_filter, save_run
+    average, pp_save_filter, save_run, read_run_params
   
   contains
 
@@ -61,6 +61,46 @@ module io
 
     return
   end subroutine close_files
+
+! ***************************************************************************  
+
+  subroutine read_run_params()
+    ! Read run-time parameters from run.in.
+    use error, only : emergency_stop
+    use ic, only : unit_no
+    use parameters
+    implicit none
+  
+    integer :: ioerr
+    character(5) :: _ioerr = '*****'
+
+    open (unit_no, file='run.in')
+    read (unit_no, nml=run_params, iostat=ioerr)
+    if (ioerr /= 0) call nml_error('run_params', ioerr)
+    read (unit_no, nml=eqn_params, iostat=ioerr)
+    if (ioerr /= 0) call nml_error('eqn_params', ioerr)
+    read (unit_no, nml=io_params, iostat=ioerr)
+    if (ioerr /= 0) call nml_error('io_params', ioerr)
+    read (unit_no, nml=misc_params, iostat=ioerr)
+    if (ioerr /= 0) call nml_error('misc_params', ioerr)
+    close (unit_no)
+
+    contains
+
+    subroutine nml_error(nl, ioerr)
+      implicit none
+
+      character(*), intent(in) :: nl
+      integer, intent(in) :: ioerr
+
+      close (unit_no)
+      write (_ioerr, '(i5.4)') ioerr
+      call emergency_stop('ERROR: There was an error reading namelist '//nl// &
+        ' in run.in: iostat='//_ioerr//'.')
+
+      return
+    end subroutine nml_error
+  end subroutine read_run_params
 
 ! ***************************************************************************  
 
@@ -561,7 +601,7 @@ module io
           write (unit_no) ny
           write (unit_no) nz
           write (unit_no) p
-          write (unit_no) t
+          write (unit_no) t, im_t
           write (unit_no) dt
           write (unit_no) filtered
         case default
@@ -804,7 +844,7 @@ module io
     write (unit_no) ny
     write (unit_no) nz
     write (unit_no) p
-    write (unit_no) t
+    write (unit_no) t, im_t
     write (unit_no) dt
     write (unit_no) in_var
 
@@ -815,6 +855,7 @@ module io
       open (98, file = 'save.dat')
       write (98, *) 'Periodically saved state'
       write (98, *) 't =', t
+      write (98, *) 'im_t =', im_t
       write (98, *) 'dt =', dt
       write (98, *) 'nx =', nx
       write (98, *) 'ny =', ny

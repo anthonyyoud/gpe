@@ -28,11 +28,12 @@ OPTIONS:
                     end_state.dat files are then copied to the new run
                     directory.
 
-        -f|--force
+        -c|--clean
                     If the script detects the existence of process directories
                     in the current directory, new process directories are not
-                    created and the script aborts.  Use -f to force removal of
-                    the existing process directories and create new ones.
+                    created and the script aborts.  Use -c to clean the current
+                    directory, removing all files and directories except those
+                    needed for a fresh run.
 
         -p|--post-process
                     Should be used when post-processing isosurfaces.
@@ -48,7 +49,7 @@ run() {
 }
 
 # Get command line options
-options=`getopt -o r:fph -l restart:,force,post-process,help -n run.sh -- "$@"`
+options=`getopt -o r:cph -l restart:,clean,post-process,help -n run.sh -- "$@"`
 
 # If no options, show the help
 if [ $# == 0 ]; then
@@ -58,14 +59,14 @@ fi
 
 eval set -- "$options"
 
-FORCE=0
+CLEAN=0
 POST=0
 # Set parameters depending on options
 while true
 do
   case "$1" in
     -r|--restart) PREDIR=$2; shift 2;;
-    -f|--force) FORCE=1; shift;;
+    -c|--clean) CLEAN=1; shift;;
     -p|--post-process) POST=1; shift;;
     -h|--help) usage; exit 1;;
     --) shift ; break ;;
@@ -97,12 +98,12 @@ for i in `seq -f "%0${DIGITS}g" 0 $(($NPROCS-1))`
 do
   PROCDIR=proc$i
   if [ -d $PROCDIR ]; then
-    if [ $FORCE -eq 0 ]; then
+    if [ $CLEAN -eq 0 ]; then
       echo WARNING: At least one process directory already exists - aborting.
-      echo Use -f to force deletion of process directories.
+      echo Use -c to clean current directory and begin a fresh run.
       exit 1
     else
-      rm -rf $PROCDIR
+      rm -rf $PROCDIR *.dat *.txt idf pdf spectrum vcf RUNNING ERROR
     fi
   fi
   mkdir $PROCDIR
