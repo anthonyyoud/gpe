@@ -10,7 +10,7 @@ module variables
   public :: laplacian, get_density, get_phase, get_pdf_velocity, get_norm, &
     get_pdf, get_vcf, energy, mass, momentum, linelength, setup_itable, &
     para_range, array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-    unpack_y, renormalise, alter_psi
+    unpack_y, renormalise, imprint_vortex_line
 
   type, public :: var
     complex (pr), allocatable, dimension(:,:,:) :: new
@@ -1135,21 +1135,20 @@ module variables
 
 ! ***************************************************************************
 
-  function alter_psi(in_var)
-    ! Make an alteration to the wave function.  This is used mainly for solving
-    ! case 4 when in imaginary time, to constantly imprint the phase o construct
-    ! a vortex line.
+  function imprint_vortex_line(in_var)
+    ! Imprint a vortex line on the wave function.  This is used mainly for
+    ! solving case 4 when in imaginary time, to constantly imprint the phase to
+    ! construct a vortex line.
     use ic, only : vortex_line
     use parameters
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: alter_psi
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: imprint_vortex_line
     complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
 
-    !alter_psi = abs(in_var) * vortex_line(vl1)
-    alter_psi = in_var
+    imprint_vortex_line = abs(in_var) * vortex_line(vl1)
 
     return
-  end function alter_psi
+  end function imprint_vortex_line
 
 end module variables

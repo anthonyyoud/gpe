@@ -279,7 +279,7 @@ program gpe
         end if
       end if
       if (renorm) call renormalise(psi%new, norm)
-      psi%new = alter_psi(psi%new)
+      if (imprint_vl) psi%new = imprint_vortex_line(psi%new)
     end if
     
     ! Update the norm

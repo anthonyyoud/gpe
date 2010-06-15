@@ -59,6 +59,7 @@ module parameters
   logical,      parameter :: restart       = .false.
   logical,      parameter :: saved_restart = .false.
   logical,      parameter :: renorm        = .false.
+  logical,      parameter :: imprint_vl    = .false.
   logical,      parameter :: stop_imag     = .true.
   logical                 :: real_time     = .false.
   logical                 :: diagnostic    = .false.
