@@ -3,60 +3,32 @@
 
 \begin{chapter}{\label{cha:quickstart} Quick start guide}
   \section{Introduction}
-  %
-  This is a quick start guide to help you compile, run and view the results of
-  the GPE code.
+  This chapter is intended as a quick start guide to help you compile, run and
+  view the results of the GPE code.  More detailed information about various
+  technical aspects of the code can be found in chapter SOMETHING OR OTHER;
+  here we will outline the basics of going through a run cycle.
 
-  In the source code directory there is a \verb"README" file explaining in more
-  detail various technical aspects of what software is required to use the
-  code, what parameters can be set, the files related to the code, and other
-  useful information.  It is probably worth having a read through it to try to
-  familiarise you with the code.  Here I will just outline the basics of going
-  through a run cycle.
-
-  \section{Compilation}
-  %
-  Before doing anything, change to the code directory
-  %
-  \begin{Verbatim}
-    cd ~/a1234567/programs/gpe
-  \end{Verbatim}
-  %
-  or wherever you have put it, replacing \verb"a1234567" with your own login
-  ID.
-
+  \section{Setting parameters and compilation}
   There are two files you are most likely going to need to edit ---
-  \verb"parameters.f90" and \verb"ic.f90".  As the names suggest, the
-  former sets all the parameters for a particular run, and the latter sets the
-  initial condition.  All the parameters are explained in the \verb"README"
-  file.
+  \verb"parameters.f90" and \verb"ic.f90" --- although, for some more exotic
+  runs you may need to edit other files.  As the names suggest, the former sets
+  all the parameters for a particular run, and the latter sets the initial
+  condition.  Set the parameters and initial condition as you wish.  All the
+  parameters are explained in chapter SOMETHING OR OTHER.
 
-  Open both files in an editor or viewer and have a quick scan through, but
-  don't make any changes just yet.  The only subroutine you'll need in
-  \verb"ic.f90" is \verb"subroutine ics()" at about line $63$.
+  Choose a directory where any runs will take place.  This should not be on a
+  network file system (NFS), which will likely be too slow (and under quota
+  restrictions).
 
-  Now you need to create a directory where any runs will take place.  This
-  should not be in your home area (the directory you are in when you log in),
-  but should instead be in a dedicated area on disk known as \verb"/data".
-  Type
-  %
-  \begin{Verbatim}
-    mkdir /data/a1234567
-  \end{Verbatim}
-  %
-  Now within this directory you can create any number of your own directories,
-  where your runs can take place.  Usually, it is a good idea to have a
-  directory structure which is quite descriptive of the runs you are doing, so,
-  for example, maybe you are doing runs where the initial conditions are
-  different, or for a particular initial condition the parameters are varying.
+  Usually, it is a good idea to have a directory structure which is quite
+  descriptive of the runs you are doing, so, for example, maybe you are doing
+  runs where the initial conditions are different, or for a particular initial
+  condition the parameters are varying.
 
   In this case you might create directories such as \verb"ring", or
-  \verb"lines", with subdirectories defining radii or separations, etc.
-  Ultimately, it is up to you, but try to keep things organised, otherwise it's
-  difficult to keep track of what you've done!
-
-  With that in mind create a directory in which to do a test run (I'll call it
-  \verb"run_dir" from now on.
+  \verb"lines", with subdirectories defining ring radii or line separations,
+  etc.  Ultimately, it is up to you, but try to keep things organised,
+  otherwise it can be difficult to keep track of what you have done.
 
   Now compile the code with
   %
@@ -64,16 +36,10 @@
     ./setup run_dir
   \end{Verbatim}
   %
-  This will compile the code, and copy (or move) certain files to the run
-  directory.
+  This will compile the code, create the directory \verb"run_dir", and copy (or
+  move) certain files to this directory.
 
-  Now change to the run directory
-  %
-  \begin{Verbatim}
-    cd run_dir
-  \end{Verbatim}
-  %
-  and type \verb"ls" to see its contents.
+  Now change to the run directory and type \verb"ls" to see its contents.
 
   In here you will find three files initially:
   %
@@ -86,23 +52,18 @@
   \end{itemize}
   %
   \section{Running the code}
-  %
   To run the code simply type
   %
   \begin{Verbatim}
-    ./run.sh 2
+    ./run.sh <nprocs>
   \end{Verbatim}
   %
-  where \verb"2" specifies that the code will run on two processors.  The
-  machine \verb"starlink" only has two processors, so you should never set this
-  parameter larger than $2$.  (It should match \verb"nyprocs*nzprocs" in
-  \verb"parameters.f90").
-
-  The run I've chosen as the default should take about five minutes to run,
-  when nobody else is using the machine.  It simply propagates a vortex ring.
+  where \verb"<nprocs>" specifies on how many processes the code should run.
+  Ideally, this should be less than or equal to the number of physical
+  processors in your system, and it should match \verb"nyprocs*nzprocs" in
+  \verb"parameters.f90", otherwise a run-time error will result.
 
   \section{During the run}
-  %
   When the job is running there is an empty file called \verb"RUNNING" in the
   run directory; when the job is finished this file is deleted.  You can also
   delete this file at any time to immediately stop the run cleanly.
@@ -113,18 +74,15 @@
   occurred.
 
   There are various output files containing various data, most of which are
-  explained in the \verb"README" file.
+  explained in chapter SOMETHING OR OTHER.
 
   The numbered \verb"proc" directories contain data local to each process on
-  which the job ran.  This is where the isosurface data is stored.
+  which the job ran.  This is where 3D isosurface data are stored.
 
   \section{Graphics}
-  %
-  During and after a run it is possible to plot various $1$D graphs, $2$D
-  contour plots and $3$D isosurfaces.  For the $1$D time-series graphs, gnuplot
-  is the best program to use.  Simply type \verb"gnuplot" to start it.  The
-  command syntax is exactly the same as the Windows version if you have ever
-  used that.  So, for example, to plot the line length of vortices in the
+  During and after a run it is possible to plot various 1D graphs, 2D contour
+  plots and 3D isosurfaces.  For the 1D time-series graphs, gnuplot is a good
+  program to use.  So, for example, to plot the line length of vortices in the
   condensate you could do
   %
   \begin{Verbatim}
@@ -136,21 +94,21 @@
   been abbreviated to the shortest non-ambiguous form, which is possible with
   any gnuplot command.
 
-  Check the \verb"README" file for other files to plot.
-
   \subsection{Contour plots}
-  %
-  From the run directory start the graphics program IDL (Interactive Data
-  Language) by typing \verb"idl" at the command prompt.  Providing everything
-  is set up correctly you should be able to type
+  Contour and isosurface data are stored in binary form; the layout of the
+  binary files are explained in chapter SOMETHING OR OTHER.  Assuming you have
+  access to the Interactive Data Language (IDL) graphics program, IDL routines
+  are provided with the code to directly plot the data.
+
+  From the run directory start IDL.  Providing everything is set up correctly
+  you should be able to type
   %
   \begin{Verbatim}
     anim,0,0,/cntr
   \end{Verbatim}
   %
   which will show a contour plot of the initial condition as a slice through
-  the $(x,y)$-plane at $z=0$.  Unfortunately, it is in black and white at the
-  minute; it is supposed to be in colour, so this is something I need to fix!
+  the $(x,y)$-plane at $z=0$.
 
   Now try a plot at a later time replacing the zeroes in the previous command
   with $430$.  You should see that the two black patches have moved further to

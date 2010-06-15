@@ -2,7 +2,7 @@
 # Compile and set up the code ready to run in a separate directory
 # usage:  ./setup <directory name>
 
-mkdir $1 2> /dev/null
+mkdir -p $1 2> /dev/null
 
 # Determine whether this run will be for filtered isosurfaces
 #filter=`cat parameters.f90 | grep pp_filter | cut -c 47-`
