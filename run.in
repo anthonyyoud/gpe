@@ -42,6 +42,7 @@
   save_contour  = .false.
   save_3d       = .true.
   save_filter   = .false.
+  filter_kc     = 10.0
   save_average  = .false.
   save_spectrum = .false.
   save_pdf      = .false.

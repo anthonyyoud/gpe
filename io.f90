@@ -372,7 +372,7 @@ module io
       E0 = (1.0_pr/real(2*V, pr))*(M**2+(M-n0)**2)
       H = E0 + temp*real(V-1, pr)
       temp2 = ((M/(8.0_pr*xr*yr*zr))-(n0/V))/tot
-      ! Plot $5/$4 for n0/M for condensed particles.
+      ! Plot $6/$5 for n0/M for condensed particles.
       open (15, status='unknown', position='append', file='mass.dat')
       write (15, '(9e17.9)') time, im_t, M/(8.0_pr*xr*yr*zr), n0/V, M, n0, &
         temp, temp2, H/V
@@ -562,7 +562,7 @@ module io
           k2 = ii2 + jj2 + kk2
           !a(i,j,k) = a(i,j,k)*max(1.0_pr-(real(k2, pr)/kc2),0.0_pr)
           !a(i,j,k) = a(i,j,k)*max(1.0_pr-(m*real(k2, pr)/(9.0_pr-1e-3_pr*t)**2),0.0_pr)
-          a(i,j,k) = a(i,j,k)*max(1.0_pr-(m*real(k2, pr)/(10.0_pr)**2),0.0_pr)
+          a(i,j,k) = a(i,j,k)*max(1.0_pr-(m*real(k2, pr)/filter_kc**2),0.0_pr)
         end do
       end do
     end do

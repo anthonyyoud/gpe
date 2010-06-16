@@ -199,6 +199,8 @@ save_3d (logical) -  Should 3D isosurface data be saved?
 
 save_filter (logical) - Should 3D filtered isosurfaces of the density be saved?
 
+filter_kc (real) - The cutoff wavenumber used to filter the isosurfaces.
+
 save_average (logical) - Should 3D time-averaged isosurfaces of the density be
                          saved?
 

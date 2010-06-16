@@ -82,6 +82,8 @@ program gpe
           print*, 'Solving CASE 2'
         case (3)
           print*, 'Solving CASE 3'
+        case (4)
+          print*, 'Solving CASE 4'
       end select
     end if
   end if

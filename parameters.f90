@@ -10,16 +10,26 @@ module parameters
   include 'mpif.h'
   include 'parameters.in'
 
-  logical :: pp_filtered_surface
-  integer :: nlines
-  integer :: nfilter
-  real (pr) :: fscale
+  ! run_params
+  real (pr)    :: tau
+  real (pr)    :: end_time
+  real (pr)    :: xr, yr, zr
+  character(5) :: scheme
+  integer      :: eqn_to_solve
+  integer      :: bcs
+  integer      :: order
+  logical      :: restart
+  logical      :: saved_restart
+  logical      :: renorm
+  logical      :: imprint_vl
+  logical      :: stop_imag
+  logical      :: real_time
 
-  real (pr) :: tau
-  real (pr) :: end_time
-  real (pr) :: xr
-  real (pr) :: yr
-  real (pr) :: zr
+  namelist /run_params/ tau, end_time, xr, yr, zr, scheme, eqn_to_solve, &
+    bcs, order, restart, saved_restart, renorm, imprint_vl, stop_imag, &
+    real_time
+
+  ! eqn_params
   real (pr) :: Urhs
   real (pr) :: diss_amp
   real (pr) :: scal
@@ -29,54 +39,49 @@ module parameters
   real (pr) :: mu
   real (pr) :: nn
   real (pr) :: omx, omy, omz
-  integer :: eqn_to_solve
-  integer :: bcs
-  integer :: order
-  integer :: nbins
-  integer :: save_rate
-  real (pr) :: save_rate2
-  real (pr) :: save_rate3
-  real (pr) :: p_save
-  logical  :: save_contour
-  logical  :: save_3d
-  logical  :: save_filter
-  logical  :: save_average
-  logical  :: save_spectrum
-  logical  :: save_pdf
-  logical  :: save_vcf
-  logical  :: save_ll
-  logical  :: save_zeros
-  logical  :: restart
-  logical  :: saved_restart
-  logical  :: renorm
-  logical  :: imprint_vl
-  logical  :: stop_imag
-  logical :: real_time
-  logical :: diagnostic
-  character(5) :: scheme
-
-  namelist /run_params/ tau, end_time, xr, yr, zr, scheme, eqn_to_solve, &
-    bcs, order, restart, saved_restart, renorm, imprint_vl, stop_imag, &
-    real_time
 
   namelist /eqn_params/ Urhs, diss_amp, scal, nv, enerv, g, mu, nn, &
     omx, omy, omz
 
+  ! io_params
+  integer   :: save_rate
+  real (pr) :: save_rate2
+  real (pr) :: save_rate3
+  real (pr) :: p_save
+  logical   :: save_contour
+  logical   :: save_3d
+  logical   :: save_filter
+  real (pr) :: filter_kc
+  logical   :: save_average
+  logical   :: save_spectrum
+  logical   :: save_pdf
+  logical   :: save_vcf
+  logical   :: save_ll
+  logical   :: save_zeros
+
   namelist /io_params/ save_rate, save_rate2, save_rate3, p_save, &
-    save_contour, save_3d, save_filter, save_average, save_spectrum, &
-    save_pdf, save_vcf, save_ll, save_zeros
+    save_contour, save_3d, save_filter, filter_kc, save_average, &
+    save_spectrum, save_pdf, save_vcf, save_ll, save_zeros
+
+  ! misc_params
+  integer   :: nbins
+  logical   :: diagnostic
+  logical   :: pp_filtered_surface
+  integer   :: nlines
+  integer   :: nfilter
+  real (pr) :: fscale
 
   namelist /misc_params/ nbins, diagnostic, pp_filtered_surface, nlines, &
     nfilter, fscale
 
   ! Parameters for adaptive time stepping
-  real (pr), parameter :: eps              = 1e-6_pr
-  real (pr), parameter :: safety           = 0.9_pr
-  real (pr), parameter :: dt_decrease      = -0.25_pr
-  real (pr), parameter :: dt_increase      = -0.20_pr
+  real (pr), parameter :: eps         = 1e-6_pr
+  real (pr), parameter :: safety      = 0.9_pr
+  real (pr), parameter :: dt_decrease = -0.25_pr
+  real (pr), parameter :: dt_increase = -0.20_pr
   real (pr)            :: errcon
 
-  ! Parameters that don't need changing
+  ! Grid dimensions, processes, local array dimensions, etc.
   integer, parameter :: nx1 = nx-1
   integer, parameter :: ny1 = ny-1
   integer, parameter :: nz1 = nz-1
@@ -87,6 +92,7 @@ module parameters
   integer :: ks, kks, ke, kke, klen, zprev, znext
   integer :: ierr
   
+  ! Other parameters.
   integer, dimension(MPI_STATUS_SIZE) :: istatus
   integer, dimension(0:nzprocs-1) :: jdisp, kklen
   integer, dimension(0:nyprocs-1) :: kdisp, jjlen
@@ -103,21 +109,12 @@ module parameters
   real (pr), dimension(4) :: maxvar = 0.0_pr
   real (pr), dimension(4) :: minvar = 0.0_pr
   real (pr), parameter :: pi = 3.1415926535897932384626433832795_pr
-  real (pr) :: xl
-  real (pr) :: yl
-  real (pr) :: zl
-  real (pr) :: dx
-  real (pr) :: dy
-  real (pr) :: dz
-  real (pr) :: dx2
-  real (pr) :: dy2
-  real (pr) :: dz2
+  real (pr) :: xl, yl, zl
+  real (pr) :: dx, dy, dz
+  real (pr) :: dx2, dy2, dz2
   complex (pr), parameter :: eye = (0.0_pr,1.0_pr)
   integer :: p
   integer :: snapshots   = 1
-  integer :: gpe_mpi_real
-  integer :: gpe_mpi_2real
-  integer :: gpe_mpi_complex
-  integer :: gpe_mpi_2complex
+  integer :: gpe_mpi_real, gpe_mpi_2real, gpe_mpi_complex, gpe_mpi_2complex
 
 end module parameters

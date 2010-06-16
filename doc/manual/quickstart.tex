@@ -9,11 +9,14 @@
   here we will outline the basics of going through a run cycle.
 
   \section{Setting parameters and compilation}
-  There are two files you are most likely going to need to edit ---
-  \verb"parameters.f90" and \verb"ic.f90" --- although, for some more exotic
-  runs you may need to edit other files.  As the names suggest, the former sets
-  all the parameters for a particular run, and the latter sets the initial
-  condition.  Set the parameters and initial condition as you wish.  All the
+  There are three files you will need to edit to set up a run.  These are
+  \verb"parameters.in", \verb"run.in", and \verb"ic.in".  The first two files
+  set the run-time parameters, and the third sets the initial condition.
+
+  A recompilation of the code is necessary only when changing the parameters in
+  \verb"parameters.in", or the initial condition in \verb"ic.in".
+  
+  Set the parameters and initial condition as you wish.  All the
   parameters are explained in chapter SOMETHING OR OTHER.
 
   Choose a directory where any runs will take place.  This should not be on a
