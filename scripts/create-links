@@ -1,0 +1,142 @@
+#!/bin/sh
+# $Id$
+#----------------------------------------------------------------------------
+
+usage()
+{
+cat <<EOF
+
+create-links
+---------
+
+DESCRIPTION:
+
+  This short script creates symlinks for files named prefixn.suffix to files
+named prefixm.suffix which may or may not be in the current directory.  n is
+any index which differentiates the files.  m is another index with a fixed
+number of digits incremented by 1 for each file.
+
+USAGE:
+
+        create-links [OPTIONS]
+          Use with no options to create the links with the default options
+
+OPTIONS:
+
+        --symlinks=
+                    links directory [links]
+        --procdir=
+                    process directory prefix [proc]
+        --prefix=
+                    filename prefix [dens]
+        --suffix=
+                    filename suffix [dat]
+        --num_zeros=
+                    number of zeros in the filename [7]
+        --start=
+                    which index to start the links at [0]
+        --help
+                    display this help
+
+EOF
+}
+
+while [ $# -gt 0 ]
+do
+  case $1 in
+    --symlinks=*)
+      symlinks=`echo $1 | sed s/--"symlinks="//`
+    ;;
+    --procdir=*)
+      procdir=`echo $1 | sed s/--"procdir="//`
+    ;;
+    --prefix=*)
+      prefix=`echo $1 | sed s/--"prefix="//`
+    ;;
+    --suffix=*)
+      suffix=`echo $1 | sed s/--"suffix="//`
+    ;;
+    --num_zeros=*)
+      num_zeros=`echo $1 | sed s/--"num_zeros="//`
+    ;;
+    --start=*)
+      start=`echo $1 | sed s/--"start="//`
+    ;;
+    -h)
+      usage; exit 1
+    ;;
+    -?)
+      usage; exit 1
+    ;;
+    --help)
+      usage; exit 1
+    ;;
+    *)
+      echo UNRECOGNISED PARAMETER
+      usage; exit 1
+    ;;
+  esac
+  shift
+done
+
+[ "$symlinks" ] || symlinks='links'
+[ "$procdir" ] || procdir='proc'
+[ "$prefix" ] || prefix='dens'
+[ "$suffix" ] || suffix='dat'
+[ "$num_zeros" ] || num_zeros=7
+[ "$start" ] || start=0
+
+# Assume the last character of the prefix is a separator before the index.
+sep=${prefix:${#prefix}-1:1}
+# Create a new directory for the symlinks if it doesn't already exist.
+if [ ! -d $symlinks ]; then
+  mkdir $symlinks
+fi
+# Create process directories below symlink directory
+for i in `ls -d $procdir*`
+do
+  mkdir $symlinks/$i &> /dev/null
+done
+# Get the current working directory
+cwd=`pwd`
+# Initialise an empty string
+string=""
+# Create a string of zeros of length specified as an argument.
+for i in `seq 0 $(( $num_zeros-1 ))`
+do
+  string="0"$string
+done
+# Initialise some indices
+i=$start
+zeros=1
+# Loop over all process directories
+for dir in `ls -d $procdir*`
+do
+  i=$start
+  # Loop over all files
+  for num in `ls $dir/$prefix*.$suffix | cut -d $sep -f 2 | cut -d . -f 1`
+  do
+    k=$(( $i/10 ))
+    zeros=1
+  # Determine how many zeros should be removed from the string.
+    while [ $k -gt 0 ]; do
+      zeros=$(( $zeros+1 ))
+      k=$(( $k/10 ))
+    done
+  # Construct the new index with the required number of zeros removed.
+    new_str=${string:$zeros:${#string}}$i
+    i=$(( i+1 ))
+    linkfile=$symlinks/$dir/$prefix$new_str.$suffix
+  # Skip this link if it already exists.
+    if [ -h $linkfile ]; then
+      echo $linkfile exists.  Skipping...
+      continue
+    fi
+  # Create the symlink.
+    ln -s `pwd`/$dir/$prefix$num.$suffix $linkfile
+    if [ $? -ne 0 ]; then
+      exit 2
+    fi
+  done
+done
+echo DONE!

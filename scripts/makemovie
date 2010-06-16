@@ -1,0 +1,178 @@
+#!/bin/bash
+# $Id$
+#----------------------------------------------------------------------------
+
+usage()
+{
+cat <<EOF
+makemovie
+---------
+
+DESCRIPTION:
+
+Create an AVI movie from either a single existing file such as GIF or MPG, or
+from a set of images.
+
+USAGE:
+
+        makemovie [OPTIONS]
+
+OPTIONS:
+
+        -f <filename>|--filename=<filename>
+                    If the input is a single GIF or MPG animation set the
+                    filename.
+
+        -h|--help
+                    Show usage information.
+
+        -i <inputformat>|--in-fmt=<inputformat>
+                    If a series of images is to be converted, this is the
+                    format of the input images.
+
+        -p <prefix>|--prefix=<prefix>
+                    If a series of images is to be converted, this is the
+                    prefix before the number of the image, e.g., if the files
+                    are named mymovie00001.png etc., then the prefix is
+                    'mymovie'.
+
+EOF
+}
+
+# Check to see whether mencoder exists
+mencoder_exists=`which mencoder &> /dev/null`
+
+if [ $? != 0 ]; then
+  echo "ERROR: The 'mencoder' command cannot be found.
+You will need this program to create the AVI animation."
+  exit 1
+fi
+
+# Check to see whether convert exists
+convert_exists=`which convert &> /dev/null`
+
+if [ $? != 0 ]; then
+  echo "ERROR: The 'convert' command cannot be found.
+You will need this program to create the AVI animation."
+  exit 1
+fi
+
+# Get command line options
+options=`getopt -o p:i:f:h -l prefix:,in-fmt:,filename:,help \
+         -n makemovie -- "$@"`
+
+# If no options, show the help
+if [ $# == 0 ]; then
+  usage
+  exit 1
+fi
+
+eval set -- "$options"
+
+# Set parameters depending on options
+while true
+do
+  case "$1" in
+    -p|--prefix) prefix=$2; shift 2;;
+    -i|--in-fmt) in_fmt=$2; shift 2;;
+    -f|--filename) filename=$2; shift 2;;
+    -h|--help) usage; exit 1;;
+    --) shift ; break ;;
+    *) echo "Invalid flag" ; exit 1 ;;
+  esac
+done
+
+# Guard against setting a filename prefix, but not specifying an input file
+# format
+if [ ! -z $prefix ]; then
+  if [ -z $in_fmt ]; then
+    echo ERROR: Filename prefix is set, but input file format is not
+    exit 1
+  fi
+fi
+
+# Guard against setting an input file format, but not specifying a filename
+# prefix
+if [ ! -z $in_fmt ]; then
+  if [ -z $prefix ]; then
+    echo ERROR: Input file format is set, but filename prefix is not
+    exit 1
+  fi
+fi
+
+# Create a unique temporary directory
+tmpdir=`mktemp -d tmp.XXXXXXXX`
+
+# Set the intermediate filename prefix and file format
+tmpname=tmp_convert
+out_fmt=sgi
+
+# Quality setting and frame rate.
+quality=90
+fps=30
+
+# If filename is set...
+if [ ! -z $filename ]; then
+  # ...convert the single file into a set of SGI images
+  convert $filename $tmpdir/"$tmpname%08d.sgi"
+else
+  #...otherwise convert a sequence of images to SGI format
+  for i in `ls $prefix*.$in_fmt | xargs -0 | sed s/$prefix// | sed s/\.$in_fmt//`
+  do
+    infile=$prefix$i.$in_fmt
+    echo $infile
+    outfile=$tmpdir/$tmpname$i.$out_fmt
+    if [ -e $outfile ]; then
+      echo $outfile exists.  Skipping...
+      continue
+    fi
+    convert $infile $outfile
+    if [ $? -ne 0 ]; then
+      echo ERROR: Conversion error.
+      exit 2
+    fi
+  done
+fi
+
+# Get the image dimensions
+for i in $tmpdir/*.$out_fmt
+do
+  img=$i
+  break
+done
+
+size=`identify $img | awk '{print $3}'`
+width=${size/x*/}
+height=${size/*x/}
+height=${height/+*/}
+
+# Compute the optimal bitrate
+#       br = 50 * 25 * width * height / 256
+#
+# the 50 factor can vary between 40 and 60
+#obr=`expr $width \* $height \* $quality \* $fps / 256`
+obr=20971520
+#obr=4096
+
+# set the MPEG4 codec options
+#       you have to experiment!
+#opt="vbitrate=$obr:mbd=2:keyint=132:v4mv:vqmin=3:lumi_mask=0.07:dark_mask=0.2:scplx_mask=0.1:tcplx_mask=0.1:naq:trell"
+#opt="vbitrate=$obr:keyint=132:v4mv:vqmin=3:lumi_mask=0.07:dark_mask=0.2:scplx_mask=0.1:tcplx_mask=0.1:naq:trell"
+#codec="mpeg4"
+
+# Set the Microsoft MPEG4 V2 codec options
+#opt="vbitrate=$obr:mbd=2:keyint=132:vqblur=1.0:cmp=2:subcmp=2:dia=2:mv0:last_pred=3"
+opt="vbitrate=$obr:keyint=132:vqblur=1.0:cmp=2:subcmp=2:dia=2:last_pred=3"
+codec="msmpeg4v2"
+
+# Clean temporary files that can interfere with the compression phase
+rm -f divx2pass.log frameno.avi
+
+# Call mencoder to make the AVI animation
+#mencoder -ovc lavc -lavcopts vcodec=$codec:vpass=1:$opt -mf type=$out_fmt:w=$width:h=$height:fps=$fps mf://\*.$out_fmt -nosound -o /dev/null
+#mencoder -ovc lavc -lavcopts vcodec=$codec:vpass=2:$opt -mf type=$out_fmt:w=$width:h=$height:fps=$fps mf://\*.$out_fmt -nosound -o output.avi
+mencoder -ovc lavc -lavcopts vcodec=$codec:$opt -mf type=$out_fmt:w=$width:h=$height:fps=$fps mf://$tmpdir/\*.$out_fmt -nosound -o output.avi
+
+# Cleanup
+rm -f divx2pass.log
+rm -rf $tmpdir
