@@ -92,7 +92,7 @@ pro get_filenames, digits, i, ifile, idir, iprefix, isuffix, ofile, odir, $
   ofile = odir + oprefix + strcompress(index, /remove_all)
 end
 
-pro anim, nstart, nend, cntr=cntr, c_anim=c_anim, phase=phase, $
+pro gpe, nstart, nend, cntr=cntr, c_anim=c_anim, phase=phase, $
   skip=skip, slice=slice, dir=dir, xpos=xpos, ypos=ypos, zpos=zpos, vx=vx, $
   vy=vy, vz=vz, eps=eps, dbl=dbl, xsize=xsize, ysize=ysize, _extra=_extra
 
