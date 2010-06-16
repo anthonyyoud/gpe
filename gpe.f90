@@ -58,34 +58,7 @@ program gpe
 
   ! Check which time stepping scheme we're using
   if (.not. pp_filtered_surface) then
-    if (myrank == 0) then
-      select case (scheme)
-        case ('euler')
-          print*, 'Explicit Euler time stepping'
-        case ('rk2')
-          print*, 'Explicit second order Runge-Kutta time stepping'
-        case ('rk4')
-          print*, 'Explicit fourth order Runge-Kutta time stepping'
-        case ('rk45')
-          print*, 'Explicit fifth order &
-                  &Runge-Kutta-Fehlberg adaptive time stepping'
-        case default
-          call emergency_stop('ERROR: Unrecognised time stepping scheme.')
-      end select
-    end if
-
-    if (myrank == 0) then
-      select case (eqn_to_solve)
-        case (1)
-          print*, 'Solving CASE 1'
-        case (2)
-          print*, 'Solving CASE 2'
-        case (3)
-          print*, 'Solving CASE 3'
-        case (4)
-          print*, 'Solving CASE 4'
-      end select
-    end if
+    call print_runtime_info()
   end if
   
   ! Set the time step

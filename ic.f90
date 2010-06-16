@@ -150,10 +150,12 @@ module ic
     if (real_time) then
       if (real(dt_prev, pr) == 0.0_pr) then
         dt_prev = cmplx(-aimag(dt_prev), real(dt_prev, pr), pr)
+        im_t = 0.0_pr
       end if
     else
       if (aimag(dt_prev) == 0.0_pr) then
         dt_prev = cmplx(aimag(dt_prev), -real(dt_prev, pr), pr)
+        t = 0.0_pr
       end if
     end if
 

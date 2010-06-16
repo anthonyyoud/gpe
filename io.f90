@@ -11,7 +11,7 @@ module io
     save_velocity_pdf, save_vel_corr, save_surface, idl_surface, end_state, &
     get_zeros, get_re_im_zeros, get_extra_zeros, save_linelength, &
     save_momentum, save_norm, get_dirs, diag, condensed_particles, &
-    average, pp_save_filter, save_run, read_run_params
+    average, pp_save_filter, save_run, read_run_params, print_runtime_info
   
   contains
 
@@ -1582,5 +1582,48 @@ module io
 
     return
   end subroutine save_run
+
+! ***************************************************************************  
+
+  subroutine print_runtime_info()
+    use error, only : emergency_stop
+    use parameters
+    implicit none
+
+    if (myrank == 0) then
+      select case (scheme)
+        case ('euler')
+          print*, 'Explicit Euler time stepping'
+        case ('rk2')
+          print*, 'Explicit second order Runge-Kutta time stepping'
+        case ('rk4')
+          print*, 'Explicit fourth order Runge-Kutta time stepping'
+        case ('rk45')
+          print*, 'Explicit fifth order &
+                  &Runge-Kutta-Fehlberg adaptive time stepping'
+        case default
+          call emergency_stop('ERROR: Unrecognised time stepping scheme.')
+      end select
+    end if
+
+    if (myrank == 0) then
+      select case (eqn_to_solve)
+        case (1)
+          print*, 'Homogeneous condensate, natural units non-dim.'
+          print*, '-2i*dpsi/dt + 2iU*dpsi/dx = del^2(psi) + (1-|psi|^2)psi'
+        case (2)
+          print*, 'Homogeneous condensate, no mu.'
+          print*, 'i*dpsi/dt = -del^2(psi) + |psi|^2*psi'
+        case (3)
+          print*, 'Solving CASE 3'
+        case (4)
+          print*, 'Trapped condensate, harmonic oscillator units non-dim.'
+          print*, 'i*dpsi/dt = -0.5_pr*del^2(psi) + Vtrap*psi + g(|psi|^2)psi -&
+            &mu*psi'
+      end select
+    end if
+  
+    return
+  end subroutine print_runtime_info
   
 end module io
