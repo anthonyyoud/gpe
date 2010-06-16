@@ -1,0 +1,10 @@
+! $Id: ic.in 617 2010-06-15 15:26:22Z najy2 $
+! vim: set filetype=fortran:
+!----------------------------------------------------------------------------
+! This file includes the definition of the initial condition.  It is included
+! verbatim in ic.f90 in subroutine ics().  The initial condition must be in the
+! form init_cond = some_function.  Any changes to this file will require a
+! recompilation of the code.
+!----------------------------------------------------------------------------
+! Vortex ring
+  init_cond = vortex_ring(vr1)

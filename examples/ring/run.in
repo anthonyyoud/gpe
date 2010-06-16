@@ -1,0 +1,60 @@
+! $Id: run.in 617 2010-06-15 15:26:22Z najy2 $
+! vim: set filetype=fortran:
+!----------------------------------------------------------------------------
+! Run-time parameters.  Any changes to this file do not require a recompile of
+! the code.
+!----------------------------------------------------------------------------
+&run_params
+  tau           = 0.0001
+  end_time      = 50.0
+  xr            = 64.0
+  yr            = 64.0
+  zr            = 64.0
+  scheme        = 'rk45'
+  eqn_to_solve  = 1
+  bcs           = 2
+  order         = 4
+  restart       = .false.
+  saved_restart = .false.
+  renorm        = .false.
+  imprint_vl    = .false.
+  stop_imag     = .false.
+  real_time     = .true.
+/
+&eqn_params
+  Urhs     = 0.0
+  diss_amp = 0.0
+  scal     = 1.0
+  nv       = 0.75
+  enerv    = 0.75
+  g        = 5.0
+  mu       = 8.0
+  nn       = 1.0
+  omx      = 1.0
+  omy      = 1.0
+  omz      = 2.0
+/
+&io_params
+  save_rate     = 10
+  save_rate2    = 1.0
+  save_rate3    = 10.0
+  p_save        = 10.0
+  save_contour  = .false.
+  save_3d       = .true.
+  save_filter   = .false.
+  filter_kc     = 10.0
+  save_average  = .false.
+  save_spectrum = .false.
+  save_pdf      = .false.
+  save_vcf      = .false.
+  save_ll       = .true.
+  save_zeros    = .false.
+/
+&misc_params
+  nbins               = 256
+  diagnostic          = .false.
+  pp_filtered_surface = .false.
+  nlines              = 3
+  nfilter             = 1
+  fscale              = 1.0
+/
