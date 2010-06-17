@@ -50,7 +50,7 @@
   end type ring_param
 
   type (ring_param), parameter :: &
-    vr1 = ring_param(0.0_pr, 0.0_pr, 0.0_pr, 25.0_pr, &
+    vr1 = ring_param(0.0_pr, 0.0_pr, 0.0_pr, 10.0_pr, &
       0.0_pr, 5, 0.0_pr, 10, -1.0_pr)
   !
   ! *************************************************************************
