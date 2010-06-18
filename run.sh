@@ -85,6 +85,14 @@ DIGITS=2
 EXE=gpe
 LOGFILE=log.txt
 
+NYPROCS=`grep nyprocs parameters.in | cut -d= -f 2`
+NZPROCS=`grep nzprocs parameters.in | cut -d= -f 2`
+
+if [ ! $((NYPROCS*NZPROCS)) -eq $NPROCS ]; then
+  echo "ERROR: Number of processes ($NPROCS) does not match nyprocs*nzprocs in parameters.in."
+  exit 1
+fi
+
 echo Going to run on $NPROCS processes
 
 if [ $POST -eq 1 ]; then

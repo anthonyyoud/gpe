@@ -174,7 +174,7 @@ module io
 
     ! Write the data to file
     if (myrank == 0) then
-      open (10, status='unknown', position='append', file='u_time.dat')
+      open (10, status='unknown', position='append', file='psi_time.dat')
       write (10, '(6e17.9)') time, im_t, real(var(1), pr), &
         aimag(var(1)), real(var(2), pr), real(var(3), pr)
       close (10)

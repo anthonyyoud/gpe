@@ -72,6 +72,38 @@
     \item gnuplot and/or IDL for visualisation; VAPOR optional.
   \end{itemize}
 
+  \subsection{\label{subsec:idl_setup}IDL}
+  If you intend to use IDL to produce 2D contour and 3D isosurface plots, then
+  you will need to make sure that some environment variables are set in your
+  startup files, \eg \verb".cshrc" if you are using C Shell, or \verb".profile"
+  if you are using Bash.  These variables are:
+  %
+  \begin{itemize}
+    \item \verb"IDL_DIR" --- specifies the IDL install directory;
+    \item \verb"IDL_PATH" --- specifies the directories in which IDL will look
+      to find IDL procedures and functions;
+    \item \verb"IDL_STARTUP" --- specifies where to find the IDL startup file
+      \verb".idlrc".
+  \end{itemize}
+  %
+  Two example files in the \gpefile{idl} subdirectory of the main code
+  directory, named \gpefile{idl.csh} and \gpefile{idl.sh} (for C Shell
+  and Bash respectively), provide example commands to set these environment
+  variables.  They will likely need to be edited to suit your system, then
+  added to your startup file.
+
+  An example \verb".idlrc" file is also provided (named \gpefile{dot.idlrc}),
+  which fixes some quirks with X displays, and sets 24-bit true colour output
+  by default.  If you wish to use this, then make sure that the
+  \verb"IDL_STARTUP" environment variables points to this file.
+
+  \subsubsection{IDL command line}
+  You might find that IDL's command line is broken, \ie no command-line
+  completion, no command-line history, inability to use the \texttt{End} or
+  \texttt{Home} keys, etc.  To remedy this, install the \texttt{rlwrap}
+  package, and set up an alias \texttt{alias -a -c idl} for the \texttt{idl}
+  command.  This will provide \texttt{readline} functionality for IDL.
+
   \section{Organisation of this manual}
   The rest of this manual is organised as follows:
   %
