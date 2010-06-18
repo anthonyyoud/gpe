@@ -46,7 +46,7 @@
   To propagate in imaginary time set \verb"real_time" equal to \verb".true.";
   otherwise set \verb"real_time" equal to \verb".false.".
 
-  \section{Non-dimensionalised GPE}
+  \section{\label{sec:nondimgpe}Non-dimensionalised GPE}
   The code solves a non-dimensionalised form of equation~\eqref{eqn:gpe}.
   There are two possibilities for this non-dimensionalisation, depending on
   whether the external trapping potential is present.  Here, we show the two
@@ -74,7 +74,8 @@
     \abs{\psi}^{2}\right)\psi.
   \end{equation*}
   %
-  See appendix~\ref{cha:nondim} for a full derivation.
+  See appendix~\ref{cha:nondim} for a full derivation.  To solve this form of
+  the GPE set \gpevar{eqn\_to\_solve} to \gpevar{1} in \gpefile{run.in}.
 
   \subsection{Harmonic oscillator units}
   When the external trapping potential is present, harmonic oscillator units
@@ -103,6 +104,20 @@
     g\abs{\psi}^{2}\psi - \mu\psi.
   \end{equation*}
   %
+  See appendix~\ref{cha:nondim} for a full derivation.  To solve this form of
+  the GPE set \gpevar{eqn\_to\_solve} to \gpevar{4} in \gpefile{run.in}.
+
+  \subsection{Alternative form}
+  An alternative dimensionless form of the GPE can also be solved, specifically
+  for the random phase approximation, as in \citet{BS02}.  This is
+  %
+  \begin{equation*}
+    -2\eye\frac{\pa \psi}{\pa t} = \nabla^{2}\psi + \abs{\psi}^{2}\psi,
+  \end{equation*}
+  %
+  and it can be selected by setting \gpevar{eqn\_to\_solve} to \gpevar{2} in
+  \gpefile{run.in}.
+
   \section{Dimensionless forms of other quantities}
   It is useful to know the dimensionless forms of other relevant variables and
   quantities.  These are described in this section.  Full derivations of each

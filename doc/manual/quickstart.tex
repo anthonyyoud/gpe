@@ -1,8 +1,7 @@
 % $Id$
 %------------------------------------------------------------------------------
 
-\begin{chapter}{\label{cha:quickstart} Quick start guide}
-  \section{Introduction}
+\begin{chapter}{\label{cha:quickstart}Quick start guide}
   This chapter is intended as a quick start guide to help you compile, run and
   view the results of the GPE code.  More detailed information about various
   technical aspects of the code can be found in chapter SOMETHING OR OTHER;
@@ -20,63 +19,30 @@
   will need to edit in order to set up a run.
 
   \subsection{parameters.in}
-  Edit this file to set the floating-point precision, the number of processes,
-  and the grid dimensions of the run.  If your initial condition consists of a
-  vortex line or vortex ring, then you can also set the line/ring parameters
-  here.  Note that any changes to this file will require a recompilation of the
-  code.
-
   For this example, simply change \gpevar{nyprocs} and \gpevar{nzprocs}, so
   that \gpevar{nyprocs*nzprocs} is equal to (or less than) the number of
   processors on your machine.  If memory is an issue, then you may want to
-  reduce any or all of \gpevar{nx}, \gpevar{ny}, or \gpevar{nz}.  (See also
-  \gpevar{xr}, \gpevar{yr}, and \gpevar{zr} in section~\ref{subsec:runin}.)
+  reduce any or all of \gpevar{nx}, \gpevar{ny}, or \gpevar{nz} (and possibly
+  \gpevar{xr}, \gpevar{yr}, and \gpevar{zr} below).  See
+  section~\ref{subsec:parameters.in} for a full description of this file.  
 
   \subsection{ic.in}
-  This file defines the initial condition.  The initial condition must be
-  defined in the form \gpevar{init\_cond = function()}, where
-  \gpevar{function()} is some function in the code which defines a possible
-  component of an initial condition.  Components can be multiplied together to
-  form any number of different initial conditions.  See \gpefile{run.in} in the
-  main code directory to see some examples.
-
-  In the \gpeexample{ring} example, the initial condition is already correctly
-  set to \gpevar{vortex\_ring(vr1)}, where \gpevar{vr1} is a type parameter
-  declared in \gpefile{parameters.in}, which defines various aspects of the
-  ring, such as radius and position, among other properties.
-
-  As with \gpefile{parameters.in}, any changes to this file will require the
-  code to be recompiled.
+  This file defines the initial condition.  For this example, no changes are
+  necessary.  See section~\ref{subsec:ic.in} for a full description of this
+  file.
 
   \subsection{\label{subsec:runin}run.in}
   This file defines the main parameters for the run, as a set of Fortran
-  \verb"namelist"s.  Each namelist loosely collects together related
-  parameters.  The namelists are:
-  %
-  \begin{itemize}
-    \item \gpevar{run\_params} --- these are parameters to do with the run
-      itself, such as time step, time stepping scheme, when the run should end,
-      which equation to solve, etc.;
-    \item \gpevar{eqn\_params} --- these parameters set properties of the
-      equation, such as whether it should be solved in a moving reference
-      frame, trap parameters, random phase parameters, etc.;
-    \item \gpevar{io\_params} --- these parameters control input/output, for
-      example, what data should be saved and how often;
-    \item \gpevar{misc\_params} --- miscellaneous parameters which do not fit
-      in the other categories.
-  \end{itemize}
-  %
-  A full list of parameters is provided in chapter SOMETHING OR OTHER.
-
+  \verb"namelist"s.
+  
   For the \gpeexample{ring} example, the parameters are correctly set.  You
   might want to alter \gpevar{end\_time} if the run takes too long.  If you
   altered any of \gpevar{nx}, \gpevar{ny}, or \gpevar{nz} in
   \gpefile{parameters.in}, then you might also want to alter \gpevar{xr},
   \gpevar{yr}, or \gpevar{zr} as appropriate.  These parameters set the
   right-hand end of the physical extent of the computational box (the left-hand
-  end is set to the same value with opposite sign).
-
-  Any changes to this file will \emph{not} require a recompile of the code.
+  end is set to the same value with opposite sign).  See
+  section~\ref{subsec:run.in} for a full description of this file.
 
   \section{Compiling the code}
   Choose a directory where your run will take place (we shall assume the
@@ -91,10 +57,13 @@
     ./setup run_dir
   \end{Verbatim}
   %
-  This will compile the code, create the directory \verb"run_dir", and copy
-  \gpefile{parameters.in}, \gpefile{ic.in}, \gpefile{run.in}, and
-  \gpefile{run.sh} to the run directory.  In addition, the executable
-  \gpefile{gpe} is moved to the run directory.
+  This will compile the code\footnote{The default Makefile assumes the sunf95
+  compiler is available and in the path, and that 64-bit code should be
+  generated.  If this is not what you want, then you will need to edit the
+  Makefile.  See section~\ref{sec:makefile} for more information.}, create the
+  directory \verb"run_dir", and copy \gpefile{parameters.in}, \gpefile{ic.in},
+  \gpefile{run.in}, and \gpefile{run.sh} to the run directory.  In addition,
+  the executable \gpefile{gpe} is moved to the run directory.
 
   This run uses double-precision floating-point arithmetic.  For other runs, if
   you require only single precision, then remember to set \gpevar{pr}
@@ -121,6 +90,9 @@
   terminal, and logging out of the machine on which the job is running will not
   terminate the job.
 
+  The \gpefile{run.sh} script has several options for controlling how the run
+  should be started.  Run it with no arguments to see usage instructions.
+
   \section{During the run}
   As a first sanity check that the job is running, look for a file called
   \gpefile{ERROR} in the run directory.  If this does not exist, then that is a
@@ -140,9 +112,8 @@
   same number of times as the number of processes on which you chose to run the
   job.
 
-  Finally, if numbers are appearing in some of the \gpefile{*.dat} files, for
-  example, \gpefile{linelength.dat} or \gpefile{timestep.dat}, then you can at
-  least be sure that the job is running.
+  Finally, if numbers are appearing in the \gpefile{*.dat} files, then you can
+  at least be sure that the job is running.
 
   \section{Important run-time files}
   \subsection{The RUNNING file}
@@ -188,7 +159,7 @@
   A full description of the output files is given in chapter SOMETHING OR
   OTHER.
 
-  \section{Viewing results}
+  \section{\label{sec:viewing_results}Viewing results}
   During and after a run it is possible to plot various 1D graphs, 2D contour
   plots and 3D isosurfaces.  For the 1D time-series graphs, gnuplot is a good
   program to use (although nearly any plotting program capable of understanding
@@ -371,7 +342,7 @@
   \emph{If you miss off the /png switch, all the output will again go to the
   screen.  This should be avoided if possible.}
 
-  \section{Restarting the code}
+  \section{\label{sec:restart}Restarting the code}
   After a run, you might decide that you would like to restart the code from
   where you left off, for example, maybe you started your run in imaginary
   time, and now want to switch to real time, or maybe you did not run for quite
