@@ -29,6 +29,9 @@
   double-precision arithmetic can be specified without relying on compiler
   switches.
 
+  Some publications that have used the code include \citet{AYB08},
+  \citet{WBPYW10}.
+
   \section{\label{sec:prelim}Preliminaries and required software}
   Since the code is parallelised using MPI, an MPI parallel environment must be
   available (currently, this is also true even when running on one processor).
@@ -107,6 +110,16 @@
   The rest of this manual is organised as follows:
   %
   \begin{itemize}
-    \item Chapter~\ref{cha:equations} ---
+    \item Chapter~\ref{cha:quickstart} is a getting started guide.  The chapter
+      will guide you through the basics of setting up, compiling, and running
+      the code, as well as visualising some of the results.
+    \item Chapter~\ref{cha:equations} describes the governing equations, and
+      the non-dimensionalisation used.
+    \item Chapter~\ref{cha:numerics} describes some of the numerical
+      formulation, including time stepping schemes, spatial discretisation, and
+      boundary conditions.
+    \item Chapter~\ref{cha:file_reference} describes the files which make up
+      the code, including source files, input and output files, and the IDL
+      programs used for visualisation.
   \end{itemize}
 \end{chapter}
