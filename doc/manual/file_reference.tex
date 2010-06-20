@@ -3,30 +3,40 @@
 
 \begin{chapter}{\label{cha:file_reference}File reference}
   This chapter is intended as a reference for the main files associated with
-  the code, such as the source files, and input and output files.
+  the code, such as the source files, input and output files, and the IDL
+  \gpefile{gpe.pro} program.
 
   \section{Program source files}
   Table~\ref{tab:source_files} lists the \gpefile{.f90} source code files which
-  make up the code, and describes their function.
+  make up the code, and describes their functionality.
   %
   \begin{table}[ht]
     \centering
     \begin{tabular}{lp{0.67\textwidth}}
+      \hline
       File & Description \\
       \hline
-      constants.f90 & This is a module which defines the constants needed for
-      FFTw. \\
-      derivs.f90 & Routines to do with derivatives. \\
-      error.f90 & Error-handling routines. \\
-      gpe.f90 & This is the main program file. \\
-      ic.f90 & Routines to do with setting up the initial condition and general
-      initialisation. \\
-      parameters.f90 & Compile-time parameters and global variables. \\
-      solve.f90 & Routines to do with actually solving the equation, for
-      example, the time stepping algorithms are defined in this file. \\
-      variables.f90 & User-defined types, and other general routines to do with
-      the equation variables. \\
-      \hline
+      \gpevar{constants.f90} & This is a module which defines the constants
+      needed for FFTw. \\
+      %
+      \gpefile{derivs.f90} & Routines to do with derivatives. \\
+      %
+      \gpefile{error.f90} & Error-handling routines. \\
+      %
+      \gpefile{gpe.f90} & Main program file. \\
+      %
+      \gpefile{ic.f90} & Routines to do with setting up the initial condition
+      and general initialisation. \\
+      %
+      \gpefile{parameters.f90} & Compile-time parameters and global variables.
+      \\
+      %
+      \gpefile{solve.f90} & Routines to do with actually solving the equation,
+      for example, the time stepping algorithms are defined in this file. \\
+      %
+      \gpefile{variables.f90} & User-defined types, and other general routines
+      to do with the equation variables. \\
+      \hline\hline
     \end{tabular}
     \caption{\label{tab:source_files}Program source files which make up the GPE
       code.}
@@ -38,8 +48,8 @@
 
   \subsection{\label{subsec:parameters.in}parameters.in}
   Edit this file to set the floating-point precision, the number of processes,
-  and the grid dimensions of the run.  If your initial condition consists of a
-  vortex line or vortex ring, then you can also set the line/ring parameters
+  and the grid dimensions of the run.  If the initial condition consists of a
+  vortex line or vortex ring, then the line/ring parameters can also be set
   here.  Note that any changes to this file will require a recompilation of the
   code.  See tables~\ref{tab:parameters.in}, \ref{tab:line_params}, and
   \ref{tab:ring_params} for a description of the parameters.
@@ -47,18 +57,29 @@
   \begin{table}[ht]
     \centering
     \begin{tabular}{llp{0.67\textwidth}}
+      \hline
       Parameter & Type & Description \\
       \hline
-      pr & integer & The precision of real variables is parametrised.  Choose
-      the desired line for either real or double precision. \\
-      nyprocs & integer & The number of processes in the $y$-direction. \\
-      nzprocs & integer & The number of processes in the $z$-direction. \\
-      nx & integer & The number of grid points in the $x$-direction. \\
-      ny & integer & The number of grid points in the $y$-direction. \\
-      nz & integer & The number of grid points in the $z$-direction. \\
-      \hline
+      \gpevar{pr} & integer & The precision of real variables is parametrised.
+      Choose the desired line for either real or double precision. \\
+      %
+      \gpevar{nyprocs} & integer & The number of processes in the
+      $y$-direction. \\
+      %
+      \gpevar{nzprocs} & integer & The number of processes in the
+      $z$-direction. \\
+      %
+      \gpevar{nx} & integer & The number of grid points in the $x$-direction.
+      \\
+      %
+      \gpevar{ny} & integer & The number of grid points in the $y$-direction.
+      \\
+      %
+      \gpevar{nz} & integer & The number of grid points in the $z$-direction.
+      \\
+      \hline\hline
     \end{tabular}
-    \caption{\label{tab:parameters.in}Compile time parameters to set.}
+    \caption{\label{tab:parameters.in}Compile-time parameters to set.}
   \end{table}
    
   There are no restrictions on the \gpevar{nyprocs} and \gpevar{nzprocs}
@@ -71,43 +92,62 @@
   \begin{table}[ht]
     \centering
     \begin{tabular}{llp{0.6\textwidth}}
+      \hline
       Parameter & Type & Description \\
       \hline
-      x0 & real & $x$-position of the line. \\
-      y0 & real & $y$-position of the line. \\
-      z0 & real & $z$-position of the line. \\
-      amp1 & real & Amplitude of a sinusoidal disturbance in one direction
-      along the line. \\
-      amp2 & real & Amplitude of a sinusoidal disturbance in the other
+      \gpevar{x0} & real & $x$-position of the line. \\
+      %
+      \gpevar{y0} & real & $y$-position of the line. \\
+      %
+      \gpevar{z0} & real & $z$-position of the line. \\
+      %
+      \gpevar{amp1} & real & Amplitude of a sinusoidal disturbance in one
       direction along the line. \\
-      ll & real & The wavelength of the above disturbances. \\
-      sgn & real & The sign of the argument of the line (\ie circulation
-      direction). \\
-      dir & character & The direction ($x$, $y$, or $z$) in which the line
-      should extend. \\
-      imprint\_phase & logical & Whether only the phase should be imprinted,
-      \ie no vortex core should be modelled. \\
-      \hline
+      %
+      \gpevar{amp2} & real & Amplitude of a sinusoidal disturbance in the other
+      direction along the line. \\
+      %
+      \gpevar{ll} & real & The wavelength of the above disturbances. \\
+      %
+      \gpevar{sgn} & real & The sign of the argument of the line (\ie
+      circulation direction). \\
+      %
+      \gpevar{dir} & character & The direction ($x$, $y$, or $z$) in which the
+      line should extend. \\
+      %
+      \gpevar{imprint\_phase} & logical & Whether only the phase should be
+      imprinted, \ie no vortex core should be modelled. \\
+      \hline\hline
     \end{tabular}
-    \caption{\label{tab:line_params}Compile time parameters for a vortex line.}
+    \caption{\label{tab:line_params}Compile-time parameters for a vortex line.}
   \end{table}
   %
   \begin{table}[ht]
     \centering
     \begin{tabular}{llp{0.67\textwidth}}
+      \hline
       Parameter & Type & Description \\
       \hline
-      x0 & real & $x$-position of the line. \\
-      y0 & real & $y$-position of the line. \\
-      z0 & real & $z$-position of the line. \\
-      amp & real & Amplitude of a planar disturbance along the ring. \\
-      mm & integer & Wavenumber of a planar disturbance. \\
-      r1 & real & Amplitude of a helical disturbance. \\
-      kk & integer & Wavenumber of a helical disturbance. \\
-      dir & real & Ring propagation direction ($\pm 1$). \\
-      \hline
+      \gpevar{x0} & real & $x$-position of the ring. \\
+      %
+      \gpevar{y0} & real & $y$-position of the ring. \\
+      %
+      \gpevar{z0} & real & $z$-position of the ring. \\
+      %
+      \gpevar{amp} & real & Amplitude of a planar disturbance around the ring.
+      \\
+      %
+      \gpevar{mm} & integer & Wavenumber of a planar disturbance. \\
+      %
+      \gpevar{r1} & real & Amplitude of a helical disturbance around the ring.
+      \\
+      %
+      \gpevar{kk} & integer & Wavenumber of a helical disturbance. \\
+      %
+      \gpevar{dir} & real & Ring propagation direction ($\pm 1$). \\
+      \hline\hline
     \end{tabular}
-    \caption{\label{tab:ring_params}Compile time parameters for a vortex ring.}
+    \caption{\label{tab:ring_params}Compile-time parameters for a vortex ring.}
   \end{table}
 
   New vortex lines and rings can be defined simply by copying an existing
@@ -137,8 +177,8 @@
   defined in the form \gpevar{init\_cond = function()}, where
   \gpevar{function()} is some function in the code which defines a possible
   component of an initial condition.  Components can be multiplied together to
-  form any number of different initial conditions.  See \gpefile{run.in} in the
-  main code directory to see some examples.
+  form any number of different initial conditions.  Look at \gpefile{ic.in} in
+  the main code directory to see some examples.
 
   In the \gpeexample{ring} example, the initial condition is set to
   \gpevar{vortex\_ring(vr1)}, where \gpevar{vr1} is a type parameter declared
@@ -179,124 +219,128 @@
   %
   \begin{center}
     \begin{longtable}[ht]{llp{0.6\textwidth}}
+      \hline
       Parameter & Type & Description \\
       \hline
-      tau & real & The initial timestep to try.  Valid for both imaginary and
-      real time. \\
+      \gpevar{tau} & real & The initial timestep to try.  Valid for both
+      imaginary and real time. \\
       %
-      end\_time & real & The final (dimensionless) time. \\
+      \gpevar{end\_time} & real & The final (dimensionless) time. \\
       %
-      xr & real & The $x$-coordinate of the right-hand-side of the
+      \gpevar{xr} & real & The $x$-coordinate of the right-hand-side of the
       computational box (the left-hand-side is set to -xr). \\
       %
-      yr & real & As above but for the $y$-coordinate. \\
+      \gpevar{yr} & real & As above but for the $y$-coordinate. \\
       %
-      zr & real & As above but for the $z$-coordinate. \\
+      \gpevar{zr} & real & As above but for the $z$-coordinate. \\
       %
-      scheme & character & The time stepping scheme to use.  This must be set
-      to one of \verb"euler" (for explicit second-order Euler time stepping),
-      \verb"rk2" (for explicit second-order Runge-Kutta time stepping),
-      \verb"rk4" (for explicit fourth-order Runge-Kutta time stepping), or
-      \verb"rk45" (for explicit adaptive fourth-order Runge-Kutta-Fehlberg time
-      stepping). \\
+      \gpevar{scheme} & character & The time stepping scheme to use.  This must
+      be set to one of \verb"euler" (for explicit second-order Euler time
+      stepping), \verb"rk2" (for explicit second-order Runge-Kutta time
+      stepping), \verb"rk4" (for explicit fourth-order Runge-Kutta time
+      stepping), or \verb"rk45" (for explicit adaptive fourth-order
+      Runge-Kutta-Fehlberg time stepping). \\
       %
-      eqn\_to\_solve & integer & The form of the GPE to solve.  See
+      \gpevar{eqn\_to\_solve} & integer & The form of the GPE to solve.  See
       section~\ref{sec:nondimgpe} for the possible values to use. \\
       %
-      bcs & integer & The boundary conditions to use.  Set to 1 for periodic
-      BCs; set to 2 for reflective BCs. \\
+      \gpevar{bcs} & integer & The boundary conditions to use.  Set to \verb"1"
+      for periodic BCs; set to \verb"2" for reflective BCs. \\
       %
-      order & integer & The order of the derivatives to use.  Set to 2 for
-      second-order; set to 4 for fourth-order. \\
+      \gpevar{order} & integer & The order of the derivatives to use.  Set to
+      \verb"2" for second-order; set to \verb"4" for fourth-order. \\
       %
-      restart & logical & Set to \verb".true." to do a restart of a previous
-      run.  See section~\ref{sec:restart}. \\
+      \gpevar{restart} & logical & Set to \verb".true." to do a restart of a
+      previous run.  See \S\ref{sec:restart}. \\
       % 
-      saved\_restart & logical & Set to \verb".true." if using filtered data
-      from a previous run to multiply with the initial condition of a new run.
-      \\
+      \gpevar{saved\_restart} & logical & Set to \verb".true." if using
+      filtered data from a previous run to multiply with the initial condition
+      of a new run.  \\
       %
-      renorm & logical & Set to \verb".true." if the wavefunction should be
-      renormalised at every time step in imaginary time. \\
+      \gpevar{renorm} & logical & Set to \verb".true." if the wavefunction
+      should be renormalised at every time step in imaginary time. \\
       % 
-      imprint\_vl & logical & Set to \verb".true." if the wavefunction should
-      be multiplied by a vortex line at each time step in imaginary time. \\
+      \gpevar{imprint\_vl} & logical & Set to \verb".true." if the wavefunction
+      should be multiplied by a vortex line at each time step in imaginary
+      time. \\
       %
-      stop\_imag & logical & Set to \verb".true." if the run should stop at the
-      end of imaginary time, \ie when the relative norms of successive time
-      steps are deemed to be sufficiently small (currently $10^{-12}$). \\
+      \gpevar{stop\_imag} & logical & Set to \verb".true." if the run should
+      stop at the end of imaginary time, \ie when the relative norms of
+      successive time steps are deemed to be sufficiently close (currently
+      $10^{-12}$). \\
       %
-      real\_time & logical & Set to \verb".true." if the run should be started
-      in real time. \\
+      \gpevar{real\_time} & logical & Set to \verb".true." if the run should be
+      started in real time. \\
       %
-      Urhs & real & Set non-zero to solve the equation in a moving reference
-      frame. \\
+      \gpevar{Urhs} & real & Set non-zero to solve the equation in a moving
+      reference frame. \\
       %
-      diss\_amp & real & Set non-zero to include dissipation of this amplitude
-      at the boundaries. \\
+      \gpevar{diss\_amp} & real & Set non-zero to include dissipation of this
+      amplitude at the boundaries. \\
       %
-      scal & real & Set non-zero to scale vortex rings/lines. \\
+      \gpevar{scal} & real & Set non-zero to scale vortex rings/lines. \\
       %
-      nv & real & For random phase approximation, the total mass per unit
-      volume. \\
+      \gpevar{nv} & real & For random phase approximation, the total mass per
+      unit volume. \\
       % 
-      enerv & real & For random phase approximation, the total kinetic energy
-      per unit volume. \\
+      \gpevar{enerv} & real & For random phase approximation, the total kinetic
+      energy per unit volume. \\
       % 
-      g & real & Interaction parameter for trapped condensate. \\
+      \gpevar{g} & real & Interaction parameter for trapped condensate. \\
       %
-      mu & real & Chemical potential for trapped condensate. \\
+      \gpevar{mu} & real & Chemical potential for trapped condensate. \\
       %
-      nn & real & Number of atoms in a trapped condensate.  Should currently be
-      left to \verb"1.0", and instead tune \gpevar{mu} and \gpevar{g} to
-      specify \gpevar{nn}. \\
+      \gpevar{nn} & real & Number of atoms in a trapped condensate.  Should
+      currently be left to \verb"1.0", and instead tune \gpevar{mu} and
+      \gpevar{g} to specify \gpevar{nn}. \\
       %
-      omx & real & Frequency of trap in $x$-direction. \\
+      \gpevar{omx} & real & Frequency of trap in $x$-direction. \\
       %
-      omy & real & Frequency of trap in $y$-direction. \\
+      \gpevar{omy} & real & Frequency of trap in $y$-direction. \\
       %
-      omz & real & Frequency of trap in $z$-direction. \\
+      \gpevar{omz} & real & Frequency of trap in $z$-direction. \\
       %
-      save\_rate & integer & The rate at which time-series data should be saved
-      (roughly corresponding to the number of time steps). \\
+      \gpevar{save\_rate} & integer & The rate at which time-series data should
+      be saved (roughly corresponding to the number of time steps). \\
       % 
-      save\_rate2 & real & How often (in terms of actual time units) isosurface
-      data should be saved (3D isosurfaces, 2D surfaces). \\
+      \gpevar{save\_rate2} & real & How often (in terms of actual time units)
+      isosurface data should be saved (3D isosurfaces, 2D surfaces). \\
       %
-      save\_rate3 & real & How often (in terms of actual time units) data to do
-      with condensed particles and PDFs should be saved. \\
+      \gpevar{save\_rate3} & real & How often (in terms of actual time units)
+      data to do with condensed particles and PDFs should be saved. \\
       % 
-      p\_save & real & - How often (in terms of actual time units) the code
-      should save its own state, so that it can be restarted in the event of a
-      machine failure, etc. \\
+      \gpevar{p\_save} & real & How often (in terms of actual time units) the
+      code should save its own state, so that it can be restarted in the event
+      of a machine failure, for example. \\
       % 
-      save\_contour & logical & Should 2D contour data be saved? \\
+      \gpevar{save\_contour} & logical & Should 2D contour data be saved? \\
       %
-      save\_3d & logical & Should 3D isosurface data be saved? \\
+      \gpevar{save\_3d} & logical & Should 3D isosurface data be saved? \\
       %
-      save\_filter & logical & Should 3D filtered isosurfaces of the density be
-      saved? \\
-      %
-      filter\_kc & real & The cutoff wavenumber used to filter the isosurfaces.
-      \\
-      %
-      save\_average & logical & Should 3D time-averaged isosurfaces of the
+      \gpevar{save\_filter} & logical & Should 3D filtered isosurfaces of the
       density be saved? \\
       %
-      save\_spectrum & logical & Should various spectra be saved (mainly for
-      random phase approximation). \\
+      \gpevar{filter\_kc} & real & The cutoff wavenumber used to filter the
+      isosurfaces.  \\
       %
-      save\_pdf & logical & Should PDFs of the velocity components be saved? \\
+      \gpevar{save\_average} & logical & Should 3D time-averaged isosurfaces of
+      the density be saved? \\
       %
-      save\_vcf & logical & Should the velocity correlation function be saved?
-      \\
+      \gpevar{save\_spectrum} & logical & Should various spectra be saved
+      (mainly for random phase approximation)? \\
       %
-      save\_ll & logical & Should the vortex line length be saved? \\
+      \gpevar{save\_pdf} & logical & Should PDFs of the velocity components be
+      saved? \\
       %
-      save\_zeros & logical & Should the points of zero density be saved?
-      (Not reliable!) \\
-      \hline
-      \caption{\label{tab:run.in}Compile time parameters to set.}
+      \gpevar{save\_vcf} & logical & Should the velocity correlation function
+      be saved?  \\
+      %
+      \gpevar{save\_ll} & logical & Should the vortex line length be saved? \\
+      %
+      \gpevar{save\_zeros} & logical & Should the points of zero density be
+      saved?  (Not reliable!) \\
+      \hline\hline
+      \caption{\label{tab:run.in}Run-time parameters to set.}
     \end{longtable}
   \end{center}
 
@@ -308,120 +352,199 @@
   \begin{table}[ht]
     \centering
     \begin{tabular}{lp{0.67\textwidth}}
+      \hline
       Variable & Description \\
       \hline
-      OBJECT & The name of the executable produced on compilation. \\
+      \gpevar{OBJECT} & The name of the executable produced on compilation. \\
       %
-      OBJS & The object files that should be linked. \\
+      \gpevar{OBJS} & The object files that should be linked. \\
       %
-      FC & The Fortran compiler to be used.  This could be the MPI wrapper
-      compiler \verb"mpif90", but the underlying Fortran compiler must be able
-      to compile the code (\eg sunf95, ifort, gfortran). \\
+      \gpevar{FC} & The Fortran compiler to be used.  This could be the MPI
+      wrapper compiler \verb"mpif90", but the underlying Fortran compiler must
+      be able to compile the code (\eg sunf95, ifort, gfortran). \\
       %
-      FFLAGS & Compiler flags.  See the compiler's manual.  Sunf95 works well
-      with \verb"-fast".  If nonsense results are produced \verb"-fsimple=0"
-      might be required. \\
+      \gpevar{FFLAGS} & Compiler flags.  See the compiler's manual.  Sunf95
+      works well with \verb"-fast".  If nonsense results are produced
+      \verb"-fsimple=0" might be required. \\
       %
-      LDFFTW & FFTw libraries to link.  Compiling with \verb"make precision=single"
-      will link the single precision libraries. \\
+      \gpevar{LDFFTW} & FFTw libraries to link.  Compiling with \verb"make precision=single" will link the single precision libraries. \\
       %
-      LDFLAGS & Any extra flags required by the linker.  If \verb"mpif90" is
-      not the compiler, then all the MPI libraries will need to be linked. \\
+      \gpevar{LDFLAGS} & Any extra flags required by the linker.  If
+      \verb"mpif90" is not the compiler, then all the MPI libraries will need
+      to be linked. \\
       %
-      INCLUDE & Include path (\eg for MPI header files). \\
-      \hline
+      \gpevar{INCLUDE} & Include path (\eg for MPI header files). \\
+      \hline\hline
     \end{tabular}
     \caption{\label{tab:makefile}Description of Makefile variables.}
   \end{table}
 
-  \section{Program output files}
+  \section{\label{sec:output}Program output files}
   The output that the program produces depends on the parameters set in the
   \gpevar{io\_params} namelist.  Table~\ref{tab:output} briefly describes these
   files.
   %
-  \begin{table}[!ht]
+  \begin{table}[ht]
     \centering
     \begin{tabular}{lp{0.67\textwidth}}
+      \hline
       File & Description \\
       \hline
-      energy.dat & Saves the energy at each time. \\
+      \gpefile{energy.dat} & Saves the energy at each time. \\
       %
-      linelength.dat & Saves the total line length of vortices in the
+      \gpefile{linelength.dat} & Saves the total line length of vortices in the
       condensate. \\
       %
-      mass.dat & Saves the mass at each time. \\
+      \gpefile{mass.dat} & Saves the mass at each time. \\
       %
-      minmax\_*.dat & Saves the minimum and maximum of the density, filtered
-      density and time-averaged density over the duration of the run. \\
+      \gpefile{minmax\_*.dat} & Saves the minimum and maximum of the density,
+      filtered density and time-averaged density over the duration of the run.
+      \\
       %
-      norm.dat & Saves the norm at each time. \\
+      \gpefile{norm.dat} & Saves the norm at each time. \\
       %
-      misc.dat & Any miscellaneous data can be sent to this file. \\
+      \gpefile{misc.dat} & Any miscellaneous data can be sent to this file. \\
       %
-      momentum.dat & Saves the three components of the momentum. \\
+      \gpefile{momentum.dat} & Saves the three components of the momentum. \\
       %
-      p\_saved.dat & The values of the time index \gpevar{p} when the code
-      saved its own state. \\
+      \gpefile{p\_saved.dat} & The values of the time index \gpevar{p} when the
+      code saved its own state. \\
       %
-      save.dat & The parameters for the most recently saved state. \\
+      \gpefile{save.dat} & The parameters for the most recently saved state. \\
       %
-      timestep.dat & The imaginary and real time step at each time if adaptive
-      timestepping is chosen. \\
+      \gpefile{timestep.dat} & The imaginary and real time step at each time,
+      if adaptive time stepping is chosen. \\
       %
-      psi\_time.dat & Saves the real and imaginary time, the real and imaginary
-      parts of the wavefunction, the density, and the phase. \\
+      \gpefile{psi\_time.dat} & Saves the real and imaginary time, the real and
+      imaginary parts of the wavefunction, the density, and the phase. \\
       %
-      proc** & Numbered directories corresponding to each process involved in
-      the run.  Each of these directories contains the binary files listed
-      below. \\
+      \gpefile{proc**} & Numbered directories corresponding to each process
+      involved in the run.  Each of these directories contains the binary files
+      listed below. \\
       %
-      end\_state.dat & The saved state of the run. \\
+      \gpefile{end\_state.dat} & The saved state of the run. \\
       %
-      im\_zeros*******.dat & The coordinates where the imaginary part of the
-      wavefunction goes to zero. \\
+      \gpefile{im\_zeros*******.dat} & The coordinates where the imaginary part
+      of the wavefunction goes to zero. \\
       %
-      re\_zeros*******.dat & The coordinates where the real part of the
-      wavefunction goes to zero. \\
+      \gpefile{re\_zeros*******.dat} & The coordinates where the real part of
+      the wavefunction goes to zero. \\
       %
-      dens*******.dat & If 3D isosurfaces are requested, the data for them are
-      saved in these files. \\
+      \gpefile{dens*******.dat} & If 3D isosurfaces are requested, the data for
+      them are saved in these files. \\
       %
-      filtered*******.dat & As above but for filtered data. \\
+      \gpefile{filtered*******.dat} & As above, but for filtered data. \\
       %
-      ave*******.dat & As above but for time-averaged data. \\
+      \gpefile{ave*******.dat} & As above, but for time-averaged data. \\
       %
-      spectrum*******.dat & The spectrum ($n_{\vec{k}}$ vs. $\vec{k}$). \\
+      \gpefile{spectrum*******.dat} & The spectrum ($n_{\vec{k}}$ vs.
+      $\vec{k}$). \\
       %
-      zeros*******.dat & The coordinates where the real and imaginary parts of
-      the wavefunction simultaneously go to zero. \\
-      \hline
+      \gpefile{zeros*******.dat} & The coordinates where the real and imaginary
+      parts of the wavefunction simultaneously go to zero. \\
+      \hline\hline
     \end{tabular}
     \caption{\label{tab:output}Output files from the GPE code.}
+  \end{table}
+
+  \subsection{\label{subsec:binary}Binary layout}
+  If you do not have access to IDL, but still want to be able to view contour
+  and isosurface plots, then you will need to know how this data is arranged in
+  the numbered \gpefile{dens*******.dat} files, within each \gpefile{proc}
+  directory.  Table~\ref{tab:binary} describes the data which are saved to
+  these files, and how much space (in terms of bytes) is needed to store the
+  data.
+  %
+  \begin{table}[ht]
+    \centering
+    \begin{tabular}{llccp{0.40\textwidth}}
+      \hline
+      Variable & Type & \multicolumn{2}{c}{Size (bytes)} & Description \\
+      & & Single & Double & \\
+      \hline
+      \gpevar{t+im\_t} & real & 4 & 8 & The total time elapsed. \\
+      \gpevar{nx} & integer & 4 & 4 & Number of grid points in the
+      $x$-direction. \\
+      \gpevar{ny} & integer & 4 & 4 & Number of grid points in the
+      $y$-direction. \\
+      \gpevar{nz} & integer & 4 & 4 & Number of grid points in the
+      $z$-direction. \\
+      \gpevar{nyprocs} & integer & 4 & 4 & Number of processes in the
+      $y$-direction. \\
+      \gpevar{nzprocs} & integer & 4 & 4 & Number of processes in the
+      $z$-direction. \\
+      \gpevar{js} & integer & 4 & 4 & Starting index of data in $y$-direction,
+      local to each process. \\
+      \gpevar{je} & integer & 4 & 4 & Ending index of data in $y$-direction,
+      local to each process. \\
+      \gpevar{ks} & integer & 4 & 4 & Starting index of data in $z$-direction,
+      local to each process. \\
+      \gpevar{ke} & integer & 4 & 4 & Ending index of data in $z$-direction,
+      local to each process. \\
+      \gpevar{psi} & complex & \small{8\gpevar{nx*nyl*nzl}} &
+      \small{16\gpevar{nx*nyl*nzl}} & Complex wavefunction $\psi$, local to
+      each process. \\
+      \gpevar{x} & real & 4\gpevar{nx} & 8\gpevar{nx} & The grid array in the
+      $x$-direction. \\
+      \gpevar{y} & real & 4\gpevar{ny} & 8\gpevar{ny} & The grid array in the
+      $y$-direction. \\
+      \gpevar{z} & real & 4\gpevar{nz} & 8\gpevar{nz} & The grid array in the
+      $z$-direction. \\
+      \hline\hline
+    \end{tabular}
+    \caption{\label{tab:binary}Data saved to the \gpefile{dens*******.dat}
+      files, with sizes in bytes for both single and double precision (assuming
+      x86 or x86-64 architecture).  The number of grid points local to each
+      process in the $y$- and $z$-directions are given by \gpevar{nyl=je-js}
+      and \gpevar{nzl=ke-ks}.}
   \end{table}
 
   \section{run.sh}
   This script can be used to start a run on a shared memory machine, such as
   those with the latest multi-core processors, or older multi-processor
-  machines.  Instructions for usage are provided with the script itself; run
-  with no arguments to see the help.
+  machines.  Usage instructions are provided with the script itself; run with
+  no arguments to see the help.
 
-  \section{The IDL gpe.pro program}
+  \section{\label{sec:gpe.pro}The IDL gpe.pro program}
   If you have access to IDL, then all of the contour and isosurface
-  visualisation is done through the \gpefile{gpe.pro} program.  This section
-  will briefly describe its use.  Detailed examples of some aspects of the
-  program are given in section~\ref{sec:viewing_results}.
+  visualisation can be done through the \gpefile{gpe.pro} program.  This
+  section will briefly describe its use.  Detailed examples of some aspects of
+  the program are given in \S\ref{sec:viewing_results}.
 
   \subsection{Floating point precision}
   It is important to note the precision of the run for which you want to view
   results.  If you have performed a double-precision run, then all \gpevar{gpe}
   commands must include the \verb"/dbl" keyword.
 
+  \subsection{Fortran unformatted I/O}
+  The GPE code used to write binary data using Fortran 77 unformatted,
+  record-based I/O.  With the advent of Fortran 2003 stream I/O, this is no
+  longer necessary, and record markers are not part of the data.  It might
+  still be necessary to view the old data, however, in which case the
+  \verb"/f77" keyword should be used in all \gpevar{gpe} commands.
+
   \subsection{Isosurface plots}
-  The program will produce an isosurface plot of the density if no keywords are
-  provided, \eg
+  The program will produce an isosurface plot of the density $\abs{\psi}^{2}$
+  if no keywords or options are provided, \eg
   %
   \begin{Verbatim}
     gpe, 0, 0
+  \end{Verbatim}
+  %
+  To change the default surface colour, set the \verb"index" option, \eg
+  %
+  \begin{Verbatim}
+    gpe, 0, 0, index=100
+  \end{Verbatim}
+  %
+  The \verb"index" option must be in the range 0 to 255, and corresponds to the
+  index into the currently loaded IDL colour table.
+  %
+  The isosurface level can also be controlled, by using the \verb"level"
+  option, \eg
+  %
+  \begin{Verbatim}
+    gpe, 0, 0, level=0.4
   \end{Verbatim}
 
   \subsection{Contour plots}

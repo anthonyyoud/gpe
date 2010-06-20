@@ -116,7 +116,7 @@ module ic
 
     out_var2 = 1.0_pr
     
-    open (unit_no, file=end_state_file, form='unformatted')
+    open (unit_no, file=end_state_file, access='stream')
 
     ! Read in the distributed data from the previous run
     read (unit_no) nx_prev
@@ -131,7 +131,7 @@ module ic
     
     if (saved_restart) then
       open (unit_no, file=proc_dir//'end_state_filtered.dat', &
-        form='unformatted')
+        access='stream')
 
       ! Read in the filtered distributed data from the previous run
       read (unit_no) undef_int

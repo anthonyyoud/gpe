@@ -458,7 +458,7 @@ module io
     ! particular process
     do k=ks,ke
       if (k==zpos) then
-        open (unit_no, status='unknown', file=proc_dir//'u'//itos(p)//'.dat')
+        open (unit_no, status='unknown', file=proc_dir//'psi'//itos(p)//'.dat')
         do i=0,nx1
           write (unit_no, '(6e17.9)') (x(i), y(j), density(i,j,zpos), &
             phase(i,j,zpos), real(in_var(i,j,zpos), pr), &
@@ -495,7 +495,7 @@ module io
     !call get_minmax(phase, 'phase')
 
     open (unit_no, status='unknown', file=proc_dir//'dens'//itos(p)//'.dat', &
-      form='unformatted')
+      access='stream')
     
     write (unit_no) t+im_t
     write (unit_no) nx, ny, nz
@@ -585,7 +585,7 @@ module io
       select case (flag)
         case (0)
           open (unit_no, status='unknown', &
-            file=proc_dir//'filtered'//itos(p)//'.dat', form='unformatted')
+            file=proc_dir//'filtered'//itos(p)//'.dat', access='stream')
           write (unit_no) t
           write (unit_no) nx, ny, nz
           write (unit_no) nyprocs, nzprocs
@@ -596,7 +596,7 @@ module io
           write (unit_no) z
         case (1)
           open (unit_no, status='unknown', &
-            file=proc_dir//'end_state_filtered.dat', form='unformatted')
+            file=proc_dir//'end_state_filtered.dat', access='stream')
           write (unit_no) nx
           write (unit_no) ny
           write (unit_no) nz
@@ -758,7 +758,7 @@ module io
         ! Save current max/min to file
         if (myrank == 0) then
           !print*, 'dens', minvar(1), maxvar(1)
-          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          open (16, file='minmax_'//var//'.dat', access='stream')
           write (16) minvar(1)
           write (16) maxvar(1)
           close (16)
@@ -776,7 +776,7 @@ module io
         ! Save current max/min to file
         if (myrank == 0) then
           !print*, 'ave', minvar(2), maxvar(2)
-          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          open (16, file='minmax_'//var//'.dat', access='stream')
           write (16) minvar(2)
           write (16) maxvar(2)
           close (16)
@@ -794,7 +794,7 @@ module io
         ! Save current max/min to file
         if (myrank == 0) then
           !print*, 'filtered', minvar(3), maxvar(3)
-          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          open (16, file='minmax_'//var//'.dat', access='stream')
           write (16) minvar(3)
           write (16) maxvar(3)
           close (16)
@@ -812,7 +812,7 @@ module io
         ! Save current max/min to file
         if (myrank == 0) then
           !print*, 'dens', minvar(1), maxvar(1)
-          open (16, file='minmax_'//var//'.dat', form='unformatted')
+          open (16, file='minmax_'//var//'.dat', access='stream')
           write (16) minvar(4)
           write (16) maxvar(4)
           close (16)
@@ -838,7 +838,7 @@ module io
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
     integer :: j, k
 
-    open (unit_no, file=proc_dir//'end_state.dat', form='unformatted')
+    open (unit_no, file=proc_dir//'end_state.dat', access='stream')
 
     write (unit_no) nx
     write (unit_no) ny
@@ -1477,7 +1477,7 @@ module io
     ave = ave + abs(in_var)**2
     
     open (unit_no, status='unknown', file=proc_dir//'ave'//itos(p)//'.dat', &
-      form='unformatted')
+      access='stream')
 
     write (unit_no) t
     write (unit_no) nx, ny, nz
@@ -1523,7 +1523,7 @@ module io
         call MPI_BCAST(p, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 
         open (unit_no, file=proc_dir//'dens'//itos(p)//'.dat', &
-          form='unformatted')
+          access='stream')
 
         read (unit_no) t
         read (unit_no) dummy_int, dummy_int, dummy_int

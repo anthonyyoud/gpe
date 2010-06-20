@@ -9,7 +9,7 @@
   centred finite differences.
 
   \section{Time stepping}
-  As briefly mentioned in the Introduction, a choice of time stepping schemes
+  As briefly mentioned in the introduction, a choice of time stepping schemes
   is possible.  Each of these is explained in this section.
 
   \subsection{Euler's method}
@@ -31,8 +31,8 @@
 
   This scheme is only first order accurate in $\dt$, and is not recommended for
   use, other than for very rough testing.  It can be selected in the code by
-  setting the parameter \verb"scheme" equal to \verb"euler".  See chapter
-  SOMETHING OR OTHER for a full description of the parameters which can be set.
+  setting the parameter \gpevar{scheme} equal to \verb"euler" in
+  \gpefile{run.in}.
 
   \subsection{Second-order Runge--Kutta method}
   The second-order Runge--Kutta method (also known as the midpoint method) is
@@ -51,10 +51,10 @@
     \end{aligned}
   \end{equation*}
   %
-  This scheme can be selected by setting \verb"scheme" equal to \verb"rk2".
+  This scheme can be selected by setting \gpevar{scheme} equal to \verb"rk2".
 
   \subsection{Fourth-order Runge--Kutta method}
-  The fourth-order Runge--Kutta method is second order accurate in time and
+  The fourth-order Runge--Kutta method is fourth order accurate in time and
   takes the form
   %
   \begin{equation*}
@@ -74,11 +74,11 @@
     \end{aligned}
   \end{equation*}
   %
-  This scheme can be selected by setting \verb"scheme" equal to \verb"rk4".
+  This scheme can be selected by setting \gpevar{scheme} equal to \verb"rk4".
 
   \subsection{Runge--Kutta--Fehlberg method}
   The Runge--Kutta--Fehlberg method is a hybrid fourth/fifth order adaptive
-  time stepping scheme.  In the code the fifth-order formula is
+  time stepping scheme.  In the code, the fifth-order formula is
   %
   \begin{equation*}
     \begin{aligned}
@@ -140,7 +140,7 @@
   Full details of the algorithm can be found in Numerical Recipes \citep[\S
   16.2, p.708,][]{NR92}.
 
-  This scheme can be selected by setting \verb"scheme" equal to \verb"rk45".
+  This scheme can be selected by setting \gpevar{scheme} equal to \verb"rk45".
 
   \section{Spatial discretisation}
   Centred finite differences are used to spatially discretise the GPE; these
@@ -164,8 +164,8 @@
   \right)$.
 
   \subsection{Second-order finite differences}
-  The second-order finite-difference approximation to the first derivative with
-  respect to $x$ is given by
+  The second-order finite-difference approximation to the first derivative,
+  with respect to $x$, is given by
   %
   \begin{equation*}
     \frac{\pa \psi}{\pa x} \approx \frac{\psi_{i+1} - \psi_{i-1}}{2\dx},
@@ -180,16 +180,16 @@
     \psi_{i-1}}{\dx^{2}}.
   \end{equation*}
   %
-  Second-order finite differences can be chosen by setting \verb"order" equal
-  to \verb"2".
+  Second-order finite differences can be chosen by setting \gpevar{order} equal
+  to \verb"2" in \gpefile{run.in}.
 
   \subsection{Fourth-order finite differences}
-  The fourth-order finite-difference approximation to the first derivative with
-  respect to $x$ is given by
+  The fourth-order finite-difference approximation to the first derivative,
+  with respect to $x$, is given by
   %
   \begin{equation*}
     \frac{\pa \psi}{\pa x} \approx \frac{-\psi_{i+2} +8\psi_{i+1} - 8\psi_{i-1}
-    + \psi_{i-2}}{12\dx},
+    + \psi_{i-2}}{12\dx}.
   \end{equation*}
   %
   Similarly, the fourth-order approximation to the second derivative is
@@ -199,7 +199,7 @@
     30\psi_{i} + 16\psi_{i-1} - \psi_{i-2}}{12\dx^{2}}.
   \end{equation*}
   %
-  Fourth-order finite differences can be chosen by setting \verb"order" equal
+  Fourth-order finite differences can be chosen by setting \gpevar{order} equal
   to \verb"4".
 
   \section{Boundary conditions}
@@ -225,7 +225,8 @@
   These conditions are also applied in the $y$- and $z$-directions, and can be
   naturally extended for higher order approximations.
 
-  To use periodic boundary conditions set \verb"bcs" equal to \verb"1".
+  To use periodic boundary conditions set \gpevar{bcs} equal to \verb"1" in
+  \gpefile{run.in}.
 
   \subsection{Reflective boundary conditions}
   The physical meaning of reflective boundary conditions is that structures
@@ -243,5 +244,5 @@
     \end{aligned}
   \end{equation*}
   %
-  To use reflective boundary conditions set \verb"bcs" equal to \verb"2".
+  To use reflective boundary conditions set \gpevar{bcs} equal to \verb"2".
 \end{chapter}

@@ -97,7 +97,8 @@ end
 
 pro gpe, nstart, nend, cntr=cntr, c_anim=c_anim, phase=phase, $
   skip=skip, slice=slice, dir=dir, xpos=xpos, ypos=ypos, zpos=zpos, vx=vx, $
-  vy=vy, vz=vz, eps=eps, dbl=dbl, xsize=xsize, ysize=ysize, _extra=_extra
+  vy=vy, vz=vz, eps=eps, dbl=dbl, xsize=xsize, ysize=ysize, f77=f77, $
+  _extra=_extra
 
 ;no. digits (including leading 0's) in filename
 digits = 7
@@ -134,7 +135,7 @@ isuffix = 'dat'
 default, xsize, 640
 default, ysize, 480
 
-; Rotation matrix.
+; Transformation matrix.
 tmat=[[      0.73090459,     -0.79570162,    -0.034048109,       0.0000000], $
       [      0.36181851,      0.29057828,      0.97630603,       0.0000000], $
       [     -0.70949820,     -0.67152441,      0.46280538,       0.0000000], $
@@ -184,7 +185,8 @@ if nstart ne nend then begin
       print, j
       get_filenames, digits, j, ifile, idir, iprefix, isuffix, ofile, odir, $
         oprefix
-      data=read_data(file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl)
+      data=read_data(file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
+        f77=f77)
       get_pos, data, x0, y0, z0, xpos=xpos, ypos=ypos, zpos=zpos
       plotdata = contourdata(data, x0, y0, z0, phase=phase, $
         vx=vx, vy=vy, vz=vz, dir=dir)
@@ -211,7 +213,8 @@ for i = nstart, nend, skip do begin
     oprefix
   print,'******Datafile ',ifile,'******'
 
-  data = read_data(file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl)
+  data = read_data(file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
+    f77=f77)
   
   if not keyword_set(cntr) and not keyword_set(slice) then begin
     ; 3D isosurface.

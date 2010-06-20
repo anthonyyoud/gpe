@@ -111,7 +111,7 @@ do
       echo Use -c to clean current directory and begin a fresh run.
       exit 1
     else
-      rm -rf $PROCDIR *.dat *.txt idf pdf spectrum vcf RUNNING ERROR links
+      rm -rf proc* *.dat *.txt idf pdf spectrum vcf RUNNING ERROR links
     fi
   fi
   mkdir $PROCDIR

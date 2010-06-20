@@ -5,7 +5,7 @@
   non-dimensionalisation}
 
   The single-particle complex wavefunction $\psi(\vec{r}, t)$ for $N$ bosons of
-  mass $m$, obeys the 3 dimensional, time dependent Gross--Pitaevskii (GP)
+  mass $m$, obeys the 3 dimensional, time dependent, Gross--Pitaevskii (GP)
   equation \citep{Gross61,Pitaevskii61}
   %
   \begin{equation}
@@ -14,10 +14,10 @@
     \label{eqn:gpe}
   \end{equation}
   %
-  where $\hbar = h/(2\pi)$ is the reduced Planck constant , $\Vtrap$ is an
-  external potential, $g$ is the strength of the interactions between the
-  bosons, and $\mu$ is the chemical potential.  The wavefunction is normalised
-  by the condition that
+  where $\hbar = h/(2\pi)$ is the reduced Planck constant, $\Vtrap$ is an
+  external trapping potential, $g$ is the strength of the interactions between
+  the bosons, and $\mu$ is the chemical potential.  The wavefunction is
+  normalised by the condition that
   %
   \begin{equation*}
     \int_{V}{\abs{\psi}^{2}}\total V = N.
@@ -58,8 +58,8 @@
   %
   \begin{equation*}
     \begin{aligned}
-      t       &\to \frac{\hbar}{2\mu}t \\
-      \vec{r} &\to a\vec{r} \\
+      t       &\to \frac{\hbar}{2\mu}t, \\
+      \vec{r} &\to a\vec{r}, \\
       \psi    &\to \psi_{\infty} \psi,
     \end{aligned}
   \end{equation*}
@@ -83,11 +83,11 @@
   %
   \begin{equation*}
     \begin{aligned}
-      t       &\to \frac{t}{\ombar} \\
-      \vec{r} &\to \aoh\vec{r} \\
-      \psi    &\to \aoh^{-\frac{3}{2}} \psi \\
-      g       &\to \aoh^{3}\hbar\ombar g \\
-      \mu     &\to \hbar\ombar\mu \\
+      t       &\to \frac{t}{\ombar}, \\
+      \vec{r} &\to \aoh\vec{r}, \\
+      \psi    &\to \aoh^{-\frac{3}{2}} \psi, \\
+      g       &\to \aoh^{3}\hbar\ombar g, \\
+      \mu     &\to \hbar\ombar\mu, \\
       \Vtrap  &\to \hbar\ombar\Vtrap,
     \end{aligned}
   \end{equation*}
@@ -105,7 +105,7 @@
   \end{equation*}
   %
   See appendix~\ref{cha:nondim} for a full derivation.  To solve this form of
-  the GPE set \gpevar{eqn\_to\_solve} to \gpevar{4} in \gpefile{run.in}.
+  the GPE, set \gpevar{eqn\_to\_solve} to \gpevar{4} in \gpefile{run.in}.
 
   \subsection{Alternative form}
   An alternative dimensionless form of the GPE can also be solved, specifically
@@ -121,13 +121,13 @@
   \section{Dimensionless forms of other quantities}
   It is useful to know the dimensionless forms of other relevant variables and
   quantities.  These are described in this section.  Full derivations of each
-  of the non-dimensionalisations is given in appendix~\ref{cha:nondim}.
+  of the non-dimensionalisations are given in appendix~\ref{cha:nondim}.
 
   \subsection{Thomas--Fermi approximation}
   The dimensional Thomas--Fermi approximation is given by
   %
   \begin{equation*}
-    \psi = \sqrt{\frac{\mu-\Vtrap}{g}}
+    \psi = \sqrt{\frac{\mu-\Vtrap}{g}}.
   \end{equation*}
   %
   Since this approximation is only relevant for trapped condensates, we use
@@ -136,8 +136,8 @@
   its dimensionless counterpart.
 
   \subsubsection{Condensate extent}
-  The extent $R_{i}$, $i = x$, $y$, $z$, of the condensate in the Thomas--Fermi
-  limit is given by
+  The extent of the condensate $R_{i}$, $i = x$, $y$, $z$, in the Thomas--Fermi
+  limit, is given by
   %
   \begin{equation*}
     R_{i}^{2} = \frac{2\mu}{m\omega_{i}^{2}}, \quad i = x, y, z.
@@ -149,8 +149,8 @@
   \end{equation*}
 
   \subsubsection{Number of atoms}
-  The number of atoms within the condensate, under the Thomas--Fermi
-  approximation is given by
+  The number of atoms within the condensate $N$, under the Thomas--Fermi
+  approximation, is given by
   %
   \begin{equation*}
     N = \frac{8\pi}{15} \left( \frac{2\mu}{m\ombar^2} \right)^{\frac{3}{2}}
@@ -182,14 +182,14 @@
   %
   Using natural units with the scaling $\kappa \to (2\mu a^{2}/\hbar)\kappa$,
   or harmonic oscillator units with the scaling $\kappa \to
-  \aoh^{2}\ombar\kappa$, leads to a dimensionless circulation of
+  \aoh^{2}\ombar\kappa$, in both cases leads to a dimensionless circulation of
   $\kappa = 2\pi n$.
 
   \section{Initial conditions}
   The code implements three basic initial conditions, any combination of which
   can theoretically be multiplied together.  This section outlines the
   mathematical description of the initial conditions; for a description of the
-  numerical implementation see section SOMETHING OR OTHER.
+  numerical implementation see \S\ref{subsec:ic.in}.
 
   \subsection{Vortex line}
   A vortex line is given by
@@ -199,7 +199,7 @@
   \end{equation*}
   %
   in polar coordinates $(r, \theta)$, where $f(r)$ is some function which
-  models the vortex core, and $\theta$ is the phase.  In the code we use the
+  models the vortex core, and $\theta$ is the phase.  In the code, we use the
   vortex core model proposed by \citet{BR01}, so that
   %
   \begin{equation*}
@@ -223,10 +223,11 @@
 
   Cyclically permuting $x$, $y$, and $z$ results in a vortex line along another
   direction, and the initial position and circulation of the line can also be
-  defined.
+  defined.  See \S\ref{subsec:parameters.in} for a description of the
+  parameters which control the vortex line initial condition.
 
   \subsection{Vortex ring}
-  A vortex ring in the $yz$-plane travelling in the $x$-direction takes the
+  A vortex ring in the $(y,z)$-plane, travelling in the $x$-direction takes the
   form \citep{Berloff04}
   %
   \begin{equation*}
@@ -250,14 +251,15 @@
   $R_{0}$ is the radius of the ring.
 
   The vortex ring initial condition also supports planar and helical
-  disturbances in a manner similar to that of the vortex line.  With the setup
+  disturbances, in a manner similar to that of the vortex line.  With the setup
   above, applying a perturbation in the $x$- and $s$-directions results in a
   helical disturbance; applying a perturbation only in the $s$-direction
   results in a planar disturbance.
 
   The direction of motion of the vortex ring in the $x$-direction can be
   defined, but note that it is not yet possible to set up rings moving in the
-  $y$- or $z$-directions.
+  $y$- or $z$-directions.  See \S\ref{subsec:parameters.in} for a description
+  of the parameters which control the vortex ring initial condition.
 
   \subsection{Random phase}
   The GPE can model the formation of a condensate, starting from a
@@ -279,7 +281,8 @@
   where the $\vec{k}$s are the wavenumbers in momentum space, and the phases of
   the complex amplitudes $a_{\vec{k}}$ are distributed randomly.
 
-  The mass and kinetic energy density must be set prior to performing a random
-  phase simulation.  These are \verb"nv" and \verb"enerv" respectively.
+  The mass and kinetic energy density must be set in \gpefile{run.in}, prior to
+  performing a random phase simulation.  These are \verb"nv" and \verb"enerv"
+  respectively.
 
 \end{chapter}

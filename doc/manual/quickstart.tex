@@ -1,22 +1,21 @@
 % $Id$
 %------------------------------------------------------------------------------
 
-\begin{chapter}{\label{cha:quickstart}Quick start guide}
+\begin{chapter}{\label{cha:quickstart}Getting started}
   This chapter is intended as a quick start guide to help you compile, run and
-  view the results of the GPE code.  More detailed information about various
-  technical aspects of the code can be found in chapter SOMETHING OR OTHER;
-  here we will outline the basics of going through a run cycle, by using the
-  provided \gpeexample{ring} example.
-
-  This example propagates a vortex ring in a homogeneous condensate for a short
-  time.
+  view the results of the GPE code.  Later chapters explain various aspects of
+  the code in greater detail, and some amount of reading the (commented) source
+  code should be expected, to gain a better understanding of what the code can
+  do.  Here, we shall outline the basics of going through a run cycle, by using
+  the provided \gpeexample{ring} example, which propagates a vortex ring in a
+  homogeneous condensate for a short time.
 
   \section{Setting the run parameters and initial condition}
   Change to the \gpefile{examples/ring} directory.  In here, you
   will find symbolic links to the source files, and in addition, three
   \gpefile{.in} files.  In general, it is these files ---
   \gpefile{parameters.in}, \gpefile{ic.in}, and \gpefile{run.in} --- which you
-  will need to edit in order to set up a run.
+  will need to edit, in order to set up a run.
 
   \subsection{parameters.in}
   For this example, simply change \gpevar{nyprocs} and \gpevar{nzprocs}, so
@@ -24,32 +23,32 @@
   processors on your machine.  If memory is an issue, then you may want to
   reduce any or all of \gpevar{nx}, \gpevar{ny}, or \gpevar{nz} (and possibly
   \gpevar{xr}, \gpevar{yr}, and \gpevar{zr} below).  See
-  section~\ref{subsec:parameters.in} for a full description of this file.  
+  \S\ref{subsec:parameters.in} for a full description of this file.  
 
   \subsection{ic.in}
   This file defines the initial condition.  For this example, no changes are
-  necessary.  See section~\ref{subsec:ic.in} for a full description of this
-  file.
+  necessary.  See \S\ref{subsec:ic.in} for a full description of this file.
 
   \subsection{\label{subsec:runin}run.in}
   This file defines the main parameters for the run, as a set of Fortran
   \verb"namelist"s.
   
-  For the \gpeexample{ring} example, the parameters are correctly set.  You
-  might want to alter \gpevar{end\_time} if the run takes too long.  If you
-  altered any of \gpevar{nx}, \gpevar{ny}, or \gpevar{nz} in
-  \gpefile{parameters.in}, then you might also want to alter \gpevar{xr},
-  \gpevar{yr}, or \gpevar{zr} as appropriate.  These parameters set the
-  right-hand end of the physical extent of the computational box (the left-hand
-  end is set to the same value with opposite sign).  See
-  section~\ref{subsec:run.in} for a full description of this file.
+  For the \gpeexample{ring} example, you might want to alter
+  \gpevar{end\_time} if the run takes too long.  If you altered any of
+  \gpevar{nx}, \gpevar{ny}, or \gpevar{nz} in \gpefile{parameters.in}, then you
+  might also want to alter \gpevar{xr}, \gpevar{yr}, or \gpevar{zr} as
+  appropriate.  These parameters set the right-hand end of the physical extent
+  of the computational box (the left-hand end is set to the same value with
+  opposite sign).  See \S\ref{subsec:run.in} for a full description of this
+  file.
 
   \section{Compiling the code}
   Choose a directory where your run will take place (we shall assume the
   directory \verb"run_dir" in what follows).  This directory should not be on a
-  network file system (NFS), which will likely be too slow (and under quota
-  restrictions).  The \gpeexample{ring} example will require approximately 3GB
-  of disk space with the default parameters.
+  network file system (NFS), which will likely be too slow, and possibly under
+  quota restrictions (as would be the case for a network mounted \verb"/home"
+  area, for example).  The \gpeexample{ring} example will require approximately
+  3GB of disk space with the default parameters.
 
   Now compile the code with
   %
@@ -58,9 +57,9 @@
   \end{Verbatim}
   %
   This will compile the code\footnote{The default Makefile assumes the sunf95
-  compiler is available and in the path, and that 64-bit code should be
+  compiler is available and in the PATH, and that 64-bit code should be
   generated.  If this is not what you want, then you will need to edit the
-  Makefile.  See section~\ref{sec:makefile} for more information.}, create the
+  Makefile.  See \S\ref{sec:makefile} for more information.}, create the
   directory \verb"run_dir", and copy \gpefile{parameters.in}, \gpefile{ic.in},
   \gpefile{run.in}, and \gpefile{run.sh} to the run directory.  In addition,
   the executable \gpefile{gpe} is moved to the run directory.
@@ -113,24 +112,27 @@
   job.
 
   Finally, if numbers are appearing in the \gpefile{*.dat} files, then you can
-  at least be sure that the job is running.
+  be sure that the job is running.
 
   \section{Important run-time files}
+  This section describes some important files which may exist in the run
+  directory as a job is running.
+
   \subsection{The RUNNING file}
-  When the job is running there is an empty file called \gpefile{RUNNING} in
+  When the job is running, there is an empty file called \gpefile{RUNNING} in
   the run directory; when the job is finished this file is deleted.  You can
   also delete this file at any time to immediately stop the run cleanly.  The
   job should never be ended by using \verb"kill" or \verb"killall", unless an
   unrecoverable error occurs.
 
   \subsection{The ERROR file}
-  If a serious error occurs which the code can anticipate, then the
+  If a serious error occurs, which the code can anticipate and handle, then the
   \gpefile{ERROR} file is created in the run directory.  Its contents will
   provide details of the error.  The job will be terminated cleanly in this
   case, and the \gpefile{RUNNING} file will be removed.
 
   \subsection{The log.txt file}
-  Any output that the job would normally print to the screen is instead
+  Any output that the job would normally print to the screen, is instead
   redirected to the file \gpefile{log.txt}.  It is a good idea to periodically
   check this file to make sure that no unexpected run-time errors have
   occurred.  Any errors which are written to \gpefile{ERROR} are also written
@@ -154,24 +156,22 @@
   been set in the \gpevar{io\_params} namelist in \gpefile{run.in}.
 
   The numbered \gpefile{proc} directories contain data local to each process on
-  which the job is running.  This is where 3D isosurface data are stored.
-
-  A full description of the output files is given in chapter SOMETHING OR
-  OTHER.
+  which the job is running.  This is where 3D isosurface data are stored.  A
+  full description of the output files is given in \S\ref{sec:output}.
 
   \section{\label{sec:viewing_results}Viewing results}
   During and after a run it is possible to plot various 1D graphs, 2D contour
   plots and 3D isosurfaces.  For the 1D time-series graphs, gnuplot is a good
-  program to use (although nearly any plotting program capable of understanding
-  simple columnar text files will be sufficient).  This section will describe
+  program to use, although nearly any plotting program capable of understanding
+  simple columnar text files will be sufficient.  This section will describe
   how to produce some plots.
   
   \subsection{1D time-series plots}
   1D time-series data is produced in the \gpefile{*.dat} files at the top-level
   of the run directory, much of which is self-explanatory, given the names of
   the files, \eg \gpefile{energy.dat}, \gpefile{mass.dat}.  A full description
-  of what can be found in these data files is given in chapter SOMETHING OR
-  OTHER, but note that the exact contents of files can be subject to change.
+  of what can be found in these data files is given in \S\ref{sec:output}, but
+  note that the exact contents of files can be subject to change.
   
   So, for the \gpeexample{ring} example, using gnuplot to plot the total energy
   in the system, you could do
@@ -180,8 +180,8 @@
     p "energy.dat" u 1:3 w lp
   \end{Verbatim}
   %
-  which will plot column three (line length) versus column one (real time) in
-  the file, and where the \verb"plot", \verb"using", \verb"with", and
+  which will plot column three (energy) versus column one (real time) in the
+  file, and where the \verb"plot", \verb"using", \verb"with", and
   \verb"linespoints" keywords have been abbreviated to the shortest
   non-ambiguous form, which is possible with any gnuplot command.
 
@@ -190,61 +190,62 @@
 
   \subsection{\label{subsec:contour_plots}Contour plots}
   Contour and isosurface data are stored in binary form within the
-  \gpefile{proc} directories; the layout of the binary files is explained in
-  chapter SOMETHING OR OTHER.
+  \gpefile{proc} directories; the layout of the binary files is described in
+  table~\ref{tab:binary} in \S\ref{subsec:binary}.
 
   If you have access to the Interactive Data Language (IDL) graphics program,
   then IDL routines are provided with the code to directly plot the data.
   These are located in the \gpefile{idl} subdirectory of the main code
-  directory.
+  directory.  The main program is called \gpefile{gpe.pro}, and is described in
+  more detail in \S\ref{sec:gpe.pro}.  The subsequent sections will guide you
+  through the basics of using the program.
 
-  From the run directory start IDL with the command \verb"idl".  Providing the
-  IDL environment is set up correctly (see section~\ref{subsec:idl_setup}) you
+  From the run directory, start IDL with the command \verb"idl".  Providing the
+  IDL environment is set up correctly (see \S\ref{subsec:idl_setup}) you
   should be able to type
   %
   \begin{Verbatim}
     gpe, 0, 0, /dbl, /cntr
   \end{Verbatim}
   %
-  which will show a contour plot of the density of the initial condition as a
-  slice through the $(x,y)$-plane at $z=0$.  You should get something which
-  looks like figure~\ref{fig:ring_ic_con}.
+  which will show a contour plot of the density of the ring initial condition
+  as a slice through the $(x,y)$-plane at $z=0$.  You should see something
+  which looks like figure~\ref{fig:ring_ic_con}.
   %
-  \begin{figure}
+  \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{fig/ring_ic_con}
-    \caption{\label{fig:ring_ic_con}Contour plot of the density of a vortex
-      ring of radius $R_{0}=10$ in the $(x,y)$-plane at $z=0$.}
+    \caption{\label{fig:ring_ic_con}Contour plot of the density
+      $\abs{\psi}^{2}$ of the condensate, showing a vortex ring of radius
+      $R_{0}=10$ in the $(x,y)$-plane at $z=0$.}
   \end{figure}
-  %
-  The word \gpevar{gpe} represents an IDL program, which takes two non-optional
-  arguments.  The first is the index corresponding to the first file you want
-  to plot, and the second is the index corresponding to the last file you want
-  to plot.  \emph{Important: For output to the screen these numbers should
-  always be the same.}
+  
+  The word \gpevar{gpe} represents the IDL program, which takes two
+  non-optional arguments.  The first is the index corresponding to the first
+  file you want to plot, and the second is the index corresponding to the last
+  file you want to plot.  For output to the screen, these numbers should always
+  be the same.
 
   The numbers refer to the files within the \gpefile{proc} directories.  If you
   look in \gpefile{proc00}, for example, you will see a number of files named
   \gpefile{dens*******.dat}.  The arguments to \gpevar{gpe} are the numbers
   within the filenames, excluding the leading zeroes.
 
-  So, \gpevar{gpe, 0, 0} plots \gpefile{dens0000000.dat}; \gpevar{gpe, 334,
-  334} plots \gpefile{dens0000331.dat}, etc.
+  So for example, arguments of 0 and 0 would plot \gpefile{dens0000000.dat};
+  arguments of 334 and 334 would plot \gpefile{dens0000334.dat}, etc.
 
   The remaining arguments are optional.  The first, \gpevar{/dbl}, denotes that
-  the binary data are double-precision.  You must always provide this switch
+  the binary data are double-precision.  You must always provide this keyword
   when you have performed a double-precision run.  In a single-precision run,
-  this switch is not necessary.
+  this keyword is not necessary.
 
-  The second, \gpevar{/cntr}, is a switch which turns on contour output, rather
+  The second, \gpevar{/cntr}, is a keyword which turns on contour output, rather
   than the default, which is an isosurface (see
   section~\ref{subsec:isosurface_plots}).
 
-  To quit IDL at any time type \verb"exit".
-
   \subsection{\label{subsec:isosurface_plots}Isosurface plots}
-  Start IDL again, and do exactly as in section~\ref{subsec:contour_plots}, but
-  this time leave off the \gpevar"/cntr" switch.
+  Now do exactly as in section~\ref{subsec:contour_plots}, but this time leave
+  off the \gpevar{/cntr} keyword.
   
   You should see an isosurface plot in a window similar to that in
   figure~\ref{fig:ring_ic_iso}, and a control panel with various buttons on it.
@@ -253,11 +254,12 @@
   content, and the axes labels respectively.  You will need to click the
   \verb"Redraw" button if you make any changes.
   %
-  \begin{figure}
+  \begin{figure}[h]
     \centering
     \includegraphics[scale=1]{fig/ring_ic_iso}
-    \caption{\label{fig:ring_ic_iso}Isosurface plot of the density of a vortex
-      ring of radius $R_{0}=10$ at the level $\abs{\psi}^{2} = 0.75$.}
+    \caption{\label{fig:ring_ic_iso}Isosurface plot of the density of the
+      condensate at the level $\abs{\psi}^{2} = 0.75$, showing a vortex ring of
+      radius $R_{0}=10$.}
   \end{figure}
   %
   Left-click and hold in the white window and you can move the view around;
@@ -275,11 +277,20 @@
   wireframe, or a series of points.  If the display is too slow, selecting
   \verb"points" or \verb"wireframe" instead of \verb"solid" will speed it up.
 
+  \subsubsection{The TMat}
+  The TMat, or transformation matrix, controls the isosurface view, and is set
+  in \gpefile{gpe.pro} to give a perspective view by default.  If you would
+  like to change the default, find the view you would like by rotating and
+  zooming the display, then click the \verb"TMat" button on the control panel.
+  This will print the transformation matrix for the view in the terminal.  Copy
+  and paste this into \gpefile{gpe.pro}, overwriting the TMat that is currently
+  defined.
+
   \subsection{Animations}
-  By saving a series of snapshots of 2D or 3D data it is possible to then
+  By saving a series of snapshots of 2D or 3D data, it is possible to then
   combine them into an animation.
 
-  From the run directory run the script \gpefile{create-links}.  This will
+  From the run directory, run the script \gpefile{create-links}.  This will
   create a directory \gpefile{links}, which contains renamed symbolic links
   (shortcuts) pointing to the isosurface files within each process directory.
   This is to make sure that the files are numbered sequentially in steps of
@@ -303,9 +314,9 @@
   should actually find 100 data files in each \gpefile{proc} directory, so you
   could do plots from 0 to 99 if you wish.)
 
-  \emph{If you miss off the /c\_anim switch here, you will get all the
-  plots shown to the screen.  When you are plotting 100 or more files, this
-  can be very bad and in some cases might run your machine out of memory.}
+  If you forget the \verb"/c_anim" keyword here, you will get all the plots
+  shown to the screen.  When you are plotting 100 or more files, this can be
+  very bad and in some cases might run your machine out of memory.
 
   Now change to the \verb"images" directory and run the \gpefile{makemovie}
   script, which is located in the \gpefile{scripts} subdirectory of the main
@@ -316,7 +327,8 @@
   \end{Verbatim}
   %
   which will create an AVI animation out of the PNG files, with 10 frames,
-  saving the output as \gpefile{output.avi}.
+  saving the output as \gpefile{output.avi}.  The \gpefile{makemovie} script
+  has several options.  Run the script with no arguments to see its help.
 
   You can then play the animation with any media player, for example,
   %
@@ -329,7 +341,7 @@
 
   \subsubsection{Isosurface animations}
   Rename the \gpefile{images} directory to something else, and recreate an
-  empty \gpefile{images} directory.  Start IDL and this time type
+  empty \gpefile{images} directory.  From within IDL type
   %
   \begin{Verbatim}
     gpe, 0, 9, /png
@@ -339,8 +351,8 @@
   \gpefile{images} directory, which you can then convert into an animation
   using \gpefile{makemovie}.
 
-  \emph{If you miss off the /png switch, all the output will again go to the
-  screen.  This should be avoided if possible.}
+  If you forget the \verb"/png" keyword, all the output will again go to the
+  screen.  This should be avoided if possible.
 
   \section{\label{sec:restart}Restarting the code}
   After a run, you might decide that you would like to restart the code from
@@ -354,8 +366,8 @@
   directory to the restart directory.
 
   Now edit \gpefile{run.in}, change \gpevar{restart} to \gpevar{.true.}, and
-  make any other changes necessary.  Recompilation is not needed when making
-  changes only to \gpefile{run.in}.
+  make any other changes you feel necessary.  Recompilation is not needed when
+  making changes only to \gpefile{run.in}.
 
   Now type
   %
@@ -365,8 +377,9 @@
   %
   where \verb"<initial run directory>" is the directory of the run which you
   want to continue.  This will copy the \gpefile{end\_state.dat} files from the
-  \gpefile{proc} directories to the restart directory (suitably renamed).  The
-  \gpefile{log.txt} file should then report that the code is
+  \gpefile{proc} directories to the restart directory (suitably renamed), and
+  start the run.  The \gpefile{log.txt} file should then report that the code
+  is
   %
   \begin{Verbatim}
     Getting restart conditions

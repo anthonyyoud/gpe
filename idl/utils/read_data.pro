@@ -1,7 +1,8 @@
 ; $Id$
 ;----------------------------------------------------------------------------
 
-function read_data, file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl
+function read_data, file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
+  f77=f77
 
   isdouble = keyword_set(dbl)
 
@@ -30,7 +31,11 @@ function read_data, file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl
     endelse
     file = data_dir+ifile
 
-    openr, 5, file, /F77
+    if keyword_set(f77) then begin
+      openr, 5, file, /F77
+    endif else begin
+      openr, 5, file
+    endelse
     readu, 5, t
     readu, 5, nx, nytot, nztot
     readu, 5, nyprocs, nzprocs
