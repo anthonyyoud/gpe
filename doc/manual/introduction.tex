@@ -18,9 +18,6 @@
     \item fourth/fifth-order adaptive Runge--Kutta--Fehlberg (RK45).
   \end{itemize}
   %
-  The RK45 scheme uses the algorithm proposed in Numerical Recipes
-  \citep[\S 16.2, p.708,][]{NR92}.
-  
   The spatial discretisation is performed with either second- or fourth-order
   accurate centred finite differences, and the boundary conditions can be
   either periodic or reflective.
@@ -47,13 +44,13 @@
 
   The code also requires the FFTw library (http://www.fftw.org) for some
   routines.  This must be version 2 of the library (the latest is version
-  2.1.3), since FFTs in the code are performed in parallel, and FFTw version 3
+  2.1.5), since FFTs in the code are performed in parallel, and FFTw version 3
   does not yet support (distributed) parallel transforms.
 
   To view the output of the code, any graphics program capable of reading
-  space-separated columnar text files will be able to produce time-series plots
-  (gnuplot is a nice, easy to use program, http://www.gnuplot.info/).  Routines
-  written in IDL (Interactive Data Language,
+  space-separated, columnar text files will be able to produce time-series
+  plots (gnuplot is a nice, easy to use program, http://www.gnuplot.info/).
+  Routines written in IDL (Interactive Data Language,
   http://www.ittvis.com/ProductServices/IDL.aspx) for producing 2D contour and
   3D isosurface plots are included with the code.  The data for these plots are
   saved in binary format, so more work will be needed if a different graphics
@@ -97,7 +94,7 @@
   An example \verb".idlrc" file is also provided (named \gpefile{dot.idlrc}),
   which fixes some quirks with X displays, and sets 24-bit true colour output
   by default.  If you wish to use this, then make sure that the
-  \verb"IDL_STARTUP" environment variables points to this file.
+  \verb"IDL_STARTUP" environment variable points to this file.
 
   \subsubsection{IDL command line}
   You might find that IDL's command line is broken, \ie no command-line

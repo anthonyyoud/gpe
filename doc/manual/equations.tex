@@ -5,7 +5,7 @@
   non-dimensionalisation}
 
   The single-particle complex wavefunction $\psi(\vec{r}, t)$ for $N$ bosons of
-  mass $m$, obeys the 3 dimensional, time dependent, Gross--Pitaevskii (GP)
+  mass $m$, obeys the 3-dimensional, time dependent, Gross--Pitaevskii (GP)
   equation \citep{Gross61,Pitaevskii61}
   %
   \begin{equation}
@@ -56,15 +56,16 @@
   When the external trapping potential is absent, natural units are used to
   non-dimensionalise the GPE.  In this case the scalings are
   %
-  \begin{equation*}
+  \begin{equation}
     \begin{aligned}
       t       &\to \frac{\hbar}{2\mu}t, \\
       \vec{r} &\to a\vec{r}, \\
       \psi    &\to \psi_{\infty} \psi,
     \end{aligned}
-  \end{equation*}
+    \label{eqn:natural_scalings}
+  \end{equation}
   %
-  where $a = \hbar/(\sqrt{2m\mu})$ is the healing length and $\psi_{\infty} =
+  where $a = \hbar/(\sqrt{2m\mu})$ is the healing length, and $\psi_{\infty} =
   \sqrt{\mu/g}$ is the bulk value of $\psi$.
 
   These scalings lead to the dimensionless form of the GPE
@@ -75,13 +76,13 @@
   \end{equation*}
   %
   See appendix~\ref{cha:nondim} for a full derivation.  To solve this form of
-  the GPE set \gpevar{eqn\_to\_solve} to \gpevar{1} in \gpefile{run.in}.
+  the GPE, set \gpevar{eqn\_to\_solve} to \gpevar{1} in \gpefile{run.in}.
 
   \subsection{Harmonic oscillator units}
   When the external trapping potential is present, harmonic oscillator units
   are used to non-dimensionalise the GPE.  The scalings are
   %
-  \begin{equation*}
+  \begin{equation}
     \begin{aligned}
       t       &\to \frac{t}{\ombar}, \\
       \vec{r} &\to \aoh\vec{r}, \\
@@ -90,10 +91,11 @@
       \mu     &\to \hbar\ombar\mu, \\
       \Vtrap  &\to \hbar\ombar\Vtrap,
     \end{aligned}
-  \end{equation*}
+    \label{eqn:ho_scalings}
+  \end{equation}
   %
   where $\ombar = \left( \omega_{x}\omega_{y}\omega_{z}
-  \right)^{1/3}$, $\omega_{i}$ is the trap frequency along axis $i$ for $i =
+  \right)^{1/3}$, $\omega_{i}$ is the trap frequency along axis $i$, for $i =
   x$, $y$, $z$, and $\aoh = \sqrt{\hbar/(m\ombar)}$ is the
   harmonic oscillator length.
 
@@ -123,6 +125,24 @@
   quantities.  These are described in this section.  Full derivations of each
   of the non-dimensionalisations are given in appendix~\ref{cha:nondim}.
 
+  \subsection{Harmonic trapping potential}
+  The dimensional harmonic trapping potential is given by
+  %
+  \begin{equation}
+    \Vtrap = \frac{1}{2} m \left( \omega_{x}^{2} x^{2} + \omega_{y}^{2} y^{2} +
+    \omega_{z}^{2} z^{2} \right).
+    \label{eqn:trap}
+  \end{equation}
+  %
+  Using the scaling $\omega_{i} \to \ombar \omega_{i}$, for $i=x$, $y$, $z$,
+  and remembering to scale each coordinate, leads to the dimensionless form of
+  the trapping potential
+  %
+  \begin{equation*}
+    \Vtrap = \frac{1}{2} \left( \omega_{x}^{2} x^{2} + \omega_{y}^{2} y^{2} +
+    \omega_{z}^{2} z^{2} \right).
+  \end{equation*}
+
   \subsection{Thomas--Fermi approximation}
   The dimensional Thomas--Fermi approximation is given by
   %
@@ -132,8 +152,8 @@
   %
   Since this approximation is only relevant for trapped condensates, we use
   harmonic oscillator units to non-dimensionalise.  This leads to an identical
-  dimensionless expression, where each dimensionless variable is replaced by
-  its dimensionless counterpart.
+  dimensional expression, where each dimensionless variable is replaced by its
+  dimensionless counterpart.
 
   \subsubsection{Condensate extent}
   The extent of the condensate $R_{i}$, $i = x$, $y$, $z$, in the Thomas--Fermi
@@ -268,9 +288,9 @@
   strongly non-equilibrium state.  Evolving this state leads to the formation
   of a quasi-condensate, consisting of a tangle of quantised vortices.  This
   tangle decays as the system reaches thermal equilibrium, with a certain
-  number of particles in the zero-momentum (genuine condensate) state.  See
-  \citet{BS02} and \citet{CJPPR05} for more details on the random phase
-  approximation.
+  number of particles in the zero-momentum (genuine condensate) state.  See,
+  for example, \citet{BS02}, \citet{CJPPR05}, and \citet{BY07} for more details
+  on the random phase approximation.
 
   To model this, the initial condition is set to
   %

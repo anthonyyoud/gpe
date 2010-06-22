@@ -2,7 +2,7 @@
 %------------------------------------------------------------------------------
 
 \begin{chapter}{\label{cha:quickstart}Getting started}
-  This chapter is intended as a quick start guide to help you compile, run and
+  This chapter is intended as a quick start guide to help you compile, run, and
   view the results of the GPE code.  Later chapters explain various aspects of
   the code in greater detail, and some amount of reading the (commented) source
   code should be expected, to gain a better understanding of what the code can
@@ -46,7 +46,7 @@
   Choose a directory where your run will take place (we shall assume the
   directory \verb"run_dir" in what follows).  This directory should not be on a
   network file system (NFS), which will likely be too slow, and possibly under
-  quota restrictions (as would be the case for a network mounted \verb"/home"
+  quota restrictions (as might be the case for a network mounted \verb"/home"
   area, for example).  The \gpeexample{ring} example will require approximately
   3GB of disk space with the default parameters.
 
@@ -72,7 +72,7 @@
     ./setup run_dir single
   \end{Verbatim}
   %
-  Now change to the run directory ready to run the code.
+  Now change to the run directory, ready to run the code.
 
   \section{Running the code}
   To run the code simply type
@@ -116,7 +116,7 @@
 
   \section{Important run-time files}
   This section describes some important files which may exist in the run
-  directory as a job is running.
+  directory, as a job is running.
 
   \subsection{The RUNNING file}
   When the job is running, there is an empty file called \gpefile{RUNNING} in
@@ -160,7 +160,7 @@
   full description of the output files is given in \S\ref{sec:output}.
 
   \section{\label{sec:viewing_results}Viewing results}
-  During and after a run it is possible to plot various 1D graphs, 2D contour
+  During and after a run, it is possible to plot various 1D graphs, 2D contour
   plots and 3D isosurfaces.  For the 1D time-series graphs, gnuplot is a good
   program to use, although nearly any plotting program capable of understanding
   simple columnar text files will be sufficient.  This section will describe
@@ -239,13 +239,13 @@
   when you have performed a double-precision run.  In a single-precision run,
   this keyword is not necessary.
 
-  The second, \gpevar{/cntr}, is a keyword which turns on contour output, rather
-  than the default, which is an isosurface (see
-  section~\ref{subsec:isosurface_plots}).
+  The second, \gpevar{/cntr}, is a keyword which turns on contour output,
+  rather than the default, which is an isosurface (see
+  \S\ref{subsec:isosurface_plots}).
 
   \subsection{\label{subsec:isosurface_plots}Isosurface plots}
-  Now do exactly as in section~\ref{subsec:contour_plots}, but this time leave
-  off the \gpevar{/cntr} keyword.
+  Now do exactly as in \S\ref{subsec:contour_plots}, but this time leave off
+  the \gpevar{/cntr} keyword.
   
   You should see an isosurface plot in a window similar to that in
   figure~\ref{fig:ring_ic_iso}, and a control panel with various buttons on it.
@@ -266,7 +266,7 @@
   right-clicking zooms in and out, and middle-clicking moves the centre
   viewpoint.  Depending on the speed of your machine, and the complexity of the
   displayed image, zooming and moving the view might be a little slow, so move
-  the mouse slowly, and avoid large jerky movements.
+  the mouse slowly, and avoid large, jerky movements.
 
   The coloured bar in the control panel is a histogram of the density, and
   clicking in here will redraw the isosurface at the new density level, which

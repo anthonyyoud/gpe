@@ -3,13 +3,16 @@
 
 \begin{chapter}{\label{cha:nondim}Derivations of non-dimensionalised equations
 and variables}
-  \section{Units}
-  The following table displays the units for various quantities which are used
-  to non-dimensionalise the GPE.
+  This chapter derives the non-dimensionalisations of the GPE, and related
+  quantities, in more detail.
+
+  \section{Physical units}
+  The following table displays the physical units for various quantities which
+  are used to non-dimensionalise the GPE.
   %
   \begin{table}[h]
     \centering
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{cc}
       \hline
       Quantity & Unit \\
       \hline
@@ -21,27 +24,208 @@ and variables}
       $\psi$      & $\cm^{-\frac{3}{2}}$ \\
       $\omega$    & $\sec^{-1}$ \\
       $\Vtrap$    & $\joule$ \\
-      \hline
+      $\kappa$    & $\cm^{2}\sec^{-1}$ \\
+      \hline\hline
     \end{tabular}
     \caption{Units for quantities used to non-dimensionalise the GPE.}
   \end{table}
+  
+  \section{Natural units non-dimensionalisation}
+  Using the scalings given by \eqref{eqn:natural_scalings}, the dimensional GPE
+  \eqref{eqn:gpe} becomes (ignoring the trapping potential $\Vtrap$)
   %
+  \begin{equation*}
+    \eye \hbar \frac{2\mu}{\hbar} \frac{\pa \psi}{\pa t} =
+    -\frac{\hbar^{2}}{2m} \frac{1}{a^{2}} \nabla^{2} \psi + g \psi_{\infty}^{2}
+    \abs{\psi}^{2} \psi - \mu \psi.
+  \end{equation*}
+  %
+  Since each term in the GPE involves a term in $\psi$, the associated factor
+  of $\psi_{\infty}$ is cancelled throughout, and so is not shown here.
+  
+  Cancelling $\hbar$ and dividing through by $\mu$ leads to
+  %
+  \begin{equation*}
+    2\eye \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2\mu m} \frac{1}{a^{2}}
+    \nabla^{2} \psi + \frac{g}{\mu} \psi_{\infty}^{2} \abs{\psi}^{2} \psi -
+    \psi.
+  \end{equation*}
+  %
+  Then
+  %
+  \begin{equation*}
+    -\frac{\hbar^{2}}{2\mu m} \frac{1}{a^{2}} = -\frac{\hbar^{2}}{2\mu m}
+    \frac{2\mu m}{\hbar^{2}} = -1,
+  \end{equation*}
+  %
+  and
+  %
+  \begin{equation*}
+    \frac{g}{\mu} \psi_{\infty}^{2} = \frac{g}{\mu} \frac{\mu}{g} = -1,
+  \end{equation*}
+  %
+  and so the non-dimensionalised GPE using natural units is
+  %
+  \begin{equation*}
+    -2\eye\frac{\pa \psi}{\pa t} = \nabla^{2}\psi + \left(1 -
+    \abs{\psi}^{2}\right)\psi.
+  \end{equation*}
 
-  \begin{equation}
-    \kappa^{*} = \frac{\hbar/(2\mu)}{a^{2}}\kappa = \frac{\hbar}{2\mu
-      a^{2}}\kappa
-    \label{eqn:two}
-  \end{equation}
+  \section{Harmonic oscillator units non-dimensionalisation}
+  Using the scalings given by \eqref{eqn:ho_scalings}, the dimensional GPE
+  \ref{eqn:gpe} becomes
   %
-  Then substituting into gives
+  \begin{equation*}
+    \eye \hbar \ombar \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2m}
+    \frac{1}{\aoh^{2}} \nabla^{2} \psi + \hbar \ombar \Vtrap \psi + \aoh^{3}
+    \hbar \ombar g \frac{1}{\aoh^{3}} \abs{\psi}^{2} \psi - \hbar \ombar \mu
+    \psi,
+  \end{equation*}
+  %
+  where again, the scaling factor for $\psi$ is cancelled throughout.
+
+  Then
+  %
+  \begin{equation*}
+    -\frac{\hbar^{2}}{2m} \frac{1}{\aoh^{2}} = -\frac{\hbar^{2}}{2m}
+    \frac{m\ombar}{\hbar} = -\frac{1}{2} \hbar \ombar,
+  \end{equation*}
+  %
+  and
+  %
+  \begin{equation*}
+    \aoh^{3} \hbar \ombar g \frac{1}{\aoh^{3}} = \hbar \ombar g.
+  \end{equation*}
+  %
+  Then, dividing through by $\hbar \ombar$ leads to the GPE,
+  non-dimensionalised using harmonic oscillator units
+  %
+  \begin{equation*}
+    \eye \frac{\pa \psi}{\pa t} = -\frac{1}{2}\nabla^{2}\psi + \Vtrap\psi +
+    g\abs{\psi}^{2}\psi - \mu\psi.
+  \end{equation*}
+
+  \section{Harmonic trapping potential}
+  Using the scalings $\Vtrap \to \hbar \ombar \Vtrap$,  $\omega_{i} \to \ombar
+  \omega_{i}$, for $i=x$, $y$, $z$, and $\vec{r} \to \aoh \vec{r}$, the
+  dimensional trapping potential \ref{eqn:trap} becomes
   %
   \begin{equation*}
     \begin{aligned}
-      \frac{2\mu a^{2}}{\hbar}\kappa^{*} &= \frac{2\pi\hbar}{m} \\
-      \implies \kappa^{*} &= \frac{2\pi\hbar}{m} \frac{\hbar}{2\mu a^{2}} \\
-      &= \frac{2\pi\hbar^{2}}{2m\mu a^{2}}
+      \hbar \ombar \Vtrap &= \frac{1}{2} m \aoh^{2} \ombar^{2} \left(
+      \omega_{x}^{2} x^{2} + \omega_{y}^{2} y^{2} + \omega_{z}^{2} z^{2}
+      \right) \\
+      &= \frac{1}{2} m \frac{\hbar}{m \ombar} \ombar^{2} \left( \cdots \right)
+      \\
+      &= \frac{1}{2} \hbar \ombar \left( \cdots \right),
     \end{aligned}
   \end{equation*}
   %
-  Then using $a^{2} = \hbar^{2}/(2m\mu)$ gives $\kappa^{*} = 2\pi$.
+  and therefore, on dividing through by $\hbar \ombar$, the dimensionless
+  trapping potential is
+  %
+  \begin{equation*}
+    \Vtrap = \frac{1}{2} \left( \omega_{x}^{2} x^{2} + \omega_{y}^{2} y^{2} +
+    \omega_{z}^{2} z^{2} \right).
+  \end{equation*}
+
+  \section{Thomas--Fermi approximation}
+  Starting from
+  %
+  \begin{equation*}
+    \abs{\psi}^{2} = \frac{\mu - \Vtrap}{g},
+  \end{equation*}
+  %
+  and scaling with the harmonic oscillator units, leads to
+  %
+  \begin{equation*}
+    \frac{1}{\aoh^{3}} \abs{\psi}^{2} = \frac{\hbar \ombar \mu - \hbar \ombar
+    \Vtrap}{\aoh^{3} \hbar \ombar g},
+  \end{equation*}
+  %
+  so that the dimensionless form of the Thomas--Fermi approximation is
+  %
+  \begin{equation*}
+    \abs{\psi}^{2} = \frac{\mu - \Vtrap}{g}.
+  \end{equation*}
+
+  \subsection{Condensate extent}
+  Starting from
+  %
+  \begin{equation*}
+    R_{i}^{2} = \frac{2\mu}{m \omega_{i}^{2}},
+  \end{equation*}
+  %
+  for $i=x$, $y$, and $z$, and again scaling using harmonic oscillator units,
+  gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      \aoh^{2} R_{i}^{2} &= \frac{2 \hbar \ombar \mu}{m \ombar^{2}
+      \omega_{i}^{2}} \\
+      &= \frac{2\aoh^{2} \ombar \mu}{\ombar \omega_{i}^{2}},
+    \end{aligned}
+  \end{equation*}
+  %
+  and, on dividing through by $\aoh^{2}$, we have the dimensionless condensate
+  extent
+  %
+  \begin{equation*}
+    R_{i}^{2} = \frac{2\mu}{\omega_{i}^{2}}.
+  \end{equation*}
+
+  \subsection{Number of atoms}
+  The number of atoms within the condensate, under the Thomas--Fermi
+  approximation, is given by
+  %
+  \begin{equation*}
+    N = \frac{8\pi}{15} \left( \frac{2\mu}{m\ombar^2} \right)^{\frac{3}{2}}
+    \frac{\mu}{g}.
+  \end{equation*}
+  %
+  Non-dimensionalising gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      N &= \frac{8\pi}{15} \left( \frac{2\hbar \ombar \mu}{m\ombar^2}
+      \right)^{\frac{3}{2}} \frac{\hbar \ombar \mu}{\aoh^{3} \hbar \ombar g} \\
+      &= \frac{8\pi}{15} \left( 2\aoh^{2} \mu \right)^{\frac{3}{2}}
+      \frac{\mu}{\aoh^{3} g} \\
+      &= \frac{8\pi}{15} \left( 2\mu \right)^{\frac{3}{2}} \frac{\mu}{g} \\
+      &= \frac{8\pi}{15} 2^{\frac{3}{2}} \frac{\mu^{\frac{5}{2}}}{g} \\
+      &= \frac{16\sqrt{2}\pi}{15} \frac{\mu^{\frac{5}{2}}}{g}.
+  \end{aligned}
+  \end{equation*}
+
+  \section{Circulation}
+  The dimensional circulation is given by
+  %
+  \begin{equation*}
+    \kappa = \frac{h}{m} = \frac{2\pi\hbar}{m}.
+  \end{equation*}
+  %
+  Letting $\kappa \to (2\mu a^{2}/\hbar)\kappa$, and scaling with natural
+  units, gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      \frac{2\mu a^{2}}{\hbar} \kappa &= \frac{2\pi \hbar}{m} \\
+      \implies \kappa &= \frac{2\pi \hbar^{2}}{2\mu a^{2} m} \\
+      &= \frac{2\pi a^{2}}{a^{2}} \\
+      &= 2\pi.
+    \end{aligned}
+  \end{equation*}
+  %
+  Simlarly, letting $\kappa \to \aoh^{2}\ombar\kappa$, and scaling with
+  harmonic oscillator units, gives
+  %
+  \begin{equation*}
+    \begin{aligned}
+      \aoh^{2} \ombar \kappa &= \frac{2\pi \hbar}{m} \\
+      \implies \kappa &= \frac{2\pi \hbar}{\aoh^{2} \ombar m} \\
+      &= \frac{2\pi \aoh^{2}}{\aoh^{2}} \\
+      &= 2\pi.
+    \end{aligned}
+  \end{equation*}
+  %
 \end{chapter}
