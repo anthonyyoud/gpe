@@ -72,7 +72,7 @@ module io
     implicit none
   
     integer :: ioerr
-    character(5) :: _ioerr = '*****'
+    character(5) :: cioerr = '*****'
 
     open (unit_no, file='run.in')
     read (unit_no, nml=run_params, iostat=ioerr)
@@ -94,9 +94,9 @@ module io
       integer, intent(in) :: ioerr
 
       close (unit_no)
-      write (_ioerr, '(i5.4)') ioerr
+      write (cioerr, '(i5.4)') ioerr
       call emergency_stop('ERROR: There was an error reading namelist '//nl// &
-        ' in run.in: iostat='//_ioerr//'.')
+        ' in run.in: iostat='//cioerr//'.')
 
       return
     end subroutine nml_error
