@@ -7,27 +7,29 @@ and variables}
   quantities, in more detail.
 
   \section{Physical units}
-  The following table displays the physical units for various quantities which
-  are used to non-dimensionalise the GPE.
+  The following table lists the physical units for various quantities
+  related to the GPE and Bose--Einstein condensation.
   %
   \begin{table}[h]
     \centering
-    \begin{tabular}{cc}
+    \begin{tabular}{lll}
       \hline
-      Quantity & Unit \\
+      Quantity & Description & Unit \\
       \hline
-      $a$, $\aoh$ & $\cm$ \\
-      $\hbar$     & $\joule\sec$ \\
-      $m$         & $\joule\sec^{2}\cm^{-2}$ \\
-      $\mu$       & $\joule$ \\
-      $g$         & $\joule\cm^{3}$ \\
-      $\psi$      & $\cm^{-\frac{3}{2}}$ \\
-      $\omega$    & $\sec^{-1}$ \\
-      $\Vtrap$    & $\joule$ \\
-      $\kappa$    & $\cm^{2}\sec^{-1}$ \\
+      $a$      & Healing length & $\m$ \\
+      $\aoh$   & Harmonic oscillator length & $\m$ \\
+      $\hbar$  & Reduced Planck constant & $\joule\sec$ \\
+      $m$      & Mass & $\joule\sec^{2}\m^{-2}$ \\
+      $\mu$    & Chemical potential & $\joule$ \\
+      $g$      & Interaction parameter & $\joule\m^{3}$ \\
+      $\psi$   & Complex wavefunction & $\m^{-\frac{3}{2}}$ \\
+      $\omega$ & Trap frequency & $\sec^{-1}$ \\
+      $\Vtrap$ & Trapping potential & $\joule$ \\
+      $\kappa$ & Circulation & $\m^{2}\sec^{-1}$ \\
       \hline\hline
     \end{tabular}
-    \caption{Units for quantities used to non-dimensionalise the GPE.}
+    \caption{Physical units for quantities related to the GPE and
+      Bose--Einstein condensation.}
   \end{table}
   
   \section{Natural units non-dimensionalisation}
@@ -40,10 +42,11 @@ and variables}
     \abs{\psi}^{2} \psi - \mu \psi.
   \end{equation*}
   %
-  Since each term in the GPE involves a term in $\psi$, the associated factor
-  of $\psi_{\infty}$ is cancelled throughout, and so is not shown here.
+  Each term in the GPE involves a term in $\psi$.  The factor of
+  $\psi_{\infty}$ used to non-dimensionalise $\psi$ is therefore cancelled
+  throughout.
   
-  Cancelling $\hbar$ and dividing through by $\mu$ leads to
+  Cancelling $\hbar$ on the left, and dividing through by $\mu$ leads to
   %
   \begin{equation*}
     2\eye \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2\mu m} \frac{1}{a^{2}}
@@ -73,7 +76,7 @@ and variables}
 
   \section{Harmonic oscillator units non-dimensionalisation}
   Using the scalings given by \eqref{eqn:ho_scalings}, the dimensional GPE
-  \ref{eqn:gpe} becomes
+  \eqref{eqn:gpe} becomes
   %
   \begin{equation*}
     \eye \hbar \ombar \frac{\pa \psi}{\pa t} = -\frac{\hbar^{2}}{2m}
@@ -108,7 +111,7 @@ and variables}
   \section{Harmonic trapping potential}
   Using the scalings $\Vtrap \to \hbar \ombar \Vtrap$,  $\omega_{i} \to \ombar
   \omega_{i}$, for $i=x$, $y$, $z$, and $\vec{r} \to \aoh \vec{r}$, the
-  dimensional trapping potential \ref{eqn:trap} becomes
+  dimensional trapping potential \eqref{eqn:trap} becomes
   %
   \begin{equation*}
     \begin{aligned}
@@ -136,7 +139,7 @@ and variables}
     \abs{\psi}^{2} = \frac{\mu - \Vtrap}{g},
   \end{equation*}
   %
-  and scaling with the harmonic oscillator units, leads to
+  and scaling with harmonic oscillator units, leads to
   %
   \begin{equation*}
     \frac{1}{\aoh^{3}} \abs{\psi}^{2} = \frac{\hbar \ombar \mu - \hbar \ombar
@@ -156,7 +159,7 @@ and variables}
     R_{i}^{2} = \frac{2\mu}{m \omega_{i}^{2}},
   \end{equation*}
   %
-  for $i=x$, $y$, and $z$, and again scaling using harmonic oscillator units,
+  for $i=x$, $y$, $z$, and again scaling using harmonic oscillator units,
   gives
   %
   \begin{equation*}
