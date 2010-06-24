@@ -38,6 +38,10 @@ LATEX		= latex
 SOURCES		= $(OBJECT).tex introduction.tex quickstart.tex equations.tex \
 						nondim.tex numerics.tex file_reference.tex
 
+# Replace date on title page in manual.tex.
+DATE = $(shell date)
+replace_date = sed -i 's/\(\$$ \$$ Date:\) .* \(\$$ \$$\)/\1 $(DATE) \2/' $(OBJECT).tex
+
 #---- IMPLICIT RULES ----------------------------------------------------------
 .SUFFIXES: .tex .dvi .ps .pdf .ps.gz .bbl
 
@@ -68,17 +72,19 @@ endif
 ifeq ($(LATEX), latex)
 # Using latex to compile.
 .tex.bbl:
+	@$(replace_date)
 	TEXINPUTS=./inputs:$(TEXINPUTS) $(LATEX) --jobname $*_dvi $*
 	mv $*_dvi.dvi $*.dvi
 	BSTINPUTS=./inputs:$(BSTINPUTS) bibtex $*_dvi
-	cp  $*_dvi.bbl  $*.bbl
+	cp $*_dvi.bbl $*.bbl
 else
 # Using pdflatex to compile.
 .tex.bbl:
+	@$(replace_date)
 	TEXINPUTS=./inputs:$(TEXINPUTS) $(LATEX) --jobname $*_pdf $*
 	mv $*_pdf.pdf $*.pdf
 	BSTINPUTS=./inputs:$(BSTINPUTS) bibtex $*_pdf
-	cp  $*_pdf.bbl  $*.bbl
+	cp $*_pdf.bbl $*.bbl
 endif
 
 #------------------------------------------------------------------------------
