@@ -228,18 +228,18 @@
   \end{equation*}
   %
   The vortex line initial condition can also support planar or helical
-  disturbances along its length.  For a vortex line oriented along the
+  perturbations along its length.  For a vortex line oriented along the
   $z$-direction, this is achieved by imposing a sinusoidal
-  disturbance of the form
+  perturbation of the form
   %
   \begin{equation*}
     \sin{\left( \frac{2\pi z}{l} \right)},
   \end{equation*}
   %
-  in the $x$-direction, and the same disturbance shifted by $\pi/2$ in the
-  $y$-direction.  These disturbances can be set independently; doing so will
-  result in a planar disturbance, while setting both will result in a helical
-  disturbance.
+  in the $x$-direction, and the same perturbation shifted by $\pi/2$ in the
+  $y$-direction.  These perturbations can be set independently; doing so will
+  result in a planar perturbation, while setting both will result in a helical
+  perturbation.
 
   Cyclically permuting $x$, $y$, and $z$ results in a vortex line along another
   direction, and the initial position and circulation of the line can also be
@@ -271,10 +271,28 @@
   $R_{0}$ is the radius of the ring.
 
   The vortex ring initial condition also supports planar and helical
-  disturbances, in a manner similar to that of the vortex line.  With the setup
-  above, applying a perturbation in the $x$- and $s$-directions results in a
-  helical disturbance; applying a perturbation only in the $s$-direction
-  results in a planar disturbance.
+  perturbations, in a manner similar to that of the vortex line.  The perturbed
+  initial condition then takes the form
+  %
+  \begin{equation*}
+    \begin{aligned}
+    \psi_{0} = \Psi&\left\{ x-A_{1} \cos{\left( m_{1}\theta \right)},
+    s+R_{0}-A_{2} \cos{\left( m_{2}\theta \right)} \right\} \times \\
+    \Psi^{*}&\left\{ x-A_{1} \cos{\left( m_{1}\theta \right)},
+    s-R_{0}-A_{2} \cos{\left( m_{2}\theta \right)} \right\},
+    \end{aligned}
+  \end{equation*}
+  %
+  where $\Psi(x,s)$ is given by
+  %
+  \begin{equation*}
+    \Psi(x,s) = f\left( \sqrt{x^{2}+s^{2}} \right) \left( x+is \right).
+  \end{equation*}
+  %
+  The function $f(r)$ is as above, $s = \sqrt{y^{2} + z^{2}} - A_{1}\sin{\left(
+  m_{1}\theta \right)}$, $A_{1}$ and $m_{1}$ are the amplitude and wavenumber
+  of a purely planar perturbation, and $A_{2}$ and $m_{2}$ are the amplitude
+  and wavenumber of a purely helical perturbation.
 
   The direction of motion of the vortex ring in the $x$-direction can be
   defined, but note that it is not yet possible to set up rings moving in the
