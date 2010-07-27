@@ -617,4 +617,60 @@
   for the snapshots in the animations above), so this directory must exist
   prior to attempting to save as EPS.
 
+  \subsection{Saving VAPOR data}
+  The \gpefile{gpe.pro} program can save data in a form suitable for
+  post-processing by VAPOR --- the visualisation and analysis platform, often
+  used by ocean, atmosphere, and solar researchers
+  (\url{http://www.vapor.ucar.edu/}).
+
+  The bulk of the work to do this is performed by the IDL
+  \gpefile{save\_vapor\_data.pro} program in the \gpefile{idl/utils} directory.
+  This program calls auxiliary IDL routines which are only available once VAPOR
+  is installed, therefore, you must have a functioning VAPOR installation,
+  prior to attempting to save VAPOR data.  See the VAPOR website for
+  installation and setup instructions.
+
+  Once VAPOR is installed, suitable data can be saved with the \verb"/vapor"
+  keyword, \eg
+  %
+  \begin{Verbatim}
+    gpe, 0, 9, /vapor
+  \end{Verbatim}
+  %
+  This will create a \gpefile{gpe.vdf} VDF metafile (which describes the data),
+  in a sub-directory \gpefile{vapor} (which must already exist).  Also created
+  within the \gpefile{vapor} directory, is a directory \gpefile{gpe\_data},
+  which includes further sub-directories where the VAPOR data resides.  (The
+  number of directories here depends on which data you requested to be saved.)
+
+  The density data are always saved by default.  In addition, you can request
+  that the phase, or the velocities are also saved, using the relevant keywords
+  (as explained above).
+
+  By default, two refinement levels of the data are saved.  This can be altered
+  with the \verb"num_levels" keyword, \eg
+  %
+  \begin{Verbatim}
+    gpe, 0, 9, /vapor, num_levels=1
+  \end{Verbatim}
+  %
+  which will save only one refinement level.
+
+  If you subsequently decide to save more data for VAPOR post-processing, for
+  example, if you have continued a run, and don't want to save all the data
+  again, then you can add the \verb"/append" keyword, to add the extra
+  information to the VDF metafile.  So, continuing from the previous example,
+  %
+  \begin{Verbatim}
+    gpe, 10, 19, /vapor, /append
+  \end{Verbatim}
+  %
+  would add files 10--19 to the VAPOR data.  To actually view the data, load the \gpefile{gpe.vdf} file into VAPOR.
+
+  \textbf{Important note:} VAPOR does not yet support double precision floating
+  point arithmetic, so even if your run is performed in double precision, the
+  data you view with VAPOR is only in single precision.  You must still provide
+  the \verb"/dbl" keyword as normal, but all double precision variables are
+  silently converted to single precision.
+
 \end{chapter}

@@ -95,10 +95,10 @@ pro get_filenames, digits, i, ifile, idir, iprefix, isuffix, ofile, odir, $
   ofile = odir + oprefix + strcompress(index, /remove_all)
 end
 
-pro gpe, nstart, nend, cntr=cntr, c_anim=c_anim, phase=phase, $
+pro gpe, nstart, nend, cntr=cntr, c_anim=c_anim, phase=phase, iprefix=iprefix, $
   skip=skip, slice=slice, dir=dir, xpos=xpos, ypos=ypos, zpos=zpos, vx=vx, $
   vy=vy, vz=vz, eps=eps, dbl=dbl, xsize=xsize, ysize=ysize, f77=f77, $
-  _extra=_extra
+  vapor=vapor, _extra=_extra
 
 ;no. digits (including leading 0's) in filename
 digits = 7
@@ -112,8 +112,9 @@ default, skip, 1L
 idir = './'
 ;output dir of files
 odir = idir+'images/'
+if keyword_set(vapor) then odir = idir+'vapor/'
 ;prefix of input filenames
-iprefix = 'dens'
+default, iprefix, 'dens'
 ;prefix of output filenames
 if keyword_set(cntr) then begin
   if keyword_set(phase) then begin
@@ -134,6 +135,15 @@ endelse
 isuffix = 'dat'
 default, xsize, 640
 default, ysize, 480
+
+; If doing an animation or saving VAPOR data, then check to make sure an output
+; directory exists,
+if nstart ne nend or keyword_set(vapor) then begin
+  if not file_test(odir, /directory) then begin
+    print, 'ERROR: Directory '+odir+' does not exist.'
+    stop
+  endif
+endif
 
 ; Transformation matrix.
 tmat=[[      0.73090459,     -0.79570162,    -0.034048109,       0.0000000], $
@@ -165,13 +175,9 @@ loadct, 39, /silent
 ;loadct, 3, /silent
 TVLCT, r, g, b, /Get
 
-; If doing an animation then check to make sure an output directory exists,
-; find the range of the data over all snapshots, and define contour levels.
+; If doing an animation, find the range of the data over all snapshots, and
+; define contour levels.
 if nstart ne nend then begin
-  if not file_test(odir, /directory) then begin
-    print, 'ERROR: Directory '+odir+' does not exist.'
-    stop
-  endif
   if keyword_set(c_anim) then begin
     print, '*****Finding range of data for contour levels.  Please wait...'
     if keyword_set(dbl) then begin
@@ -206,6 +212,7 @@ if nstart ne nend then begin
   endif
 endif
 
+vapor_i = 0
 ; Loop over all data files from 'nstart' to 'nend' in steps of 'skip', and do
 ; the plots.
 for i = nstart, nend, skip do begin
@@ -216,6 +223,14 @@ for i = nstart, nend, skip do begin
   data = read_data(file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
     f77=f77)
   
+  if keyword_set(vapor) then begin
+    odir = idir+'vapor/'
+    save_vapor_data, vapor_i, nstart, nend, skip, data, odir, phase=phase, $
+      vx=vx, vy=vy, vz=vz, _extra=_extra
+    vapor_i = vapor_i + 1
+    continue
+  endif
+
   if not keyword_set(cntr) and not keyword_set(slice) then begin
     ; 3D isosurface.
 
