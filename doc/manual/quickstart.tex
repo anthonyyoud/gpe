@@ -290,13 +290,14 @@
   By saving a series of snapshots of 2D or 3D data, it is possible to then
   combine them into an animation.
 
-  From the run directory, run the script \gpefile{create-links}.  This will
-  create a directory \gpefile{links}, which contains renamed symbolic links
-  (shortcuts) pointing to the isosurface files within each process directory.
-  This is to make sure that the files are numbered sequentially in steps of
-  one.  The \gpefile{create-links} script is located in the \gpefile{scripts}
-  subdirectory of the main code directory.  Giving it the argument
-  \gpefile{--help} will provide usage instructions.
+  From the run directory, run the script \gpefile{create-links} with the
+  argument \gpefile{links}.  This will create a directory \gpefile{links},
+  which contains renamed symbolic links (shortcuts) pointing to the isosurface
+  files within each process directory.  This is to make sure that the files are
+  numbered sequentially.  The \gpefile{create-links} script is located in the
+  \gpefile{scripts} subdirectory of the main code directory.  Running it  with
+  no arguments, or with the options \verb"-h" or \verb"--help", will provide
+  usage instructions.
 
   \subsubsection{Contour animations}
   Change to the links directory and create another directory called
