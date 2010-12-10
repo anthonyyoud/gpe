@@ -1,6 +1,3 @@
-; $Id$
-;----------------------------------------------------------------------------
-
 function contourdata, data, x0, y0, z0, phase=phase, vx=vx, vy=vy, vz=vz, $
   dir=dir
   ; Get the contour data if a contour plot is requested.

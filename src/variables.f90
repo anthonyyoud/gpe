@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module variables
   ! Routines to do with setting up variables and operations on them
   use parameters

@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module constants
   ! Constants for use in FFTW routines.  Original comments below:
   ! This file contains PARAMETER statements for various constants

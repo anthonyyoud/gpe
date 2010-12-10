@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 program gpe
   ! Code to solve the Gross-Pitaevskii equation in 3D.  Parallelised using MPI.
   ! See the README file for a description and usage instructions

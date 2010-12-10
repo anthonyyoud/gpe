@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module io
   ! Routines for input/output
   use parameters

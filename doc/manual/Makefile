@@ -1,6 +1,3 @@
-# $Id$
-#------------------------------------------------------------------------------
-
 # Generic Makefile for compiling LaTeX documents.
 #
 # * OBJECT: Change this to the name of the main LaTeX file without extension.

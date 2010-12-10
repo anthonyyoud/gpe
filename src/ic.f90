@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module ic
   ! Routines to do with setting up the initial condition
   use parameters

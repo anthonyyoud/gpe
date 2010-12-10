@@ -1,4 +1,3 @@
-! $Id$
 ! vim: set filetype=fortran:
 !----------------------------------------------------------------------------
 ! This file includes parameters which, if changed, will require the code to be

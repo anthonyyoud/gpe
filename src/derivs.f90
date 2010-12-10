@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module derivs
   ! Routines to calculate finite-difference derivatives
   use parameters

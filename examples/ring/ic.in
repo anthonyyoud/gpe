@@ -1,4 +1,3 @@
-! $Id: ic.in 617 2010-06-15 15:26:22Z najy2 $
 ! vim: set filetype=fortran:
 !----------------------------------------------------------------------------
 ! This file includes the definition of the initial condition.  It is included

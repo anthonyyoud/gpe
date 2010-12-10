@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module error
   ! Routines for error handling
   implicit none

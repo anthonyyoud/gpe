@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module parameters
   ! Parameters amd global variables.  Nothing here needs to be changed.  Edit
   ! run.in and parameters.in instead.

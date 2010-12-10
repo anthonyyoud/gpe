@@ -1,6 +1,3 @@
-; $Id: save_vapor_data.pro 629 2010-06-20 13:41:06Z ayoud $
-;----------------------------------------------------------------------------
-
 pro save_vapor_data, ind, nstart, nend, skip, data, odir, phase=phase, $
   vx=vx, vy=vy, vz=vz, append=append, num_levels=num_levels
 

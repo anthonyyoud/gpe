@@ -1,4 +1,3 @@
-! $Id: run.in 617 2010-06-15 15:26:22Z najy2 $
 ! vim: set filetype=fortran:
 !----------------------------------------------------------------------------
 ! Run-time parameters.  Any changes to this file do not require a recompile of

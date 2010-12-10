@@ -1,6 +1,3 @@
-! $Id$
-!----------------------------------------------------------------------------
-
 module solve
   ! Routines to actually solve the equation
   use parameters
