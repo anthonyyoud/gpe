@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 ! vim: set filetype=fortran:
 !----------------------------------------------------------------------------
 ! Run-time parameters.  Any changes to this file do not require a recompile of

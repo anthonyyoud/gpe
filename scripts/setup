@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Copyright (c) Anthony J. Youd/Newcastle University 2011
+#
 # Compile and set up the code ready to run in a separate directory
 # usage:  ./setup <directory name> <precision>
 

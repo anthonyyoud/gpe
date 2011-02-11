@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 module derivs
   ! Routines to calculate finite-difference derivatives
   use parameters

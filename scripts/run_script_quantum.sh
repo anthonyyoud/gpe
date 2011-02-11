@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# Copyright (c) Anthony J. Youd/Newcastle University 2011
+#
 
 FILTER=0
 TARFILE=data_`hostname`.tar

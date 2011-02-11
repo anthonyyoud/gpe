@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 ! vim: set filetype=fortran:
 !----------------------------------------------------------------------------
 ! This file includes the definition of the initial condition.  It is included

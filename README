@@ -1,3 +1,6 @@
+Copyright (c) Anthony J. Youd/Newcastle University 2011
+-------------------------------------------------------
+
 DESCRIPTION
 -----------
 Modular Gross-Pitaevskii equation solver in 3D parallelised using MPI.  The

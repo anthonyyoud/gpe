@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 module solve
   ! Routines to actually solve the equation
   use parameters

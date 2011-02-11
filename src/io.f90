@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 module io
   ! Routines for input/output
   use parameters

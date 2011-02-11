@@ -3,7 +3,7 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.7	//
+!_TAG_PROGRAM_VERSION	5.8	//
 FFTW_BACKWARD	constants.f90	/^  integer, parameter :: FFTW_BACKWARD /;"	v	module:constants
 FFTW_COMPLEX_TO_REAL	constants.f90	/^  integer, parameter :: FFTW_COMPLEX_TO_REAL /;"	v	module:constants
 FFTW_ESTIMATE	constants.f90	/^  integer, parameter :: FFTW_ESTIMATE /;"	v	module:constants

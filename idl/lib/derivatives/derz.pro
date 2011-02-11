@@ -1,3 +1,7 @@
+;
+; Copyright (c) Anthony J. Youd/Newcastle University 2011
+;
+
 function derz, z, var
   ; First z-derivative.
 

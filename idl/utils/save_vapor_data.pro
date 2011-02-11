@@ -1,3 +1,7 @@
+;
+; Copyright (c) Anthony J. Youd/Newcastle University 2011
+;
+
 pro save_vapor_data, ind, nstart, nend, skip, data, odir, phase=phase, $
   vx=vx, vy=vy, vz=vz, append=append, num_levels=num_levels
 

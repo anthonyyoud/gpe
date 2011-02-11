@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 module mpi
   ! Routines to do with MPI.
   implicit none

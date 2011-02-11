@@ -1,3 +1,7 @@
+;
+; Copyright (c) Anthony J. Youd/Newcastle University 2011
+;
+
 function read_data, file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
   f77=f77
 

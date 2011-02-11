@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 program gpe
   ! Code to solve the Gross-Pitaevskii equation in 3D.  Parallelised using MPI.
   ! See the README file for a description and usage instructions

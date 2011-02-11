@@ -1,3 +1,6 @@
+!
+! Copyright (c) Anthony J. Youd/Newcastle University 2011
+!
 module constants
   ! Constants for use in FFTW routines.  Original comments below:
   ! This file contains PARAMETER statements for various constants
