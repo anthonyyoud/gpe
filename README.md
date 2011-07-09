@@ -14,6 +14,10 @@ together.
 The code uses MPI (Message Passing Interface) as the method of parallelisation
 in solving the GP equation.
 
+__Note:__ Github thinks this is a Prolog project because of all the `.pro`
+files.  These are IDL procedure files; IDL can be used for visualisation of the
+results.  There is not a single line of Prolog anywhere here!
+
 Directory structure
 ===================
 * doc - Contains documentation.  Currently only the manual exists here.
