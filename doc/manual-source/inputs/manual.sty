@@ -1,46 +1,18 @@
+%Copyright 2011 Anthony Youd/Newcastle University
+%
+%   Licensed under the Apache License, Version 2.0 (the "License");
+%   you may not use this file except in compliance with the License.
+%   You may obtain a copy of the License at
+%
+%       http://www.apache.org/licenses/LICENSE-2.0
+%
+%   Unless required by applicable law or agreed to in writing, software
+%   distributed under the License is distributed on an "AS IS" BASIS,
+%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%   See the License for the specific language governing permissions and
+%   limitations under the License.
 %------------------------------------------------------------------------------
-% Redefine the margins - basically just a4wide.sty with different measurements.
-% If the font size is 10pt then the text is centred on the page with equal left
-% and right margins; if the font size is 11pt then the text is shifted to the
-% right so that the left hand margin is wider.  This is to take into account
-% the binding of the thesis.  I've set the margins in accordance with
-% University guidelines.  12pt has been left with the default a4wide.sty
-% settings.
-\RequirePackage{a4}
-
-\ifcase \@ptsize
-    % mods for 10 pt
-    \oddsidemargin  0.15 in     %   Left margin on odd-numbered pages.
-    \evensidemargin 0.35 in     %   Left margin on even-numbered pages.
-    \marginparwidth 1 in        %   Width of marginal notes.
-    \oddsidemargin 0.25 in      %   Note that \oddsidemargin = \evensidemargin
-    \evensidemargin 0.25 in
-    \marginparwidth 0.75 in
-    \textwidth 5.875 in        	% Width of text line.
-\or % mods for 11 pt
-    \oddsidemargin 0.1 in      	%   Left margin on odd-numbered pages.
-    \evensidemargin 0.15 in    	%   Left margin on even-numbered pages.
-    \marginparwidth 1 in       	%   Width of marginal notes.
-    \oddsidemargin 0.6 in      	%   Note that \oddsidemargin = \evensidemargin
-    \evensidemargin 0.125 in
-    \marginparwidth 0.75 in
-    \textwidth 5.700 in 	% Width of text line.
-\or % mods for 12 pt
-    \oddsidemargin -10 pt      	%   Left margin on odd-numbered pages.
-    \evensidemargin 10 pt      	%   Left margin on even-numbered pages.
-    \marginparwidth 1 in       	%   Width of marginal notes.
-    \oddsidemargin 0 in      	%   Note that \oddsidemargin = \evensidemargin
-    \evensidemargin 0 in
-    \marginparwidth 0.75 in
-    \textwidth 6.375 true in 	% Width of text line.
-\fi
-%------------------------------------------------------------------------------
-
-%------------------------------------------------------------------------------
-% A titlepage - Adapted from a titlepage designed by Ashley Willis.  To use
-% this titlepage in your thesis all you need is a line which says
-% \phdtitle{title}{name}{image}{date}.  Any other changes can be made below.
-\newcommand{\phdtitle}[4]{%
+\newcommand{\manualtitle}[4]{%
  \begin{titlepage}
    \begin{tabular}{c}
      \vspace{30mm}
@@ -52,7 +24,7 @@
      \vspace{2cm}\\
      \begin{tabular}{c}
        \hspace{2mm}
-       \scalebox{0.75}{\includegraphics{#3}}
+       \scalebox{0.5}{\includegraphics{#3}}
      \end{tabular}
      \mbox{}
      \vspace{0.6cm}\\
@@ -67,80 +39,6 @@
  \end{titlepage}
 }
 %------------------------------------------------------------------------------
-
-%------------------------------------------------------------------------------
-% A new acknowledgements environment.  As far as I am aware LaTeX does not
-% provide an acknowledgement environment; so here's one!  Just use
-% \begin{acknowledgements}...\end{acknowledgements} as usual.
-\makeatletter
-\newenvironment{acknowledgements}{
-  \titlepage\null\vfil
-  \@beginparpenalty\@lowpenalty
-  \begin{center}%
-    \bfseries Acknowledgements \@endparpenalty\@M
-  \end{center}%
-  }{
-  \par\vfil\null\endtitlepage
-}
-\makeatother
-%------------------------------------------------------------------------------
-
-%------------------------------------------------------------------------------
-% A dedication environment.  Use \begin{dedication}...\end{dedication}.  This
-% will set aside a full page with italic text centred horizontally and
-% vertically.
-\makeatletter
-\newenvironment{dedication}{
-  \titlepage\null\vfil
-  \begin{center}%
-    \itshape
-    }{
-  \end{center}%
-\par\vfil\null\endtitlepage
-}
-\makeatother
-%------------------------------------------------------------------------------
-
-%------------------------------------------------------------------------------
-% Provides dot-dashed lines.  There doesn't appear to be an easy way of making
-% dotted or dashed lines in LaTeX, so here are some pre-defined linestyles.
-\def\dashedrule#1#2#3#4#5{{%
-	% #1 is length of first dash
-	% #2 is length of gap between two consecutive first dashes
-	% #3 is length of second dash
-	% #4 is length of gap between two consecutive second dashes
-	% #5 is number of dashes
-	\dimen1=#2 \divide\dimen1 by 2
-	\dimen2=#4 \divide\dimen2 by 2
-	\def\@ruledash{%
-		\rule{\dimen1}{0pt}%
-		\rule[0.5ex]{#1}{0.4pt}%
-		% line is 0.5ex above the baseline
-		% and 0.4pt thick
-		\rule{\dimen1}{0pt}%
-		\rule{\dimen2}{0pt}%
-		\rule[0.5ex]{#3}{0.4pt}%
-		\rule{\dimen2}{0pt}}%
-	\count1=0
-	\loop%
-	\ifnum\count1<#5%
-	\advance\count1 by 1%
-	\@ruledash%
-\repeat}}
-
-% These are the definitions.  You must say \protect\longdashes,
-% \protect\shortdashes etc. in your document to get a short line of the
-% specified style.  You can define more here if you want.  The length of a line
-% segment is (#1+#2+#3+#4)*#5
-\def\longdashes{\dashedrule{0.8em}{0.2em}{0.0em}{0.0em}{3}}
-\def\mediumdashes{\dashedrule{0.3em}{0.2em}{0.0em}{0.0em}{6}}
-\def\shortdashes{\dashedrule{0.1em}{0.1em}{0.0em}{0.0em}{15}}
-\def\sparsedashes{\dashedrule{0.5em}{0.5em}{0.0em}{0.0em}{3}}
-\def\solidline{\dashedrule{3em}{0.0em}{0.0em}{0.0em}{1}}
-\def\dotdashline{\dashedrule{0.5em}{0.1em}{0.1em}{0.3em}{3}}
-%------------------------------------------------------------------------------
-
-% Any external packages that you require can be inserted here.
 \usepackage[round]{natbib}              % BiBTeX style
 \usepackage{hyperref}
 \usepackage{fancyhdr}                   % Fancy headers
@@ -304,4 +202,16 @@
 \newsavebox{\astrutbox}
 \sbox{\astrutbox}{\rule[-5pt]{0pt}{20pt}}
 \newcommand{\astrut}{\usebox{\astrutbox}}
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% Licence page
+\makeatletter
+\newenvironment{licence}{
+  \titlepage\null\vfil
+  \@beginparpenalty\@lowpenalty
+  }{
+  \par\vfil\null\endtitlepage
+}
+\makeatother
 %------------------------------------------------------------------------------

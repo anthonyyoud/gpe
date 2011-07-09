@@ -1,0 +1,54 @@
+%Copyright 2011 Anthony Youd/Newcastle University
+%
+%   Licensed under the Apache License, Version 2.0 (the "License");
+%   you may not use this file except in compliance with the License.
+%   You may obtain a copy of the License at
+%
+%       http://www.apache.org/licenses/LICENSE-2.0
+%
+%   Unless required by applicable law or agreed to in writing, software
+%   distributed under the License is distributed on an "AS IS" BASIS,
+%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%   See the License for the specific language governing permissions and
+%   limitations under the License.
+
+\documentclass[12pt]{report}
+\usepackage[a4paper,left=30mm,right=30mm,top=40mm,bottom=35mm]{geometry}
+\setlength{\headheight}{15pt}
+\usepackage{manual}
+
+\begin{document}
+
+  \manualtitle{The GPE Code}
+              {Anthony~J.~Youd}
+              {fig/trapvortex}
+              {\small{Sat 09 Jul 16:32:45 2011}\\
+               \tiny{\copyright Anthony J. Youd/Newcastle University 2011}}
+
+%%%%%%%%%%%% START OF DOCUMENT CONTENT %%%%%%%%%%%%%%%%
+
+  \input{licence}
+
+  \pagenumbering{roman}
+
+  \tableofcontents
+
+  \clearpage
+
+  \pagenumbering{arabic}
+
+  \include{introduction}
+  \include{quickstart}
+  \include{equations}
+  \include{numerics}
+  \include{file_reference}
+
+  \appendix
+
+  \include{nondim}
+%%%%%%%%%%%%% END OF DOCUMENT CONTENT %%%%%%%%%%%%%%%%%
+
+  \bibliography{references}
+  \bibliographystyle{jfm}
+
+\end{document}

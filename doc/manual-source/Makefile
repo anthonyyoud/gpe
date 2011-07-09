@@ -1,37 +1,20 @@
-# Generic Makefile for compiling LaTeX documents.
+#Copyright 2011 Anthony Youd/Newcastle University
 #
-# * OBJECT: Change this to the name of the main LaTeX file without extension.
-# * BIBTEX: Set this to true if you are using BibTeX for your citations; set it
-#           to false otherwise.
-# * LATEX: Set this to latex or pdflatex depending on what output format you
-#          want and what figure formats are included in the document.
-# * SOURCES: These are the individual tex files making up the document.
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
 #
-# Usage:
-# make 		- Compile the document.  Output depends on the LATEX and BIBTEX
-#           variables.  Default is PS output using BibTeX.
-# make twoup 	- Compile as PS but giving output in 2-up format.
-# make book 	- Compile as PS but giving output suitable for printing in
-# 		          booklet form.  Send to the printer as a duplex job.
-# make tidy	- Remove any auxiliary files created during the make process.
-# make clean 	- As for make tidy but in addition remove the final output
-# 		          files.
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 #------------------------------------------------------------------------------
 OBJECT		= manual
-
-# Set this variable to true if you are using BibTeX for your citations; set it
-# to false otherwise.
 BIBTEX		= true
-
-# Set this variable to latex if you are including only PS and EPS figures in
-# your document; the resulting output will be a PS file.  Set it to pdflatex if
-# you are only including PDF, PNG, or JPG images; the resulting output will be
-# a PDF file.
 LATEX		= latex
-
-# Add list of files here to allow make to only build what is necessary.  Your
-# master document should be listed first.
 SOURCES		= $(OBJECT).tex introduction.tex quickstart.tex equations.tex \
 						nondim.tex numerics.tex file_reference.tex
 
@@ -46,6 +29,7 @@ SOURCES		= $(OBJECT).tex introduction.tex quickstart.tex equations.tex \
 
 .ps.pdf:
 	ps2pdf $*.ps
+	cp $*.pdf ../
 
 ifeq ($(LATEX), pdflatex)
 # Using pdflatex to compile.
@@ -54,6 +38,7 @@ ifeq ($(LATEX), pdflatex)
 	TEXINPUTS=./inputs:$(TEXINPUTS) $(LATEX) --jobname $*_pdf $*
 	TEXINPUTS=./inputs:$(TEXINPUTS) $(LATEX) --jobname $*_pdf $*
 	mv $*_pdf.pdf $*.pdf
+	cp $*.pdf ../$*.pdf
 endif
 
 .tex.dvi:
