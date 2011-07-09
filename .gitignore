@@ -1,12 +1,3 @@
 *.mod
 *.o
-*.aux
-*.bbl
-*.blg
-*.log
-*.out
-*.toc
-*.ps
-*.pdf
-*.dvi
 *.swp
