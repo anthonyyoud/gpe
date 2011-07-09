@@ -1,8 +1,5 @@
-Copyright (c) Anthony J. Youd/Newcastle University 2011
--------------------------------------------------------
-
-DESCRIPTION
------------
+Description
+===========
 Modular Gross-Pitaevskii equation solver in 3D parallelised using MPI.  The
 time stepping scheme can be either explicit second-order Euler, explicit
 fourth-order Runge-Kutta, or explicit fourth-order adaptive
@@ -17,16 +14,14 @@ together.
 The code uses MPI (Message Passing Interface) as the method of parallelisation
 in solving the GP equation.
 
-DIRECTORY STRUCTURE
--------------------
-doc - Contains documentation.  Currently only the manual exists here.
-examples - Some example simulations already set up and ready to compile.
-idl - IDL routines for visualisation are kept in this directory.
-scripts - Various helper scripts are kept in this directory.
-src - The source for the code itself.
+Directory structure
+===================
+* doc - Contains documentation.  Currently only the manual exists here.
+* examples - Some example simulations already set up and ready to compile.
+* idl - IDL routines for visualisation are kept in this directory.
+* scripts - Various helper scripts are kept in this directory.
+* src - The source for the code itself.
 
-MANUAL
-------
+Manual
+======
 For instructions on how to use the code see the manual in the doc directory.
-
-AJY 20/06/2010
