@@ -22,9 +22,6 @@ END_STATE=end_state.tar
 #PARAMETERS
 #****************************************************************************
 NPROCS=$_CONDOR_NPROCS
-echo `hostname` $NPROCS
-#EXE=hello_mpi
-#EXE=fast2.5D_MPI
 EXE=gpe
 PROC_DIR=proc
 
@@ -49,7 +46,6 @@ touch modified
 start_time=`ls -cl --time-style=+%s -d modified | cut -d" " -f6`
 rm modified
 
-echo No. processors = $NPROCS
 time $EXE
 
 rm $EXE
@@ -65,12 +61,4 @@ do
     rm -r $dir
   fi
 done
-#tar cf $TARFILE --exclude="chirp.config" --exclude="condor_exec.exe" --exclude="errfile.*" --exclude="outfile.*" --exclude="$0" * &> /dev/null
 tar cf $TARFILE $PROC_DIR* &> /dev/null
-hostname
-echo "----------"
-pwd
-ls -l --time-style=+%s
-echo NPROCS $_CONDOR_NPROCS
-echo "----------"
-echo "----------"

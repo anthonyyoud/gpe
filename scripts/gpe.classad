@@ -1,0 +1,14 @@
+universe = parallel
+executable = /quantum/bin/condor-parallel.sh
+arguments = run-quantum.sh
+machine_count = 16
+log = logfile
+output = outfile.$(NODE)
+error = errfile.$(NODE)
+notification = Never
+notify_user = anthony.youd@newcastle.ac.uk
+should_transfer_files = yes
+when_to_transfer_output = on_exit
+transfer_input_files = gpe,ic.in,parameters.in,run.in,run-quantum.sh
+environment="JOBID=$(Cluster).$(Process)"
+queue
