@@ -20,9 +20,9 @@
 &run_params
   tau           = 0.0001
   end_time      = 100.0
-  xr            = 64.0
-  yr            = 64.0
-  zr            = 64.0
+  xr            = 32.0
+  yr            = 32.0
+  zr            = 32.0
   scheme        = 'rk45'
   eqn_to_solve  = 1
   bcs           = 2

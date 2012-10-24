@@ -22,8 +22,8 @@
   !integer, parameter :: pr = selected_real_kind(6,37)
   integer, parameter :: pr = selected_real_kind(15,307)
 
-  integer, parameter :: nyprocs = 2
-  integer, parameter :: nzprocs = 4
+  integer, parameter :: nyprocs = 4
+  integer, parameter :: nzprocs = 6
   integer, parameter :: nx      = 120
   integer, parameter :: ny      = 120
   integer, parameter :: nz      = 120

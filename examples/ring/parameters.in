@@ -22,11 +22,11 @@
   !integer, parameter :: pr = selected_real_kind(6,37)
   integer, parameter :: pr = selected_real_kind(15,307)
 
-  integer, parameter :: nyprocs = 2
+  integer, parameter :: nyprocs = 4
   integer, parameter :: nzprocs = 4
-  integer, parameter :: nx      = 128
-  integer, parameter :: ny      = 128
-  integer, parameter :: nz      = 128
+  integer, parameter :: nx      = 64
+  integer, parameter :: ny      = 64
+  integer, parameter :: nz      = 64
 
   ! Vortex line parameters **************************************************
   !

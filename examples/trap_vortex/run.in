@@ -18,15 +18,15 @@
 ! the code.
 !----------------------------------------------------------------------------
 &run_params
-  tau           = 0.0001
+  tau           = 0.001
   end_time      = 10.0
   xr            = 12.0
   yr            = 12.0
   zr            = 12.0
-  scheme        = 'rk2'
+  scheme        = 'rk4'
   eqn_to_solve  = 4
   bcs           = 2
-  order         = 2
+  order         = 4
   restart       = .false.
   saved_restart = .false.
   renorm        = .false.
@@ -45,7 +45,7 @@
   nn       = 1.0
   omx      = 1.0
   omy      = 1.0
-  omz      = 2.0
+  omz      = 1.0
 /
 &io_params
   save_rate     = 10
