@@ -21,9 +21,8 @@ OBJS	= constants.o derivs.o error.o gpe.o ic.o io.o mpi.o parameters.o \
 #FC	= sunf95
 #FFLAGS	= -fast -xmodel=medium #-fsimple=0
 FC	= gfortran
-#FFLAGS	= -O3 -march=pentium4 -mfpmath=sse #-mcmodel=medium
+FFLAGS	= -O3 -march=pentium4 -mfpmath=sse #-mcmodel=medium
 #FFLAGS	= -O3 -march=core2 -mfpmath=sse #-mcmodel=medium
-FFLAGS	= -O3 -march=corei7 -mfpmath=sse #-mcmodel=medium
 ifeq ($(precision), single)
   LDFFTW = -lsrfftw_mpi -lsfftw_mpi -lsrfftw -lsfftw
 else
