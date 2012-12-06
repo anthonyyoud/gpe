@@ -29,3 +29,10 @@ Directory structure
 Manual
 ======
 For instructions on how to use the code see the manual in the doc directory.
+
+Before compiling for the first time
+===================================
+* In the `src` directory, copy `Makefile.dist` to `Makefile` and edit to suit.
+* In each of the example directories, copy each `*.in.dist` file to `*.in`.
+  If you want to make changes to the example parameters, edit the `*.in` files,
+and leave the `*.in.dist` files unchanged.

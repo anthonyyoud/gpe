@@ -1,3 +1,4 @@
+! vim: set filetype=fortran:
 !Copyright 2011 Anthony Youd/Newcastle University
 !
 !   Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,8 +12,7 @@
 !   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 !   See the License for the specific language governing permissions and
 !   limitations under the License.
-
-! vim: set filetype=fortran:
+!
 !----------------------------------------------------------------------------
 ! This file includes parameters which, if changed, will require the code to be
 ! recompiled.  It is included verbatim in parameters.f90.
@@ -22,11 +22,11 @@
   !integer, parameter :: pr = selected_real_kind(6,37)
   integer, parameter :: pr = selected_real_kind(15,307)
 
-  integer, parameter :: nyprocs = 4
+  integer, parameter :: nyprocs = 2
   integer, parameter :: nzprocs = 4
-  integer, parameter :: nx      = 64
-  integer, parameter :: ny      = 64
-  integer, parameter :: nz      = 64
+  integer, parameter :: nx      = 128
+  integer, parameter :: ny      = 128
+  integer, parameter :: nz      = 128
 
   ! Vortex line parameters **************************************************
   !
