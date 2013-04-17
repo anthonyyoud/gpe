@@ -351,101 +351,162 @@ module ic
 
   function vortex_ring(vr)
     ! Vortex ring initial condition
+    use error
     use parameters
     implicit none
 
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_ring
     type (ring_param), intent(in) :: vr
-    real (pr), dimension(js:je,ks:ke) :: s, theta, dist
-    real (pr), dimension(0:nx1,js:je,ks:ke) :: rr1, rr2, d1, d2, xp
+    real (pr), allocatable, dimension(:,:) :: s, theta, dist
+    real (pr), dimension(0:nx1,js:je,ks:ke) :: rr1, rr2, d1, d2, pp
     integer :: i, j, k
 
-    !call get_s(s, vr%y0, vr%z0)
-    
-    do k=ks,ke
-      do j=js,je
-        theta(j,k) = atan2(z(k)-vr%z0, y(j)-vr%y0)
-        s(j,k) = sqrt((y(j)-vr%y0)**2 + (z(k)-vr%z0)**2) - &
-          vr%r1*sin(real(vr%kk, pr)*theta(j,k))
-      end do
-    end do
+    select case(vr%plane)
+      case ('xy')
+        ! Vortex in the xy-plane, propagating in z
+        allocate(s(0:nx1,js:je))
+        allocate(theta(0:nx1,js:je))
+        allocate(dist(0:nx1,js:je))
 
-    ! Mode-mm disturbance of amplitude amp to the ring
-    dist = vr%amp*cos(real(vr%mm, pr)*theta)
+        do j=js,je
+          do i=0,nx1
+            theta(i,j) = atan2(y(j)-vr%y0, x(i)-vr%x0)
+            s(i,j) = sqrt((x(i)-vr%x0)**2 + (y(j)-vr%y0)**2) - &
+              vr%r1*sin(real(vr%kk, pr)*theta(i,j))
+          end do
+        end do
 
-    do k=ks,ke
-      do j=js,je
-        do i=0,nx1
-          xp(i,j,k) = x(i) - vr%r1*cos(real(vr%kk, pr)*theta(j,k))
-          d1(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
-            (scal*(s(j,k)+vr%r0-dist(j,k)))**2 )
-          d2(i,j,k) = sqrt( (scal*(xp(i,j,k)-vr%x0))**2 + &
-            (scal*(s(j,k)-vr%r0-dist(j,k)))**2 )
+        ! Mode-mm disturbance of amplitude amp to the ring
+        dist = vr%amp*cos(real(vr%mm, pr)*theta)
+
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              pp(i,j,k) = z(k) - vr%r1*cos(real(vr%kk, pr)*theta(i,j))
+              d1(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%z0))**2 + &
+                (scal*(s(i,j)+vr%r0-dist(i,j)))**2 )
+              d2(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%z0))**2 + &
+                (scal*(s(i,j)-vr%r0-dist(i,j)))**2 )
+            end do
+          end do
         end do
-      end do
-    end do
-    
-    call get_rr(d1,rr1)
-    call get_rr(d2,rr2)
-    
-    do k=ks,ke
-      do j=js,je
-        do i=0,nx1
-          vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) + &
-            vr%dir*eye*(scal*(s(j,k)+vr%r0-dist(j,k)))) * &
-            rr2(i,j,k)*((scal*(xp(i,j,k)-vr%x0)) - &
-            vr%dir*eye*(scal*(s(j,k)-vr%r0-dist(j,k))))
+        
+        call get_rr(d1,rr1)
+        call get_rr(d2,rr2)
+        
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(pp(i,j,k)-vr%z0)) + &
+                vr%dir*eye*(scal*(s(i,j)+vr%r0-dist(i,j)))) * &
+                rr2(i,j,k)*((scal*(pp(i,j,k)-vr%z0)) - &
+                vr%dir*eye*(scal*(s(i,j)-vr%r0-dist(i,j))))
+            end do
+          end do
         end do
-      end do
-    end do
+
+        deallocate(s)
+        deallocate(theta)
+        deallocate(dist)
+      case ('xz')
+        ! Vortex in the xz-plane, propagating in y
+        allocate(s(0:nx1,ks:ke))
+        allocate(theta(0:nx1,ks:ke))
+        allocate(dist(0:nx1,ks:ke))
+
+        do k=ks,ke
+          do i=0,nx1
+            theta(i,k) = atan2(z(k)-vr%z0, x(i)-vr%x0)
+            s(i,k) = sqrt((x(i)-vr%x0)**2 + (z(k)-vr%z0)**2) - &
+              vr%r1*sin(real(vr%kk, pr)*theta(i,k))
+          end do
+        end do
+
+        ! Mode-mm disturbance of amplitude amp to the ring
+        dist = vr%amp*cos(real(vr%mm, pr)*theta)
+
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              pp(i,j,k) = y(j) - vr%r1*cos(real(vr%kk, pr)*theta(i,k))
+              d1(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%y0))**2 + &
+                (scal*(s(i,k)+vr%r0-dist(i,k)))**2 )
+              d2(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%y0))**2 + &
+                (scal*(s(i,k)-vr%r0-dist(i,k)))**2 )
+            end do
+          end do
+        end do
+        
+        call get_rr(d1,rr1)
+        call get_rr(d2,rr2)
+        
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(pp(i,j,k)-vr%y0)) + &
+                vr%dir*eye*(scal*(s(i,k)+vr%r0-dist(i,k)))) * &
+                rr2(i,j,k)*((scal*(pp(i,j,k)-vr%y0)) - &
+                vr%dir*eye*(scal*(s(i,k)-vr%r0-dist(i,k))))
+            end do
+          end do
+        end do
+
+        deallocate(s)
+        deallocate(theta)
+        deallocate(dist)
+      case ('yz')
+        ! Vortex in the yz-plane, propagating in x
+        allocate(s(js:je,ks:ke))
+        allocate(theta(js:je,ks:ke))
+        allocate(dist(js:je,ks:ke))
+
+        do k=ks,ke
+          do j=js,je
+            theta(j,k) = atan2(z(k)-vr%z0, y(j)-vr%y0)
+            s(j,k) = sqrt((y(j)-vr%y0)**2 + (z(k)-vr%z0)**2) - &
+              vr%r1*sin(real(vr%kk, pr)*theta(j,k))
+          end do
+        end do
+
+        ! Mode-mm disturbance of amplitude amp to the ring
+        dist = vr%amp*cos(real(vr%mm, pr)*theta)
+
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              pp(i,j,k) = x(i) - vr%r1*cos(real(vr%kk, pr)*theta(j,k))
+              d1(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%x0))**2 + &
+                (scal*(s(j,k)+vr%r0-dist(j,k)))**2 )
+              d2(i,j,k) = sqrt( (scal*(pp(i,j,k)-vr%x0))**2 + &
+                (scal*(s(j,k)-vr%r0-dist(j,k)))**2 )
+            end do
+          end do
+        end do
+        
+        call get_rr(d1,rr1)
+        call get_rr(d2,rr2)
+        
+        do k=ks,ke
+          do j=js,je
+            do i=0,nx1
+              vortex_ring(i,j,k) = rr1(i,j,k)*((scal*(pp(i,j,k)-vr%x0)) + &
+                vr%dir*eye*(scal*(s(j,k)+vr%r0-dist(j,k)))) * &
+                rr2(i,j,k)*((scal*(pp(i,j,k)-vr%x0)) - &
+                vr%dir*eye*(scal*(s(j,k)-vr%r0-dist(j,k))))
+            end do
+          end do
+        end do
+
+        deallocate(s)
+        deallocate(theta)
+        deallocate(dist)
+      case default
+        ! Error if plane not recognised
+        call emergency_stop('ERROR: Unrecognised vortex ring plane.')
+    end select
 
     return
   end function vortex_ring
-  
-! ***************************************************************************  
-
-  function vortex_ring2(x0, y0, z0, r0, dir)
-    ! Vortex ring initial condition
-    use parameters
-    implicit none
-
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: vortex_ring2
-    real (pr), intent(in) :: x0, y0, z0, r0, dir
-    real (pr), dimension(0:nx1,ks:ke) :: s
-    real (pr), dimension(0:nx1,js:je,ks:ke) :: rr1, rr2, d1, d2
-    integer :: i, j, k
-
-    do k=ks,ke
-      do i=0,nx1
-        s(i,k) = sqrt((x(i)-x0)**2 + (z(k)-z0)**2)
-      end do
-    end do
-    
-    do k=ks,ke
-      do j=js,je
-        do i=0,nx1
-          d1(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)+r0)**2 )
-          d2(i,j,k) = sqrt( (y(j)-y0)**2 + (s(i,k)-r0)**2 )
-        end do
-      end do
-    end do
-    
-    rr1 = sqrt( ((0.3437_pr+0.0286_pr*d1**2)) / &
-      (1.0_pr+(0.3333_pr*d1**2)+(0.0286_pr*d1**4)) )
-    rr2 = sqrt( ((0.3437_pr+0.0286_pr*d2**2)) / &
-      (1.0_pr+(0.3333_pr*d2**2)+(0.0286_pr*d2**4)) )
-
-    do k=ks,ke
-      do j=js,je
-        do i=0,nx1
-          vortex_ring2(i,j,k) = rr1(i,j,k)*((y(j)-y0)+dir*eye*(s(i,k)+r0)) * &
-                                rr2(i,j,k)*((y(j)-y0)-dir*eye*(s(i,k)-r0))
-        end do
-      end do
-    end do
-
-    return
-  end function vortex_ring2
   
 ! ***************************************************************************  
 
