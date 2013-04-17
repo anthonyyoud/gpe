@@ -21,12 +21,21 @@
   the provided \gpeexample{ring} example, which propagates a vortex ring in a
   homogeneous condensate for a short time.
 
+  \section{Makefile}
+  Change to the \gpefile{src} directory, and copy \gpefile{Makefile.dist} to
+  \gpefile{Makefile}.  The settings in the Makefile must be correct, in order
+  for the code to compile.  The default Makefile assumes that compilation will
+  be with the GNU Fortran compiler (gfortran), and that 64-bit code should be
+  generated.  If this is not what you want, then you will need to make changes.
+  See \S\ref{sec:makefile} for more information.
+
   \section{Setting the run parameters and initial condition}
-  Change to the \gpefile{examples/ring} directory.  In here, you
-  will find symbolic links to the source files, and in addition, three
-  \gpefile{.in} files.  In general, it is these files ---
-  \gpefile{parameters.in}, \gpefile{ic.in}, and \gpefile{run.in} --- which you
-  will need to edit, in order to set up a run.
+  Change to the \gpefile{examples/ring} directory.  In here, you will find
+  symbolic links to the source files, and in addition, three \gpefile{.in.dist}
+  files.  Before doing anything else, copy these files to files with the same
+  name, but with the \verb".dist" extension removed.  In general, it is these
+  files --- \gpefile{parameters.in}, \gpefile{ic.in}, and \gpefile{run.in} ---
+  that you will need to edit, in order to set up a run.
 
   \subsection{parameters.in}
   For this example, simply change \gpevar{nyprocs} and \gpevar{nzprocs}, so
@@ -67,13 +76,10 @@
     ./setup run_dir
   \end{Verbatim}
   %
-  This will compile the code\footnote{The default Makefile assumes the sunf95
-  compiler is available and in the PATH, and that 64-bit code should be
-  generated.  If this is not what you want, then you will need to edit the
-  Makefile.  See \S\ref{sec:makefile} for more information.}, create the
-  directory \verb"run_dir", and copy \gpefile{parameters.in}, \gpefile{ic.in},
-  \gpefile{run.in}, and \gpefile{run.sh} to the run directory.  In addition,
-  the executable \gpefile{gpe} is moved to the run directory.
+  This will compile the code, create the directory \verb"run_dir", and copy
+  \gpefile{parameters.in}, \gpefile{ic.in}, \gpefile{run.in}, and
+  \gpefile{run.sh} to the run directory.  In addition, the executable
+  \gpefile{gpe} is moved to the run directory.
 
   This run uses double-precision floating-point arithmetic.  For other runs, if
   you require only single precision, then remember to set \gpevar{pr}
