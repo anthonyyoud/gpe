@@ -764,8 +764,8 @@ module ic
           do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(y(j)-y0-a1*sin(2.0_pr*pi*x(i)/(ll+safe1)))**2 + &
-                     scal*(z(k)-z0-a2*cos(2.0_pr*pi*x(i)/(ll+safe2)))**2)
+                sqrt(scal*(y(j)-y0-a1*sin(2.0_pr*pi*(x(i)-x0)/(ll+safe1)))**2 + &
+                     scal*(z(k)-z0-a2*cos(2.0_pr*pi*(x(i)-x0)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -774,8 +774,8 @@ module ic
           do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(z(k)-z0-a1*sin(2.0_pr*pi*y(j)/(ll+safe1)))**2 + &
-                     scal*(x(i)-x0-a2*cos(2.0_pr*pi*y(j)/(ll+safe2)))**2)
+                sqrt(scal*(z(k)-z0-a1*sin(2.0_pr*pi*(y(j)-y0)/(ll+safe1)))**2 + &
+                     scal*(x(i)-x0-a2*cos(2.0_pr*pi*(y(j)-y0)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -784,8 +784,8 @@ module ic
           do j=js,je
             do i=0,nx1
               r(i,j,k) = &
-                sqrt(scal*(x(i)-x0-a1*sin(2.0_pr*pi*z(k)/(ll+safe1)))**2 + &
-                     scal*(y(j)-y0-a2*cos(2.0_pr*pi*z(k)/(ll+safe2)))**2)
+                sqrt(scal*(x(i)-x0-a1*sin(2.0_pr*pi*(z(k)-z0)/(ll+safe1)))**2 + &
+                     scal*(y(j)-y0-a2*cos(2.0_pr*pi*(z(k)-z0)/(ll+safe2)))**2)
             end do
           end do
         end do
@@ -853,8 +853,8 @@ module ic
           do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(z(k)-z0-a2*cos(2.0_pr*pi*x(i)/(ll+safe2))), & 
-                scal*(y(j)-y0-a1*sin(2.0_pr*pi*x(i)/(ll+safe1))))
+                atan2(scal*(z(k)-z0-a2*cos(2.0_pr*pi*(x(i)-x0)/(ll+safe2))), & 
+                scal*(y(j)-y0-a1*sin(2.0_pr*pi*(x(i)-x0)/(ll+safe1))))
             end do
           end do
         end do
@@ -863,8 +863,8 @@ module ic
           do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(x(i)-x0-a2*cos(2.0_pr*pi*y(j)/(ll+safe2))), &
-                scal*(z(k)-z0-a1*sin(2.0_pr*pi*y(j)/(ll+safe1))))
+                atan2(scal*(x(i)-x0-a2*cos(2.0_pr*pi*(y(j)-y0)/(ll+safe2))), &
+                scal*(z(k)-z0-a1*sin(2.0_pr*pi*(y(j)-y0)/(ll+safe1))))
             end do
           end do
         end do
@@ -873,8 +873,8 @@ module ic
           do j=js,je
             do i=0,nx1
               theta(i,j,k) = sgn * &
-                atan2(scal*(y(j)-y0-a2*cos(2.0_pr*pi*z(k)/(ll+safe2))), &
-                scal*(x(i)-x0-a1*sin(2.0_pr*pi*z(k)/(ll+safe1))))
+                atan2(scal*(y(j)-y0-a2*cos(2.0_pr*pi*(z(k)-z0)/(ll+safe2))), &
+                scal*(x(i)-x0-a1*sin(2.0_pr*pi*(z(k)-z0)/(ll+safe1))))
             end do
           end do
         end do

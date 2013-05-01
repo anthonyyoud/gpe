@@ -31,9 +31,9 @@
   ! Vortex line parameters **************************************************
   !
   type :: line_param
-    real (pr)    :: x0   ! x position
-    real (pr)    :: y0   ! y position
-    real (pr)    :: z0   ! z position
+    real (pr)    :: x0   ! x position (or translation in x if dir='x')
+    real (pr)    :: y0   ! y position (or translation in y if dir='y')
+    real (pr)    :: z0   ! z position (or translation in z if dir='z')
     real (pr)    :: amp1 ! amplitude of a disturbance of the vortex line (dir1)
     real (pr)    :: amp2 ! amplitude of a disturbance of the vortex line (dir2)
     real (pr)    :: ll   ! wavelength of the above disturbance
