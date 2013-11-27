@@ -18,21 +18,22 @@
 ! the code.
 !----------------------------------------------------------------------------
 &run_params
-  tau           = 0.0001
-  end_time      = 10.0
-  xr            = 12.0
-  yr            = 12.0
-  zr            = 12.0
-  scheme        = 'rk2'
-  eqn_to_solve  = 4
-  bcs           = 2
-  order         = 2
-  restart       = .false.
-  saved_restart = .false.
-  renorm        = .false.
-  imprint_vl    = .false.
-  stop_imag     = .true.
-  real_time     = .false.
+  tau                 = 0.0001
+  end_time            = 10.0
+  xr                  = 12.0
+  yr                  = 12.0
+  zr                  = 12.0
+  scheme              = 'rk2'
+  eqn_to_solve        = 4
+  bcs                 = 2
+  order               = 2
+  restart             = .false.
+  saved_restart       = .false.
+  multiply_ic_restart = .false.
+  renorm              = .false.
+  imprint_vl          = .false.
+  stop_imag           = .true.
+  real_time           = .false.
 /
 &eqn_params
   Urhs     = 0.0

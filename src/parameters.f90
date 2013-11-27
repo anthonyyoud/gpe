@@ -31,14 +31,15 @@ module parameters
   integer      :: order
   logical      :: restart
   logical      :: saved_restart
+  logical      :: multiply_ic_restart
   logical      :: renorm
   logical      :: imprint_vl
   logical      :: stop_imag
   logical      :: real_time
 
   namelist /run_params/ tau, end_time, xr, yr, zr, scheme, eqn_to_solve, &
-    bcs, order, restart, saved_restart, renorm, imprint_vl, stop_imag, &
-    real_time
+    bcs, order, restart, saved_restart, multiply_ic_restart, renorm, &
+    imprint_vl, stop_imag, real_time
 
   ! eqn_params
   real (pr) :: Urhs

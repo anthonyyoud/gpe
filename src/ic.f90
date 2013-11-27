@@ -120,12 +120,13 @@ module ic
     implicit none
 
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: state_restart
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: out_var1, out_var2
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: out_var1, out_var2, init_cond
     complex (pr) :: dt_prev
     integer :: nx_prev, ny_prev, nz_prev, undef_int
     real (pr) :: undef_real
 
     out_var2 = 1.0_pr
+    init_cond = 1.0_pr
     
     open (unit_no, file=end_state_file, access='stream')
 
@@ -156,7 +157,11 @@ module ic
       close (unit_no)
     end if
 
-    state_restart = out_var1*out_var2
+    if (multiply_ic_restart) then
+      include 'ic.in'
+    end if
+
+    state_restart = out_var1*out_var2*init_cond
 
     if (real_time) then
       if (real(dt_prev, pr) == 0.0_pr) then
