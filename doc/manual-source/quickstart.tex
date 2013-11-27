@@ -393,7 +393,7 @@
     ./run.sh -r <initial run directory> <nprocs>
   \end{Verbatim}
   %
-  where \verb"<initial run directory>" is the directory of the run which you
+  where \verb"<initial run directory>" is the directory of the run that you
   want to continue.  This will copy the \gpefile{end\_state.dat} files from the
   \gpefile{proc} directories to the restart directory (suitably renamed), and
   start the run.  The \gpefile{log.txt} file should then report that the code
@@ -404,4 +404,12 @@
   \end{Verbatim}
   %
   and will restart from where it left off.
+
+  \subsection{\label{subsec:multiply_ic_restart}Combining a restarted run with
+      another initial condition}
+  Since an initial condition can be constructed by multiplying any valid wave
+  functions together, it is possible to multiply the wave function as it was
+  when the previous run ended with the initial condition defined in
+  \gpefile{ic.in}.  To do this, perform a restart as explained above, while
+  also setting \gpevar{multiply\_ic\_restart} to \gpevar{.true.}.
 \end{chapter}

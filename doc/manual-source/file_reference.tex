@@ -270,7 +270,11 @@
       % 
       \gpevar{saved\_restart} & logical & Set to \verb".true." if using
       filtered data from a previous run to multiply with the initial condition
-      of a new run.  \\
+      of a new run. \\
+      %
+      \gpevar{multiply\_ic\_restart} & logical & Set to \verb".true." if a
+      restarted run should be multiplied by the initial condition defined in
+      \gpefile{ic.in}.  See \S\ref{subsec:multiply_ic_restart}. \\
       %
       \gpevar{renorm} & logical & Set to \verb".true." if the wavefunction
       should be renormalised at every time step in imaginary time. \\
