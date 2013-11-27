@@ -1,4 +1,7 @@
 #!/bin/bash
+#$ -cwd -V
+#$ -e error_log.$JOB_ID
+#$ -o output_log.$JOB_ID
 #Copyright 2011 Anthony Youd/Newcastle University
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,23 +16,53 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# Simple script to run a job.
+DOMAINNAME=$(dnsdomainname)
+# Node list
+POLARIS="polaris.leeds.ac.uk"
 
-PATH=.:/bin:/usr/bin
+case "$DOMAINNAME" in
+    $POLARIS);;
+    *) PATH=.:/bin:/usr/bin;;
+esac
 
 usage() {
+case "$DOMAINNAME" in
+    $POLARIS)
+    DESCRIPTION="
+        Submit a GPE run to the polaris queue either from the start or by doing
+        a restart from an existing run."
+    USAGE="
+        qsub [QSUB_OPTIONS] run-polaris.sh [OPTIONS]"
+    QSUB_OPTIONS="
+QSUB_OPTIONS:
+
+        These are the options to pass to the qsub command.  See man qsub
+        for more information.
+    
+        To request one hour of run time on four cores, for example, specify
+        -l h_rt=1:00:00 and -pe ib 4."
+;;
+    *)
+    DESCRIPTION="
+        Run the GPE code on <NPROCS> processes either from the start or by
+        doing a restart from an existing run."
+    USAGE="
+        run.sh [OPTIONS] <NPROCS>"
+        
+;;
+esac
+
 cat <<EOF
 run.sh
 ---------
 
 DESCRIPTION:
-
-Run the GPE code on <NPROCS> processes either from the start or by doing a
-restart from an existing run.
+$DESCRIPTION
 
 USAGE:
+$USAGE
 
-        run.sh [OPTIONS] <NPROCS>
+$QSUB_OPTIONS
 
 OPTIONS:
 
@@ -55,18 +88,35 @@ EOF
 }
 
 run() {
-  echo Running job...
-  nohup /usr/bin/time -p mpiexec -n $NPROCS $EXE &> $LOGFILE &
+echo Running job...
+case "$DOMAINNAME" in
+    $POLARIS)
+        mpiexec $EXE
+    ;;
+    *)
+        nohup /usr/bin/time -p mpiexec -n $NPROCS $EXE &> $LOGFILE &
+    ;;
+esac
 }
 
 # Get command line options
 options=`getopt -o r:cph -l restart:,clean,post-process,help -n run.sh -- "$@"`
 
-# If no options, show the help
-if [ $# == 0 ]; then
-  usage
-  exit 1
-fi
+case "$DOMAINNAME" in
+    $POLARIS)
+        if [ "BATCH" != "$ENVIRONMENT" ]; then
+            usage
+            exit 1
+        fi
+    ;;
+    *)
+        # If no options, show the help
+        if [ $# == 0 ]; then
+          usage
+          exit 1
+        fi
+    ;;
+esac
 
 eval set -- "$options"
 
@@ -85,13 +135,15 @@ do
   esac
 done
 
-if [ $# -eq 0 ];
-then
-  usage
-  exit 1
-fi
+case "$DOMAINNAME" in
+    $POLARIS)
+        NPROCS=$NSLOTS
+    ;;
+    *)
+        NPROCS=$1
+    ;;
+esac
 
-NPROCS=$1
 DIGITS=2
 EXE=gpe
 LOGFILE=log.txt
