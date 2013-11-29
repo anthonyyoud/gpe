@@ -36,6 +36,10 @@ function read_data, file=ifile, phase=phase, vx=vx, vy=vy, vz=vz, dbl=dbl, $
   
   for k=0,nprocs(0)-1 do begin
     if k lt 10 then begin
+      data_dir = 'proc000'+str(k)+'/'
+    endif else if k lt 100 then begin
+      data_dir = 'proc00'+str(k)+'/'
+    endif else if k lt 1000 then begin
       data_dir = 'proc0'+str(k)+'/'
     endif else begin
       data_dir = 'proc'+str(k)+'/'

@@ -144,7 +144,7 @@ case "$DOMAINNAME" in
     ;;
 esac
 
-DIGITS=2
+DIGITS=4
 EXE=gpe
 LOGFILE=log.txt
 

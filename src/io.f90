@@ -120,24 +120,13 @@ module io
     use parameters
     implicit none
 
-    ! Directory names are proc** with ** replaced by the rank of each process
-    if (myrank < 10) then
-      write (proc_dir(6:6), '(1i1)') myrank
-      write (proc_dir(5:5), '(1i1)') 0
-    else
-      write (proc_dir(5:6), '(1i2)') myrank
-    end if
+    ! Directory names are proc**** with **** replaced by the rank of each
+    ! process
+    write (proc_dir(5:8), '(i0.4)') myrank
 
     ! Name of the end_state.dat file used to do a restart
-    if (myrank < 10) then
-      write (end_state_file(11:11), '(1i1)') myrank
-      write (end_state_file(10:10), '(1i1)') 0
-      write (filt_end_state_file(20:20), '(1i1)') myrank
-      write (filt_end_state_file(19:19), '(1i1)') 0
-    else
-      write (end_state_file(10:11), '(1i2)') myrank
-      write (filt_end_state_file(19:20), '(1i2)') myrank
-    end if
+    write (end_state_file(10:13), '(i0.4)') myrank
+    write (filt_end_state_file(19:22), '(i0.4)') myrank
 
     return
   end subroutine get_dirs

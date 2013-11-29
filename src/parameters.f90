@@ -110,9 +110,9 @@ module parameters
   integer, dimension(0:nyprocs-1) :: kdisp, jjlen
   complex (pr), allocatable, dimension(:,:,:) :: works1, works2, workr1, workr2
   real (pr), allocatable, dimension(:,:,:) :: ave
-  character(7) :: proc_dir = 'proc**/'
-  character(15) :: end_state_file = 'end_state**.dat'
-  character(24) :: filt_end_state_file = 'end_state_filtered**.dat'
+  character(9) :: proc_dir = 'proc****/'
+  character(17) :: end_state_file = 'end_state****.dat'
+  character(26) :: filt_end_state_file = 'end_state_filtered****.dat'
   complex (pr) :: dt
   real (pr) :: t = 0.0_pr
   real (pr) :: im_t = 0.0_pr
