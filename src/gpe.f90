@@ -15,6 +15,7 @@
 program gpe
   ! Code to solve the Gross-Pitaevskii equation in 3D.  Parallelised using MPI.
   ! See the README file for a description and usage instructions
+  use decomp_2d
   use derivs
   use error
   use ic
@@ -32,8 +33,16 @@ program gpe
 
   ! Initialise the MPI process grid
   call MPI_INIT(ierr)
-  call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
-  call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
+  call decomp_2d_init(nx, ny, nz, nyprocs, nzprocs)
+  js = xstart(2)-1; je = xend(2)-1
+  ks = xstart(3)-1; ke = xend(3)-1
+  xs1 = zstart(1) - 1; xe1 = zend(1) - 1
+  ys1 = zstart(2) - 1; ye1 = zend(2) - 1
+  zs1 = zstart(3) - 1; ze1 = zend(3) - 1
+
+  myrank = nrank
+  !call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
+  !call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
 
   ! Get unit numbers so that files can be opened on each process
   call get_unit_no()
@@ -44,8 +53,8 @@ program gpe
   ! Setup the lookup table for neighbouring processes
   call setup_itable()
   ! Calculate the start and end array indices on each process
-  call para_range(0, nz1, nzprocs, myrankz, ks, ke)
-  call para_range(0, ny1, nyprocs, myranky, js, je)
+  !call para_range(0, nz1, nzprocs, myrankz, ks, ke)
+  !call para_range(0, ny1, nyprocs, myranky, js, je)
   ! Calculate the array dimensions on each process
   call array_len()
   ! Get the neighbouring process rank

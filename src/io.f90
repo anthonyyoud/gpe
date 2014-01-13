@@ -310,8 +310,8 @@ module io
     implicit none
 
     real (pr), intent(in) :: time
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a, filtered
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(inout) :: in_var
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1) :: a
     real (pr) :: M, n0, temp, temp2, tot, tmp, rho0, E0, H, k2, k4, &
       kx, ky, kz, kc, dk
     integer :: i, j, k, ii, jj, kk, ii2, jj2, kk2, V
@@ -320,15 +320,17 @@ module io
     dk = 2.0_pr*kc/real(nx1, pr)
     V = nx*ny*nz
 
-    call fft(in_var, a, 'backward', .true.)
+    call fft(in_var, a, 'forward')
 
     ! Calculate the number of condensed particles
-    do k=ks,ke
-      do j=js,je
-        if ((j==0) .and. (k==0)) then
-          n0 = abs(a(0,0,0))**2
-          exit
-        end if
+    do k=zs1,ze1
+      do j=ys1,ye1
+          do i=xs1,xe1
+            if ((i==0) .and. (j==0) .and. (k==0)) then
+              n0 = abs(a(i,j,k))**2
+              exit
+            end if
+        end do
       end do
     end do
 
@@ -529,7 +531,7 @@ module io
 
     integer, intent(in) :: flag
     integer, optional, intent(in) :: ind
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(inout) :: a
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1), intent(inout) :: a
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: filtered
     complex (pr), dimension(0:nx1,js-2:je+2,ks-2:ke+2) :: filtered_tmp
     integer :: i, j, k, ii2, jj2, kk2, k2
@@ -541,19 +543,19 @@ module io
       m = 1.0_pr
     end if
     
-    do k=ks,ke
+    do k=zs1,ze1
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=js,je
+      do j=ys1,ye1
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
           jj2 = (ny1-j+1)**2
         end if
-        do i=0,nx1
+        do i=xs1,xe1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
@@ -567,7 +569,7 @@ module io
       end do
     end do
     
-    call fft(a, filtered, 'forward', .true.)
+    call fft(a, filtered, 'backward')
     
     filtered_tmp = 0.0_pr
     filtered_tmp(:,js:je,ks:ke) = filtered
@@ -625,7 +627,7 @@ module io
     use ic, only : x, y, z, unit_no
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: a
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1), intent(in) :: a
     real (pr) :: log2k
     integer :: i, j, k, m, ii2, jj2, kk2, k2, kk
     integer, parameter :: nshells = 7
@@ -637,19 +639,19 @@ module io
     nharm = 0
     F = 0.0_pr
     
-    do k=ks,ke
+    do k=zs1,ze1
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=js,je
+      do j=ys1,ye1
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
           jj2 = (ny1-j+1)**2
         end if
-        do i=0,nx1
+        do i=xs1,xe1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
@@ -834,8 +836,8 @@ module io
     implicit none
 
     integer, intent(in) :: flag
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
+    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(inout) :: in_var
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1) :: a
     integer :: j, k
 
     open (unit_no, file=proc_dir//'end_state.dat', access='stream')
@@ -867,7 +869,7 @@ module io
     ! flag = 1 if the run has been ended
     if (flag == 1) then
       ! Save a final filtered isosurface
-      call fft(in_var, a, 'backward', .true.)
+      call fft(in_var, a, 'forward')
       call filtered_surface(a, flag)
       if (myrank == 0) then
         ! Delete RUNNING file to cleanly terminate the run
@@ -1505,7 +1507,8 @@ module io
     use ic, only : x, y, z, fft, unit_no
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: in_var, a
+    complex (pr), dimension(0:nx1,js:je,ks:ke) :: in_var
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1) :: a
     integer :: i, j, dummy_int
 
     do j=1,nfilter
@@ -1534,7 +1537,7 @@ module io
         read (unit_no) y
         read (unit_no) z
         
-        call fft(in_var, a, 'backward', .true.)
+        call fft(in_var, a, 'forward')
         
         call filtered_surface(a, 0, j)
       end do

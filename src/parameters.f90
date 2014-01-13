@@ -102,6 +102,7 @@ module parameters
   integer :: myrank, myranky, myrankz
   integer :: js, je, jlen, yprev, ynext
   integer :: ks, kks, ke, kke, klen, zprev, znext
+  integer :: xs1, xe1, ys1, ye1, zs1, ze1
   integer :: ierr
   
   ! Other parameters.

@@ -198,7 +198,7 @@ module ic
     implicit none
 
     complex (pr), dimension(0:nx1,js:je,ks:ke) :: random_phase
-    complex (pr), dimension(0:nx1,js:je,ks:ke) :: a
+    complex (pr), dimension(xs1:xe1,ys1:ye1,zs1:ze1) :: a
     integer, allocatable, dimension(:) :: seed
     real (pr) :: phi, rand
     integer :: i, j, k, ii2, jj2, kk2, n, irand
@@ -223,19 +223,19 @@ module ic
     seed = myrank + irand*(/ (i, i=0,n-1) /)
     call random_seed(put=seed)
 
-    do k=ks,ke
+    do k=zs1,ze1
       if (k <= nz1/2+1) then
         kk2 = k**2
       else
         kk2 = (nz1-k+1)**2
       end if
-      do j=js,je
+      do j=ys1,ye1
         if (j <= ny1/2+1) then
           jj2 = j**2
         else
           jj2 = (ny1-j+1)**2
         end if
-        do i=0,nx1
+        do i=xs1,xe1
           if (i <= nx1/2+1) then
             ii2 = i**2
           else
@@ -251,7 +251,7 @@ module ic
       end do
     end do
 
-    call fft(a, random_phase, 'forward', .false.)
+    call fft(a, random_phase, 'backward')
   
     return
   end function random_phase
@@ -907,100 +907,35 @@ module ic
     
 ! ***************************************************************************  
 
-  subroutine fft(in_var, out_var, dir, particles)
+  subroutine fft(in_var, out_var, dir)
     ! Calculate the FFT (or inverse) of a variable
+    use constants
+    use decomp_2d
+    use decomp_2d_fft
     use error, only : emergency_stop
     use parameters
-    use constants
     implicit none
 
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(in) :: in_var
-    complex (pr), dimension(0:nx1,js:je,ks:ke), intent(out) :: out_var
+    complex (pr), dimension(:,:,:), intent(inout) :: in_var
+    complex (pr), dimension(:,:,:), intent(out) :: out_var
     character(*), intent(in) :: dir
-    logical, intent(in) :: particles
-    complex (pr), dimension(0:nx1,0:ny1,0:nz1) :: tmp_var, tmp
-    complex (pr), allocatable, dimension(:) :: local_data, work
     integer :: i, j, k
-    integer*8 :: plan, iplan
-    integer :: loc_nz, loc_z_sta, loc_ny, loc_y_sta, tot_loc
 
-    ! Set up a temporary array so that the data can be eventually redistributed
-    ! as required by fftw
-    tmp_var = 0.0_pr
-    do k=ks,ke
-      do j=js,je
-        tmp_var(:,j,k) = in_var(:,j,k)
-      end do
-    end do 
-    
-    ! Make sure all processes have the temporary variable
-    call MPI_ALLREDUCE(tmp_var, tmp, nx*ny*nz, gpe_mpi_complex, MPI_SUM, &
-      MPI_COMM_WORLD, ierr)
-                       
+    call decomp_2d_fft_init()
+
     select case (dir)
       case ('forward')
-        ! Create the plan for a forward transform
-        call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
-          FFTW_FORWARD, FFTW_ESTIMATE)
+          call decomp_2d_fft_3d(in_var, out_var, DECOMP_2D_FFT_FORWARD)
       case ('backward')
-        ! Create the plan for a backward transform
-        call fftw3d_f77_mpi_create_plan(plan, MPI_COMM_WORLD, nx, ny, nz, &
-          FFTW_BACKWARD, FFTW_ESTIMATE)
+          call decomp_2d_fft_3d(in_var, out_var, DECOMP_2D_FFT_BACKWARD)
       case default
         call emergency_stop('ERROR: Not a valid direction for FFT!')
     end select
 
-    ! Get the sizes of the arrays local to each process
-    call fftwnd_f77_mpi_local_sizes(plan, loc_nz, loc_z_sta, &
-      loc_ny, loc_y_sta, tot_loc)
-
-    ! Allocate the array sizes
-    allocate(local_data(0:tot_loc-1))
-    allocate(work(0:tot_loc-1))
-
-    ! Distribute the data into a local array as required by fftw
-    do k=0,loc_nz-1
-      do j=0,ny1
-        do i=0,nx1
-          local_data((k*ny+j)*nx+i) = tmp(i,j,k+loc_z_sta)
-        end do
-      end do
-    end do
-    
-    ! Call the parallel FFT routine to do the transform
-    call fftwnd_f77_mpi(plan, 1, local_data, work, 1, FFTW_TRANSPOSED_ORDER)
-    
-    ! Set up another temporary array to (eventually) get the transformed data
-    ! back into the original distribution scheme
-    tmp = 0.0_pr
-    do k=0,loc_ny-1
-      do j=0,nz1
-        do i=0,nx1
-          tmp(i,k+loc_y_sta,j) = local_data((k*ny+j)*nx+i)
-        end do
-      end do
-    end do
-      
-    ! Make sure all processes have the temporary variable
-    call MPI_ALLREDUCE(tmp, tmp_var, nx*ny*nz, gpe_mpi_complex, MPI_SUM, &
-      MPI_COMM_WORLD, ierr)
-
     ! Renormalise
-    tmp_var = tmp_var / sqrt(real(nx*ny*nz, pr))
+    out_var = out_var / sqrt(real(nx*ny*nz, pr))
 
-    ! Distribute the transformed data
-    do k=ks,ke
-      do j=js,je
-        out_var(:,j,k) = tmp_var(:,j,k)
-      end do
-    end do
-
-    ! Deallocate the allocated arrays
-    deallocate(local_data)
-    deallocate(work)
-    
-    ! Destroy the transform plan
-    call fftwnd_f77_mpi_destroy_plan(plan)
+    call decomp_2d_fft_finalize()
 
     return
   end subroutine fft
