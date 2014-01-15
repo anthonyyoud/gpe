@@ -21,7 +21,7 @@ module variables
   public :: laplacian, get_density, get_phase, get_pdf_velocity, get_norm, &
     get_pdf, get_vcf, energy, mass, momentum, linelength, setup_itable, &
     para_range, array_len, neighbours, send_recv_y, send_recv_z, pack_y, &
-    unpack_y, renormalise, imprint_vortex_line
+    unpack_y, renormalise, imprint_vortex_line, get_decomposition
 
   type, public :: var
     complex (pr), allocatable, dimension(:,:,:) :: new
@@ -108,8 +108,8 @@ module variables
     irank = 0
 
     ! Fill the lookup table
-    do k=0,nzprocs-1
-      do j=0,nyprocs-1
+    do j=0,nyprocs-1
+      do k=0,nzprocs-1
         itable(j,k) = irank
         if (myrank == irank) then
           myranky = j
@@ -180,6 +180,27 @@ module variables
 
     return
   end subroutine neighbours
+
+! ***************************************************************************  
+
+  subroutine get_decomposition()
+    ! Determine the process decomposition, and local array extents
+#ifdef DOUBLE_PREC
+    use decomp_2d_d
+#else
+    use decomp_2d_f
+#endif
+    use parameters
+    implicit none
+
+    call decomp_2d_init(nx, ny, nz, nyprocs, nzprocs)
+    js = xstart(2)-1; je = xend(2)-1
+    ks = xstart(3)-1; ke = xend(3)-1
+    xs1 = zstart(1)-1; xe1 = zend(1)-1
+    ys1 = zstart(2)-1; ye1 = zend(2)-1
+    zs1 = zstart(3)-1; ze1 = zend(3)-1
+    myrank = nrank
+  end subroutine get_decomposition
 
 ! ***************************************************************************  
 
