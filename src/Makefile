@@ -15,23 +15,21 @@
 #
 #----------------------------------------------------------------------------
 
+include Makefile.inc
+
 OBJECT	= gpe
-OBJS	= constants.o derivs.o error.o gpe.o ic.o io.o mpi.o parameters.o \
-        solve.o variables.o
-#FC	= sunf95
-#FFLAGS	= -fast -xmodel=medium #-fsimple=0
-FC	= gfortran
-#FFLAGS	= -O3 -march=pentium4 -mfpmath=sse #-mcmodel=medium
-#FFLAGS	= -O3 -march=core2 -mfpmath=sse #-mcmodel=medium
-FFLAGS	= -O3 -march=corei7 -mfpmath=sse #-mcmodel=medium
+OBJS	= derivs.o error.o gpe.o ic.o io.o mpi.o parameters.o solve.o variables.o
 ifeq ($(precision), single)
-  LDFFTW = -lsrfftw_mpi -lsfftw_mpi -lsrfftw -lsfftw
+  LDFFTW = -L$(FFTW_HOME)/lib -lfftw3f -lfftw3
+  LD2DECOMP = -L$(DECOMP_HOME_SINGLE)/lib -l2decomp_fft
+  DECOMP_INC = -I$(DECOMP_HOME_SINGLE)/include
 else
-  LDFFTW = -lrfftw_mpi -lfftw_mpi -lrfftw -lfftw
+  LDFFTW = -L$(FFTW_HOME)/lib -lfftw3
+  LD2DECOMP = -L$(DECOMP_HOME_DOUBLE)/lib -l2decomp_fft
+  DECOMP_INC = -I$(DECOMP_HOME_DOUBLE)/include
 endif
-LDFLAGS	= -lmpi_f90 -lmpi_f77 -lmpi -lopen-rte -lopen-pal \
-          -ldl -lnsl -lutil -lm $(LDFFTW)
-INCLUDE	= -I/usr/lib/openmpi/include
+LDFLAGS	= $(LD2DECOMP) $(LDFFTW) -lm
+INCLUDE	= $(DECOMP_INC)
 #-----------------------------------------------------------------------
 %.o : %.f90
 	$(FC) $(FFLAGS) $(INCLUDE) -c $*.f90
@@ -42,12 +40,12 @@ clean :
 	rm -f $(OBJECT) *.o *.mod
 #-----------------------------------------------------------------------
 $(OBJECT): $(OBJS)
-	$(FC) $(FFLAGS) $(INCLUDE) $(OBJS) $(LDFLAGS) -o $@
+	$(FC) $(OBJS) $(LDFLAGS) -o $@
 
 derivs.o: parameters.o
 error.o: parameters.o
 gpe.o: derivs.o error.o ic.o io.o mpi.o parameters.o solve.o variables.o
-ic.o: constants.o error.o parameters.o ic.in
+ic.o: error.o parameters.o ic.in
 io.o: error.o ic.o parameters.o variables.o
 mpi.o: parameters.o
 parameters.o: parameters.in

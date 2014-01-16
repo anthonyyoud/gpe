@@ -185,11 +185,7 @@ module variables
 
   subroutine get_decomposition()
     ! Determine the process decomposition, and local array extents
-#ifdef DOUBLE_PREC
-    use decomp_2d_d
-#else
-    use decomp_2d_f
-#endif
+    use decomp_2d
     use parameters
     implicit none
 

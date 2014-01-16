@@ -909,12 +909,7 @@ module ic
 
   subroutine fft(in_var, out_var, dir)
     ! Calculate the FFT (or inverse) of a variable
-    use constants
-#ifdef DOUBLE_PREC
-    use decomp_2d_fft_d
-#else
-    use decomp_2d_fft_f
-#endif
+    use decomp_2d_fft
     use error, only : emergency_stop
     use parameters
     implicit none
