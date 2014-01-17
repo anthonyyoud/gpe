@@ -20,11 +20,11 @@ include Makefile.inc
 OBJECT	= gpe
 OBJS	= derivs.o error.o gpe.o ic.o io.o mpi.o parameters.o solve.o variables.o
 ifeq ($(precision), single)
-  LDFFT = -L$(FFT_HOME)/lib $(FFT_LIB_SINGLE)
+  LDFFT = -L$(FFT_HOME_SINGLE)/lib $(FFT_LIB_SINGLE)
   LD2DECOMP = -L$(DECOMP_HOME_SINGLE)/lib -l2decomp_fft
   DECOMP_INC = -I$(DECOMP_HOME_SINGLE)/include
 else
-  LDFFT = -L$(FFT_HOME)/lib $(FFT_LIB_DOUBLE)
+  LDFFT = -L$(FFT_HOME_DOUBLE)/lib $(FFT_LIB_DOUBLE)
   LD2DECOMP = -L$(DECOMP_HOME_DOUBLE)/lib -l2decomp_fft
   DECOMP_INC = -I$(DECOMP_HOME_DOUBLE)/include
 endif

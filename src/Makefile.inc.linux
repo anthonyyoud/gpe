@@ -18,8 +18,9 @@
 
 FC = mpif90
 FFLAGS = -O3 -march=corei7 -mcmodel=medium
-DECOMP_HOME_DOUBLE = /usr/local/2decomp/amd64/double
 DECOMP_HOME_SINGLE = /usr/local/2decomp/amd64/single
-FFT_HOME = /usr
+DECOMP_HOME_DOUBLE = /usr/local/2decomp/amd64/double
+FFT_HOME_SINGLE = /usr
+FFT_HOME_DOUBLE = $(FFT_HOME_SINGLE)
 FFT_LIB_SINGLE = -lfftw3f -lfftw3
 FFT_LIB_DOUBLE = -lfftw3
