@@ -22,11 +22,16 @@
   homogeneous condensate for a short time.
 
   \section{Makefile}
-  Change to the \gpefile{src} directory, and copy \gpefile{Makefile.dist} to
-  \gpefile{Makefile}.  The settings in the Makefile must be correct, in order
+  Change to the \gpefile{src} directory, and copy one of the provided example
+  \gpefile{Makefile.inc.*} files to \gpefile{Makefile.inc}.  The settings in
+  both the primary Makefile and the included Makefile must be correct, in order
   for the code to compile.  The default Makefile assumes that compilation will
-  be with the GNU Fortran compiler (gfortran), and that 64-bit code should be
-  generated.  If this is not what you want, then you will need to make changes.
+  be with the mpif90 wrapper compiler, using the GNU Fortran compiler
+  (gfortran), and that 64-bit code should be generated.  In addition, it
+  assumes that the 2Decomp\&FFT library has been built with a dependency on
+  version 3 of the FFTw library.  The path to both the 2Decomp\&FFT library and
+  the FFTw library need to be provided in the \gpefile{Makefile.inc} file.  If
+  any of the above is not what you want, then you will need to make changes.
   See \S\ref{sec:makefile} for more information.
 
   \section{Setting the run parameters and initial condition}
@@ -66,11 +71,11 @@
   Choose a directory where your run will take place (we shall assume the
   directory \verb"run_dir" in what follows).  This directory should not be on a
   network file system (NFS), which will likely be too slow, and possibly under
-  quota restrictions (as might be the case for a network mounted \verb"/home"
+  quota restrictions (as might be the case for a network-mounted \verb"/home"
   area, for example).  The \gpeexample{ring} example will require approximately
   3GB of disk space with the default parameters.
 
-  Now compile the code with
+  Now set up the run with
   %
   \begin{Verbatim}
     ./setup run_dir
@@ -83,7 +88,7 @@
 
   This run uses double-precision floating-point arithmetic.  For other runs, if
   you require only single precision, then remember to set \gpevar{pr}
-  appropriately in \gpefile{parameters.in}, and compile with
+  appropriately in \gpefile{parameters.in}, and set up with
   %
   \begin{Verbatim}
     ./setup run_dir single
@@ -152,18 +157,18 @@
   Any output that the job would normally print to the screen, is instead
   redirected to the file \gpefile{log.txt}.  It is a good idea to periodically
   check this file to make sure that no unexpected run-time errors have
-  occurred.  Any errors which are written to \gpefile{ERROR} are also written
-  to this file.  Any errors which the code could not anticipate, such as MPI
+  occurred.  Any errors that are written to \gpefile{ERROR} are also written
+  to this file.  Any errors that the code could not anticipate, such as MPI
   communication errors, will appear here.  In this case the job will most
   likely not terminate cleanly, and the \gpefile{RUNNING} file might not be
   removed.
 
   \subsection{The SAVE file}
   As the job is running, data are periodically saved, according to the
-  \gpevar{save\_rate} parameters in \gpefile{run.in}.  Every time step, the
+  \gpevar{save\_rate} parameters in \gpefile{run.in}.  Every time step the
   code checks for the existence of a file called \gpefile{SAVE} in the run
-  directory.  If this file exists, then 3D data (from which isosurfaces and
-  contour plots can be produced) is immediately written to disk.  The
+  directory.  If this file exists then 3D data (from which isosurfaces and
+  contour plots can be produced) are immediately written to disk.  The
   \gpefile{SAVE} file is then automatically removed.  This file can be created,
   for example, by using the \verb"touch" command, \ie \verb"touch SAVE".
 
@@ -244,7 +249,7 @@
   be the same.
 
   The numbers refer to the files within the \gpefile{proc} directories.  If you
-  look in \gpefile{proc00}, for example, you will see a number of files named
+  look in one of these directories, you will see a number of files named
   \gpefile{dens*******.dat}.  The arguments to \gpevar{gpe} are the numbers
   within the filenames, excluding the leading zeroes.
 
@@ -344,7 +349,7 @@
     makemovie -i png -p con_dens
   \end{Verbatim}
   %
-  which will create an AVI animation out of the PNG files, with 10 frames,
+  This will create an AVI animation out of the PNG files, with 10 frames,
   saving the output as \gpefile{output.avi}.  The \gpefile{makemovie} script
   has several options.  Run the script with no arguments to see its help.
 

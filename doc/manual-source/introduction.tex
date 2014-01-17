@@ -57,17 +57,23 @@
   known to work include sunf95 (Sun Studio 12), ifort (Intel Fortran Compiler),
   and gfortran (GNU Fortran Compiler).
 
-  The code also requires the FFTw library (\url{http://www.fftw.org}) for some
-  routines.  This must be version 2 of the library (the latest is version
-  2.1.5), since FFTs in the code are performed in parallel, and FFTw version 3
-  does not yet support (distributed) parallel transforms.
+  The code also requires the 2Decomp\&FFT library
+  (\url{http://www.2decomp.org/}) to perform process domain decomposition and
+  FFTs.  This library, in turn, can have a dependency on an external FFT
+  library (although this is not strictly required).  The default Makefile setup
+  is geared toward using version 3 of the FFTw library
+  (\url{http://www.fftw.org/}).
+
+  The FFT library to use is decided at compile time of the 2Decomp\&FFT
+  library, and not this code.  The Makefile must still be edited to reflect
+  this, however (see \S\ref{sec:makefile}).
 
   To view the output of the code, any graphics program capable of reading
   space-separated, columnar text files will be able to produce time-series
   plots (gnuplot is a nice, easy to use program,
-  \url{http://www.gnuplot.info/}).  Routines written in IDL (Interactive Data
-  Language, \url{http://www.ittvis.com/ProductServices/IDL.aspx}) for producing
-  2D contour and 3D isosurface plots are included with the code.  The data for
+  \url{http://www.gnuplot.info/}).  Routines written in IDL
+  (\url{http://www.exelisvis.com/ProductsServices/IDL.aspx}) for producing 2D
+  contour and 3D isosurface plots are included with the code.  The data for
   these plots are saved in binary format, so more work will be needed if a
   different graphics program is to be used.  Volume renderings using VAPOR
   (\url{http://www.vapor.ucar.edu/}) are also possible.
@@ -82,7 +88,7 @@
     \item A Fortran 90 compiler, supporting Fortran 2003 constructs (see
       above).
     \item An implementation of MPI, \eg OpenMPI or MPICH.
-    \item Version 2.x.y of the FFTw library.
+    \item The 2Decomp\&FFT library (and additionally possibly FFTw version 3).
     \item gnuplot and/or IDL for visualisation; VAPOR optional.
   \end{itemize}
 

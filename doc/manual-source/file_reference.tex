@@ -18,7 +18,7 @@
   \gpefile{gpe.pro} program.
 
   \section{Program source files}
-  Table~\ref{tab:source_files} lists the \gpefile{.f90} source code files which
+  Table~\ref{tab:source_files} lists the \gpefile{.f90} source code files that
   make up the code, and describes their functionality.
   %
   \begin{table}[ht]
@@ -27,9 +27,6 @@
       \hline
       File & Description \\
       \hline
-      \gpevar{constants.f90} & This is a module which defines the constants
-      needed for FFTw. \\
-      %
       \gpefile{derivs.f90} & Routines to do with derivatives. \\
       %
       \gpefile{error.f90} & Error-handling routines. \\
@@ -49,12 +46,12 @@
       to do with the equation variables. \\
       \hline\hline
     \end{tabular}
-    \caption{\label{tab:source_files}Program source files which make up the GPE
+    \caption{\label{tab:source_files}Program source files that make up the GPE
       code.}
   \end{table}
 
   \section{Program input files}
-  This section describes the \gpefile{.in} input files which will generally
+  This section describes the \gpefile{.in} input files, which will generally
   need to be edited to set up a run.
 
   \subsection{\label{subsec:parameters.in}parameters.in}
@@ -94,11 +91,11 @@
   \end{table}
    
   There are no restrictions on the \gpevar{nyprocs} and \gpevar{nzprocs}
-  parameters, other than that they be $\geqslant 1$.  In general, it is
-  recommended that \gpevar{nzprocs} $\geqslant$ \gpevar{nyprocs} for best
-  performance, so that fewer non-contiguous data transfers are performed.  They
-  can both be set to 1, in which case the job is simply run on one process (an
-  MPI parallel environment is still required though).
+  parameters, other than that they be greater than or equal to $1$.  In
+  general, it is recommended that \gpevar{nzprocs} $\geqslant$ \gpevar{nyprocs}
+  for best performance, so that fewer non-contiguous data transfers are
+  performed.  They can both be set to 1, in which case the job is simply run on
+  one process (an MPI parallel environment is still required though).
   %
   \begin{table}[ht]
     \centering
@@ -364,9 +361,12 @@
   \end{center}
 
   \section{\label{sec:makefile}Makefile}
-  Settings in the Makefile may need to be changed, depending on the
-  architecture on which the code is run, and what compilers are available to
-  you.  Table~\ref{tab:makefile} describes the Makefile variables.
+  In most cases settings in the main Makefile will not need to be changed.
+  Instead, copy one of the provided example \gpefile{Makefile.inc.*} files to
+  \gpefile{Makefile.inc} and edit that.  Variables in this file may need to be
+  changed, depending on the architecture on which the code is run, and what
+  compilers are available to you.  Table~\ref{tab:makefile} describes the
+  variables to set in \gpefile{Makefile.inc}.
   %
   \begin{table}[ht]
     \centering
@@ -374,28 +374,38 @@
       \hline
       Variable & Description \\
       \hline
-      \gpevar{OBJECT} & The name of the executable produced on compilation. \\
+      \gpevar{FC} & The Fortran compiler to be used.  In most cases this should
+      be the MPI wrapper compiler \verb"mpif90", but the underlying Fortran
+      compiler must be able to compile the code. \\
       %
-      \gpevar{OBJS} & The object files that should be linked. \\
+      \gpevar{FFLAGS} & Fortran compiler flags.  See the compiler's manual. \\
       %
-      \gpevar{FC} & The Fortran compiler to be used.  This could be the MPI
-      wrapper compiler \verb"mpif90", but the underlying Fortran compiler must
-      be able to compile the code (\eg sunf95, ifort, gfortran). \\
+      \gpevar{DECOMP\_HOME\_SINGLE} & The directory in which the single
+      precision Decomp2D\&FFT build is installed.  The \gpefile{lib} and
+      \gpefile{include} sub-directories of this build are referenced in the
+      main Makefile. \\
       %
-      \gpevar{FFLAGS} & Compiler flags.  See the compiler's manual.  Sunf95
-      works well with \verb"-fast".  If nonsense results are produced
-      \verb"-fsimple=0" might be required. \\
+      \gpevar{DECOMP\_HOME\_DOUBLE} & As above, but for the double precision
+      build. \\
       %
-      \gpevar{LDFFTW} & FFTw libraries to link.  Compiling with \verb"make precision=single" will link the single precision libraries. \\
+      \gpevar{FFT\_HOME\_SINGLE} & The directory in which the single precision
+      build of the chosen FFT library is installed.  The FFT library must match
+      that which was chosen for the build of Decomp2D\&FFT.  If no external FFT
+      library was used to build Decomp2D\&FFT, then this (and the
+      \gpevar{FFT\_LIB} variables) can be left blank. \\
       %
-      \gpevar{LDFLAGS} & Any extra flags required by the linker.  If
-      \verb"mpif90" is not the compiler, then all the MPI libraries will need
-      to be linked. \\
+      \gpevar{FFT\_HOME\_DOUBLE} & As above, but for the double precision
+      build. \\
       %
-      \gpevar{INCLUDE} & Include path (\eg for MPI header files). \\
+      \gpevar{FFT\_LIB\_SINGLE} & The FFT libraries to link to for a single
+      precision build of the code. \\
+      %
+      \gpevar{FFT\_LIB\_DOUBLE} & As above, but for a double precision build of
+      the code. \\
       \hline\hline
     \end{tabular}
-    \caption{\label{tab:makefile}Description of Makefile variables.}
+    \caption{\label{tab:makefile}Description of \gpefile{Makefile.inc}
+    variables.}
   \end{table}
 
   \section{\label{sec:output}Program output files}
@@ -659,7 +669,7 @@
   This will create a \gpefile{gpe.vdf} VDF metafile (which describes the data),
   in a sub-directory \gpefile{vapor} (which must already exist).  Also created
   within the \gpefile{vapor} directory, is a directory \gpefile{gpe\_data},
-  which includes further sub-directories where the VAPOR data resides.  (The
+  which includes further sub-directories where the VAPOR data reside.  (The
   number of directories here depends on which data you requested to be saved.)
 
   The density data are always saved by default.  In addition, you can request
@@ -686,10 +696,10 @@
   %
   would add files 10--19 to the VAPOR data.  To actually view the data, load the \gpefile{gpe.vdf} file into VAPOR.
 
-  \textbf{Important note:} VAPOR does not yet support double precision floating
-  point arithmetic, so even if your run is performed in double precision, the
-  data you view with VAPOR is only in single precision.  You must still provide
-  the \verb"/dbl" keyword as normal, but all double precision variables are
-  silently converted to single precision.
+  \textbf{Important note:} At the time of writing, VAPOR does not yet support
+  double precision floating point arithmetic, so even if your run is performed
+  in double precision, the data you view with VAPOR is only in single
+  precision.  You must still provide the \verb"/dbl" keyword as normal, but all
+  double precision variables are silently converted to single precision.
 
 \end{chapter}
