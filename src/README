@@ -1,1 +1,2 @@
-Copy Makefile.dist to Makefile before attempting to compile the code.
+Copy one of the Makefile.inc.* example files to Makefile.inc (and possibly edit
+to suit) before attempting to compile the code.
